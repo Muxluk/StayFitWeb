@@ -1,0 +1,36 @@
+# Serilog logs
+logs/
+
+# Visual Studio
+.vs/
+.vscode/
+*.user
+*.suo
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+bin/
+obj/
+
+# NuGet
+.nuget/
+packages/
+*.nuspec
+
+# Local environment
+.env
+.env.local
+appsettings.Local.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+*.swp
+*.swo
+*~
