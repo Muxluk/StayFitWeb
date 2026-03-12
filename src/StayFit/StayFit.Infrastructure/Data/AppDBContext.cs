@@ -1,0 +1,47 @@
+using Microsoft.EntityFrameworkCore;
+using StayFit.Domain.Entities;
+
+namespace StayFit.Infrastructure.Data;
+
+public class AppDbContext : DbContext
+{
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+    {
+    }
+
+    public DbSet<User> Users => Set<User>();
+    public DbSet<Food> Foods => Set<Food>();
+    public DbSet<FoodLog> FoodLogs => Set<FoodLog>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(u => u.Id);
+            entity.Property(u => u.Name).IsRequired().HasMaxLength(100);
+            entity.Property(u => u.Email).IsRequired().HasMaxLength(200);
+            entity.HasIndex(u => u.Email).IsUnique();
+        });
+
+        modelBuilder.Entity<Food>(entity =>
+        {
+            entity.HasKey(f => f.Id);
+            entity.Property(f => f.Name).IsRequired().HasMaxLength(200);
+        });
+
+        modelBuilder.Entity<FoodLog>(entity =>
+        {
+            entity.HasKey(fl => fl.Id);
+            entity.HasOne(fl => fl.User)
+                .WithMany(u => u.FoodLogs)
+                .HasForeignKey(fl => fl.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(fl => fl.Food)
+                .WithMany(f => f.FoodLogs)
+                .HasForeignKey(fl => fl.FoodId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+}
