@@ -1,0 +1,40 @@
+# Вказує, що це головний файл конфігурації для цього проекту
+root = true
+
+# Загальні правила для всіх файлів
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Правила специфічні для C#
+[*.cs]
+# Використовувати file-scoped namespaces (C# 10+)
+csharp_style_namespace_declarations = file_scoped:warning
+
+# Перевага 'var' коли тип очевидний
+csharp_style_var_when_type_is_apparent = true:warning
+csharp_style_var_elsewhere = false:suggestion
+
+# Сортування using
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+
+# --- Налаштування StyleCop ---
+# Дозволяємо using всередині або зовні namespace
+dotnet_diagnostic.SA1200.severity = none
+# Не вимагаємо коментарів для кожного поля/методу
+dotnet_diagnostic.SA1600.severity = none
+# Не вимагаємо ліцензійної шапки в кожному файлі
+dotnet_diagnostic.SA1633.severity = none
+# Дозволяємо полям починатися з підкреслення (наприклад _repository)
+dotnet_diagnostic.SA1309.severity = none
+
+# Вимикаємо вимогу писати this. перед викликами
+dotnet_diagnostic.SA1101.severity = none
+# Вимикаємо попередження про відсутність XML-документації
+dotnet_diagnostic.SA0001.severity = none
+# Вимикаємо вимогу порожнього рядка між елементами (конфліктує з автозгенерованими файлами .NET)
+dotnet_diagnostic.SA1516.severity = none
