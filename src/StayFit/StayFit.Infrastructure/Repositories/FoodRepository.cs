@@ -7,10 +7,13 @@ namespace StayFit.Infrastructure.Repositories;
 
 public class FoodRepository : Repository<Food>, IFoodRepository
 {
-    public FoodRepository(AppDbContext context) : base(context) { }
+    public FoodRepository(AppDbContext context)
+        : base(context)
+    {
+    }
 
     public async Task<IEnumerable<Food>> SearchByNameAsync(string name) =>
         await _dbSet
-            .Where(f => f.Name.ToLower().Contains(name.ToLower()))
+            .Where(f => f.Name.Contains(name, StringComparison.OrdinalIgnoreCase))
             .ToListAsync();
 }

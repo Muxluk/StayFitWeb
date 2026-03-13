@@ -7,7 +7,10 @@ namespace StayFit.Infrastructure.Repositories;
 
 public class FoodLogRepository : Repository<FoodLog>, IFoodLogRepository
 {
-    public FoodLogRepository(AppDbContext context) : base(context) { }
+    public FoodLogRepository(AppDbContext context)
+        : base(context)
+    {
+    }
 
     public async Task<IEnumerable<FoodLog>> GetByUserIdAsync(int userId) =>
         await _dbSet

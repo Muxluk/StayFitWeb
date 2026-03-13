@@ -22,10 +22,10 @@ public class HomeController : Controller
         try
         {
             _logger.LogDebug("Комбінування даних для сторінки Index");
-            
+
             // Використання LoggingService
             _loggingService.LogApplicationEvent("PageVisit", "Користувач відвідав головну сторінку");
-            
+
             return View();
         }
         catch (Exception ex)
@@ -54,7 +54,7 @@ public class HomeController : Controller
     {
         var requestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
         _logger.LogError("Сталася помилка. ID запиту: {RequestId}", requestId);
-        
+
         return View(new ErrorViewModel { RequestId = requestId });
     }
 }

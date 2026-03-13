@@ -4,7 +4,8 @@ using StayFit.Infrastructure.Data;
 
 namespace StayFit.Infrastructure.Repositories;
 
-public class Repository<T> : IRepository<T> where T : class
+public class Repository<T> : IRepository<T>
+    where T : class
 {
     protected readonly AppDbContext _context;
     protected readonly DbSet<T> _dbSet;

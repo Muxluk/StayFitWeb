@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 namespace StayFit.Application.Services;
 
 /// <summary>
-/// Приклад сервісу з логуванням
+/// Приклад сервісу з логуванням.
 /// </summary>
 public class LoggingService
 {
@@ -17,11 +17,11 @@ public class LoggingService
     public async Task<string> ProcessDataAsync(string data)
     {
         _logger.LogInformation("Почато обробку даних: {Data}", data);
-        
+
         try
         {
             _logger.LogDebug("Перевірка вхідних даних");
-            
+
             if (string.IsNullOrEmpty(data))
             {
                 _logger.LogWarning("Отримані порожні дані для обробки");

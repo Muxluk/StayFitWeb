@@ -21,8 +21,7 @@ builder.Host.UseSerilog((context, configuration) =>
             apiKey: null,
             restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information)
         .Enrich.FromLogContext()
-        .Enrich.WithProperty("Application", "StayFit")
-);
+        .Enrich.WithProperty("Application", "StayFit"));
 
 // ─── MVC ────────────────────────────────────────────────────────────────────
 builder.Services.AddControllersWithViews();
