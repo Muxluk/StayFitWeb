@@ -1,12 +1,13 @@
-using Microsoft.EntityFrameworkCore;
 using Serilog;
-using StayFit.Infrastructure.Data;
+using StayFit.Application.Services;
+using StayFit.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// конфігурація Serilog
+// ─── Serilog ────────────────────────────────────────────────────────────────
 builder.Host.UseSerilog((context, configuration) =>
     configuration
+        .ReadFrom.Configuration(context.Configuration)
         .MinimumLevel.Information()
         .WriteTo.Console(
             outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
@@ -23,13 +24,16 @@ builder.Host.UseSerilog((context, configuration) =>
         .Enrich.WithProperty("Application", "StayFit")
 );
 
+// ─── MVC ────────────────────────────────────────────────────────────────────
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+// ─── Infrastructure (БД + репозиторії) ─────────────────────────────────────
+builder.Services.AddInfrastructure(builder.Configuration);
 
-builder.Services.AddScoped<StayFit.Application.Services.LoggingService>();
+// ─── Application Services ───────────────────────────────────────────────────
+builder.Services.AddScoped<LoggingService>();
 
+// ─── Build ──────────────────────────────────────────────────────────────────
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
