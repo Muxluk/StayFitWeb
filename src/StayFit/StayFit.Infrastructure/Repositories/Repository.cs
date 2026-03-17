@@ -7,14 +7,18 @@ namespace StayFit.Infrastructure.Repositories;
 public class Repository<T> : IRepository<T>
     where T : class
 {
-    protected readonly AppDbContext _context;
-    protected readonly DbSet<T> _dbSet;
+    private readonly AppDbContext _context;
+    private readonly DbSet<T> _dbSet;
 
     public Repository(AppDbContext context)
     {
         _context = context;
         _dbSet = context.Set<T>();
     }
+
+    protected AppDbContext Context => _context;
+
+    protected DbSet<T> DbSet => _dbSet;
 
     public async Task<T?> GetByIdAsync(int id) =>
         await _dbSet.FindAsync(id);

@@ -13,14 +13,14 @@ public class FoodLogRepository : Repository<FoodLog>, IFoodLogRepository
     }
 
     public async Task<IEnumerable<FoodLog>> GetByUserIdAsync(int userId) =>
-        await _dbSet
+        await DbSet
             .Include(fl => fl.Food)
             .Where(fl => fl.UserId == userId)
             .OrderByDescending(fl => fl.LoggedAt)
             .ToListAsync();
 
     public async Task<IEnumerable<FoodLog>> GetByUserIdAndDateAsync(int userId, DateTime date) =>
-        await _dbSet
+        await DbSet
             .Include(fl => fl.Food)
             .Where(fl => fl.UserId == userId && fl.LoggedAt.Date == date.Date)
             .OrderByDescending(fl => fl.LoggedAt)

@@ -35,20 +35,6 @@ public class HomeController : Controller
         }
     }
 
-    public IActionResult Privacy()
-    {
-        _logger.LogInformation("Користувач відвідав сторінку Privacy");
-        try
-        {
-            return View();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Помилка при завантаженні сторінки Privacy");
-            throw;
-        }
-    }
-
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {

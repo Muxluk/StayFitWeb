@@ -13,8 +13,8 @@ public class UserRepository : Repository<User>, IUserRepository
     }
 
     public async Task<User?> GetByEmailAsync(string email) =>
-        await _dbSet.FirstOrDefaultAsync(u => u.Email == email);
+        await DbSet.FirstOrDefaultAsync(u => u.Email == email);
 
     public async Task<IEnumerable<User>> GetUsersWithFoodLogsAsync() =>
-        await _dbSet.Include(u => u.FoodLogs).ThenInclude(fl => fl.Food).ToListAsync();
+        await DbSet.Include(u => u.FoodLogs).ThenInclude(fl => fl.Food).ToListAsync();
 }

@@ -13,7 +13,7 @@ public class FoodRepository : Repository<Food>, IFoodRepository
     }
 
     public async Task<IEnumerable<Food>> SearchByNameAsync(string name) =>
-        await _dbSet
+        await DbSet
             .Where(f => f.Name.Contains(name, StringComparison.OrdinalIgnoreCase))
             .ToListAsync();
 }

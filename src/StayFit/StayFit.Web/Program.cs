@@ -1,6 +1,9 @@
+using Microsoft.AspNetCore.Identity;
 using Serilog;
 using StayFit.Application.Services;
 using StayFit.Infrastructure;
+using StayFit.Infrastructure.Data;
+using StayFit.Infrastructure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +32,20 @@ builder.Services.AddControllersWithViews();
 // ─── Infrastructure (БД + репозиторії) ─────────────────────────────────────
 builder.Services.AddInfrastructure(builder.Configuration);
 
+// ─── Identity ───────────────────────────────────────────────────────────────
+builder.Services
+    .AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
+    {
+        options.User.RequireUniqueEmail = true;
+        options.Password.RequiredLength = 8;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequireUppercase = false;
+        options.Password.RequireLowercase = false;
+        options.Password.RequireDigit = false;
+    })
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
+
 // ─── Application Services ───────────────────────────────────────────────────
 builder.Services.AddScoped<LoggingService>();
 
@@ -44,6 +61,8 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
