@@ -8,11 +8,19 @@ namespace StayFit.Application.Services;
 public class FoodService : IFoodService
 {
     private readonly IFoodRepository _foodRepository;
+    private readonly IFoodLogRepository? _foodLogRepository;
+    private readonly IUserRepository? _userRepository;
     private readonly ILogger<FoodService> _logger;
 
-    public FoodService(IFoodRepository foodRepository, ILogger<FoodService> logger)
+    public FoodService(
+        IFoodRepository foodRepository,
+        ILogger<FoodService> logger,
+        IFoodLogRepository? foodLogRepository = null,
+        IUserRepository? userRepository = null)
     {
         _foodRepository = foodRepository;
+        _foodLogRepository = foodLogRepository;
+        _userRepository = userRepository;
         _logger = logger;
     }
 
@@ -76,6 +84,57 @@ public class FoodService : IFoodService
         {
             _logger.LogWarning("Спроба видалити неіснуючий продукт з ID: {Id}", id);
             throw new KeyNotFoundException($"Продукт з ID {id} не знайдено.");
+        }
+    }
+
+    public async Task<IEnumerable<FoodLog>> GetDailyLogAsync(string userEmail, DateTime date)
+    {
+        EnsureFoodLogDependencies();
+
+        if (string.IsNullOrWhiteSpace(userEmail))
+        {
+            _logger.LogWarning("Спроба отримати щоденний лог без email користувача");
+            return Enumerable.Empty<FoodLog>();
+        }
+
+        var user = await _userRepository!.GetByEmailAsync(userEmail);
+        if (user == null)
+        {
+            _logger.LogWarning("Користувача з email {Email} не знайдено", userEmail);
+            return Enumerable.Empty<FoodLog>();
+        }
+
+        _logger.LogInformation("Отримання щоденного логу для користувача: {UserId}, дата: {Date}", user.Id, date.Date);
+        return await _foodLogRepository!.GetByUserIdAndDateAsync(user.Id, date.Date);
+    }
+
+    public async Task AddFoodToLogAsync(FoodLog log)
+    {
+        EnsureFoodLogDependencies();
+
+        if (log == null)
+        {
+            throw new ArgumentNullException(nameof(log));
+        }
+
+        _logger.LogInformation("Додавання запису в лог їжі. UserId: {UserId}, FoodId: {FoodId}", log.UserId, log.FoodId);
+        await _foodLogRepository!.AddAsync(log);
+    }
+
+    public async Task RemoveFromLogAsync(int logId)
+    {
+        EnsureFoodLogDependencies();
+
+        _logger.LogInformation("Видалення запису логу їжі з ID: {LogId}", logId);
+        await _foodLogRepository!.DeleteAsync(logId);
+    }
+
+    private void EnsureFoodLogDependencies()
+    {
+        if (_foodLogRepository == null || _userRepository == null)
+        {
+            throw new InvalidOperationException(
+                "Food log operations require IFoodLogRepository and IUserRepository dependencies.");
         }
     }
 }

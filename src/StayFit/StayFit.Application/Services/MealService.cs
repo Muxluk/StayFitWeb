@@ -17,12 +17,12 @@ public class MealService
 
     public async Task CreateMealAsync(MealEntry meal)
     {
-        try 
+        try
         {
             _logger.LogInformation("Attempting to create a meal: {MealName} for user {User}", meal.Name, meal.UserEmail);
-            
+
             await _mealRepository.AddAsync(meal);
-            
+
             _logger.LogInformation("Meal {MealId} successfully created.", meal.Id);
         }
         catch (Exception ex)

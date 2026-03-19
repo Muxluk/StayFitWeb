@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace StayFit.Domain.Entities;
 
 public class FoodLog
@@ -8,6 +10,23 @@ public class FoodLog
     public int FoodId { get; set; }
     public float AmountGrams { get; set; }
     public DateTime LoggedAt { get; set; } = DateTime.UtcNow;
+
+    [NotMapped]
+    public double Quantity
+    {
+        get => AmountGrams;
+        set => AmountGrams = (float)value;
+    }
+
+    [NotMapped]
+    public DateTime LogDate
+    {
+        get => LoggedAt;
+        set => LoggedAt = value;
+    }
+
+    [NotMapped]
+    public string? UserEmail { get; set; }
 
     public User User { get; set; } = null!;
     public Food Food { get; set; } = null!;

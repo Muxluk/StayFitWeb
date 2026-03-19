@@ -109,18 +109,21 @@ public class FoodController : Controller
     [HttpPost]
     public async Task<IActionResult> AddToLog(int foodId, double quantity)
     {
+        var userId = GetCurrentUserId();
+
         var log = new FoodLog
         {
+            UserId = userId,
             FoodId = foodId,
             Quantity = quantity,
             LogDate = DateTime.Now,
-            UserEmail = User.Identity.Name
+            UserEmail = User.Identity?.Name,
         };
 
         await _foodService.AddFoodToLogAsync(log);
         return RedirectToAction("Index", "Diary");
     }
-    
+
     private int GetCurrentUserId()
     {
         var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
