@@ -36,7 +36,7 @@ public class UserProfileServiceTests
             Weight = 80m,
             Height = 180m,
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.UtcNow,
         };
 
         _mockRepository.Setup(r => r.GetByUserIdAsync(userId)).ReturnsAsync(profile);
@@ -58,7 +58,7 @@ public class UserProfileServiceTests
     {
         // Arrange
         int userId = 999;
-        _mockRepository.Setup(r => r.GetByUserIdAsync(userId)).ReturnsAsync((UserProfile)null);
+        _mockRepository.Setup(r => r.GetByUserIdAsync(userId)).ReturnsAsync((UserProfile?)null);
 
         // Act
         var result = await _service.GetProfileAsync(userId);
@@ -145,7 +145,7 @@ public class UserProfileServiceTests
             DateOfBirth = new DateOnly(1992, 3, 10),
             Gender = "Чоловік",
             Weight = 75m,
-            Height = 175m
+            Height = 175m,
         };
 
         var profile = new UserProfile
@@ -158,7 +158,7 @@ public class UserProfileServiceTests
             Weight = 80m,
             Height = 180m,
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.UtcNow,
         };
 
         _mockRepository.Setup(r => r.GetByUserIdAsync(userId)).ReturnsAsync(profile);
@@ -186,7 +186,7 @@ public class UserProfileServiceTests
             DateOfBirth = null,
         };
 
-        _mockRepository.Setup(r => r.GetByUserIdAsync(userId)).ReturnsAsync((UserProfile)null);
+        _mockRepository.Setup(r => r.GetByUserIdAsync(userId)).ReturnsAsync((UserProfile?)null);
 
         // Act
         var result = await _service.UpdateProfileAsync(userId, updateDto);
@@ -261,7 +261,7 @@ public class UserProfileServiceTests
     {
         // Arrange
         int userId = 999;
-        _mockRepository.Setup(r => r.GetByUserIdAsync(userId)).ReturnsAsync((UserProfile)null);
+        _mockRepository.Setup(r => r.GetByUserIdAsync(userId)).ReturnsAsync((UserProfile?)null);
 
         // Act
         var result = await _service.DeleteProfileAsync(userId);
