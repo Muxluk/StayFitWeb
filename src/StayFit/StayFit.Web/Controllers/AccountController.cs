@@ -47,21 +47,25 @@ public class AccountController(UserManager<ApplicationUser> userManager)
 
     public sealed class RegisterRequest
     {
-        [Required]
-        [EmailAddress]
+        [Display(Name = "Електронна пошта")]
+        [Required(ErrorMessage = "Вкажіть електронну пошту")]
+        [EmailAddress(ErrorMessage = "Введіть коректну електронну пошту")]
         public string Email { get; set; } = string.Empty;
 
-        [Required]
-        [MinLength(3)]
+        [Display(Name = "Ім'я користувача")]
+        [Required(ErrorMessage = "Вкажіть ім'я користувача")]
+        [MinLength(3, ErrorMessage = "Ім'я користувача має містити щонайменше 3 символи")]
         public string UserName { get; set; } = string.Empty;
 
-        [Required]
+        [Display(Name = "Пароль")]
+        [Required(ErrorMessage = "Вкажіть пароль")]
         [DataType(DataType.Password)]
         public string Password { get; set; } = string.Empty;
 
-        [Required]
+        [Display(Name = "Підтвердження пароля")]
+        [Required(ErrorMessage = "Підтвердіть пароль")]
         [DataType(DataType.Password)]
-        [Compare(nameof(Password))]
+        [Compare(nameof(Password), ErrorMessage = "Паролі не співпадають")]
         public string ConfirmPassword { get; set; } = string.Empty;
     }
 }
