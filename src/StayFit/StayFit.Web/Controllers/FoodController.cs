@@ -119,7 +119,7 @@ public class FoodController : Controller
         {
             FoodId = foodId,
             Quantity = quantity,
-            LogDate = DateTime.Now,
+            LogDate = DateTime.UtcNow,
             UserEmail = userEmail
         };
 
