@@ -107,40 +107,26 @@ public class FoodController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> AddToLog(int foodId, double quantity)
+public async Task<IActionResult> AddToLog(int foodId, double quantity)
+{
+    var userEmail = User.Identity?.Name;
+    if (string.IsNullOrEmpty(userEmail)) 
     {
-        var userId = GetCurrentUserId();
-
-        var log = new FoodLog
-        {
-            UserId = userId,
-            FoodId = foodId,
-            Quantity = quantity,
-            LogDate = DateTime.Now,
-            UserEmail = User.Identity?.Name,
-        };
-
-        await _foodService.AddFoodToLogAsync(log);
-        return RedirectToAction("Index", "Diary");
+        return Challenge(); // Перенаправлення на логін, якщо не авторизований
     }
-    [HttpPost]
-    public async Task<IActionResult> AddToLog(int foodId, double quantity, string mealName = "Перекус")
+
+    var log = new FoodLog
     {
-        var userEmail = User.Identity?.Name;
-        if (string.IsNullOrEmpty(userEmail)) return Challenge();
+        FoodId = foodId,
+        Quantity = quantity,
+        LogDate = DateTime.Now,
+        UserEmail = userEmail
+    };
 
-        var log = new FoodLog
-        {
-            FoodId = foodId,
-            Quantity = quantity,
-            LogDate = DateTime.Now,
-            UserEmail = userEmail
-        };
-
-        await _foodService.AddFoodToLogAsync(log);
-        
-        return RedirectToAction("Index", "Diary");
-    }
+    await _foodService.AddFoodToLogAsync(log);
+    
+    return RedirectToAction("Index", "Diary");
+}
     private int GetCurrentUserId()
     {
         var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
