@@ -77,8 +77,17 @@ public class AccountController(
             return View(model);
         }
 
+        // Find user by email
+        var user = await userManager.FindByEmailAsync(model.Email);
+        if (user is null)
+        {
+            ModelState.AddModelError(string.Empty, "Невірний email або пароль");
+            return View(model);
+        }
+
+        // Sign in using the user's username
         var result = await signInManager.PasswordSignInAsync(
-            model.Email,
+            user.UserName!,
             model.Password,
             isPersistent: false,
             lockoutOnFailure: false);

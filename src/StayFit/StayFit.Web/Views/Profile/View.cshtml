@@ -1,0 +1,129 @@
+@model StayFit.Application.DTOs.UserProfileDto
+
+@{
+    ViewData["Title"] = "Мій профіль";
+}
+
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">👤 Мій профіль</h3>
+                </div>
+                <div class="card-body">
+                    @if (Model == null)
+                    {
+                        <div class="alert alert-warning" role="alert">
+                            ℹ️ Профіль не знайдено. <a href="@Url.Action("Edit", "Profile")">Створити профіль</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row">
+                            <!-- Ім'я -->
+                            <div class="col-md-6 mb-3">
+                                <h6 class="text-muted small">Ім'я</h6>
+                                <p class="fs-5 fw-bold">@Model.FullName</p>
+                            </div>
+
+                            <!-- Стать -->
+                            <div class="col-md-6 mb-3">
+                                <h6 class="text-muted small">Стать</h6>
+                                <p class="fs-5">
+                                    @if (!string.IsNullOrWhiteSpace(Model.Gender))
+                                    {
+                                        @Model.Gender
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </p>
+                            </div>
+
+                            <!-- Вага -->
+                            <div class="col-md-6 mb-3">
+                                <h6 class="text-muted small">Вага</h6>
+                                <p class="fs-5">
+                                    @if (Model.Weight.HasValue)
+                                    {
+                                        @Model.Weight.Value.ToString("F1") <span class="text-muted" style="font-size: 0.9em;">кг</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </p>
+                            </div>
+
+                            <!-- Зріст -->
+                            <div class="col-md-6 mb-3">
+                                <h6 class="text-muted small">Зріст</h6>
+                                <p class="fs-5">
+                                    @if (Model.Height.HasValue)
+                                    {
+                                        @Model.Height.Value.ToString("F0") <span class="text-muted" style="font-size: 0.9em;">см</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </p>
+                            </div>
+
+                            <!-- Дата народження -->
+                            <div class="col-md-6 mb-3">
+                                <h6 class="text-muted small">Дата народження</h6>
+                                <p class="fs-5">
+                                    @if (Model.DateOfBirth.HasValue)
+                                    {
+                                        @Model.DateOfBirth.Value.ToString("dd.MM.yyyy")
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </p>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="row text-muted small mb-3">
+                            <div class="col-md-6">
+                                <strong>Дата створення:</strong> @Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <strong>Останнє оновлення:</strong> @Model.UpdatedAt.ToString("dd.MM.yyyy HH:mm")
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="d-flex gap-2">
+                            <a href="@Url.Action("Edit", "Profile")" class="btn btn-primary btn-lg">
+                                <i class="bi bi-pencil-square"></i> Редагувати
+                            </a>
+                            <form method="post" action="@Url.Action("Delete", "Profile")" style="display:inline;">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-danger btn-lg" 
+                                        onclick="return confirm('Ви впевнені, що хочете видалити профіль? Цю дію неможливо скасувати.');">
+                                    <i class="bi bi-trash"></i> Видалити профіль
+                                </button>
+                            </form>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
