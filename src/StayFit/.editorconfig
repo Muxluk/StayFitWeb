@@ -38,3 +38,12 @@ dotnet_diagnostic.SA1101.severity = none
 dotnet_diagnostic.SA0001.severity = none
 # Вимикаємо вимогу порожнього рядка між елементами (конфліктує з автозгенерованими файлами .NET)
 dotnet_diagnostic.SA1516.severity = none
+
+# Правила для auto-generated міграцій
+[**/Migrations/*.cs]
+# Вимикаємо StyleCop для auto-generated кода
+dotnet_diagnostic.SA1028.severity = none
+dotnet_diagnostic.SA1137.severity = none
+dotnet_diagnostic.SA1200.severity = none
+dotnet_diagnostic.SA1413.severity = none
+dotnet_diagnostic.IDE0161.severity = none

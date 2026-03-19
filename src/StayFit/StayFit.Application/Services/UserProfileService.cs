@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using StayFit.Application.DTOs;
 using StayFit.Application.Interfaces;
 using StayFit.Domain.Entities;
@@ -26,7 +26,7 @@ public class UserProfileService : IUserProfileService
         try
         {
             var profile = await _repository.GetByUserIdAsync(userId);
-            
+
             if (profile == null)
             {
                 _logger.LogWarning("Профіль користувача {UserId} не знайдено", userId);
@@ -50,7 +50,7 @@ public class UserProfileService : IUserProfileService
         try
         {
             var profile = await _repository.GetByUserIdAsync(userId);
-            
+
             if (profile == null)
             {
                 _logger.LogWarning("Профіль для оновлення користувача {UserId} не знайдено", userId);
@@ -66,7 +66,7 @@ public class UserProfileService : IUserProfileService
 
             await _repository.UpdateAsync(profile);
             _logger.LogInformation("Профіль користувача {UserId} успішно оновлено", userId);
-            
+
             return true;
         }
         catch (Exception ex)
@@ -82,7 +82,7 @@ public class UserProfileService : IUserProfileService
         try
         {
             var exists = await _repository.ExistsForUserAsync(dto.UserId);
-            
+
             if (exists)
             {
                 _logger.LogWarning("Профіль для користувача {UserId} вже існує", dto.UserId);
@@ -98,12 +98,12 @@ public class UserProfileService : IUserProfileService
                 Weight = dto.Weight,
                 Height = dto.Height,
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = DateTime.UtcNow,
             };
 
             await _repository.AddAsync(profile);
             _logger.LogInformation("Профіль для користувача {UserId} успішно створено", dto.UserId);
-            
+
             return MapToDto(profile);
         }
         catch (Exception ex)
@@ -119,7 +119,7 @@ public class UserProfileService : IUserProfileService
         try
         {
             var profile = await _repository.GetByUserIdAsync(userId);
-            
+
             if (profile == null)
             {
                 _logger.LogWarning("Профіль користувача {UserId} не знайдено для видалення", userId);
@@ -128,7 +128,7 @@ public class UserProfileService : IUserProfileService
 
             await _repository.DeleteAsync(profile.Id);
             _logger.LogInformation("Профіль користувача {UserId} успішно видалено", userId);
-            
+
             return true;
         }
         catch (Exception ex)
@@ -139,7 +139,7 @@ public class UserProfileService : IUserProfileService
     }
 
     private static UserProfileDto MapToDto(UserProfile profile) =>
-        new()
+        new UserProfileDto
         {
             Id = profile.Id,
             UserId = profile.UserId,
@@ -149,6 +149,6 @@ public class UserProfileService : IUserProfileService
             Weight = profile.Weight,
             Height = profile.Height,
             CreatedAt = profile.CreatedAt,
-            UpdatedAt = profile.UpdatedAt
+            UpdatedAt = profile.UpdatedAt,
         };
 }

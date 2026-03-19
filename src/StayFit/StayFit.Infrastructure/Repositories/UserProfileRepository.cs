@@ -10,7 +10,8 @@ namespace StayFit.Infrastructure.Repositories;
 /// </summary>
 public class UserProfileRepository : Repository<UserProfile>, IUserProfileRepository
 {
-    public UserProfileRepository(AppDbContext context) : base(context)
+    public UserProfileRepository(AppDbContext context)
+        : base(context)
     {
     }
 

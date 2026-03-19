@@ -33,16 +33,15 @@
                         @Html.AntiForgeryToken()
 
                         <div class="row">
-                            <!-- Ім'я -->
                             <div class="col-md-6 mb-3">
                                 <label for="FullName" class="form-label"><strong>Ім'я</strong> <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control @(ViewData.ModelState["FullName"]?.Errors.Count > 0 ? "is-invalid" : "")" 
-                                       id="FullName" name="FullName" value="@Model?.FullName" 
+                                       id="FullName" name="FullName" value="@(Model?.FullName ?? "")" 
                                        placeholder="Введіть Ваше ім'я" required>
                                 @if (ViewData.ModelState["FullName"]?.Errors.Count > 0)
                                 {
                                     <div class="invalid-feedback d-block">
-                                        @foreach (var error in ViewData.ModelState["FullName"].Errors)
+                                        @foreach (var error in ViewData.ModelState["FullName"]!.Errors)
                                         {
                                             @error.ErrorMessage
                                         }
@@ -50,7 +49,6 @@
                                 }
                             </div>
 
-                            <!-- Стать -->
                             <div class="col-md-6 mb-3">
                                 <label for="Gender" class="form-label"><strong>Стать</strong></label>
                                 <select class="form-select @(ViewData.ModelState["Gender"]?.Errors.Count > 0 ? "is-invalid" : "")" 
@@ -74,7 +72,7 @@
                                 @if (ViewData.ModelState["Gender"]?.Errors.Count > 0)
                                 {
                                     <div class="invalid-feedback d-block">
-                                        @foreach (var error in ViewData.ModelState["Gender"].Errors)
+                                        @foreach (var error in ViewData.ModelState["Gender"]!.Errors)
                                         {
                                             @error.ErrorMessage
                                         }
@@ -82,16 +80,15 @@
                                 }
                             </div>
 
-                            <!-- Вага -->
                             <div class="col-md-6 mb-3">
                                 <label for="Weight" class="form-label"><strong>Вага</strong> (кг)</label>
                                 <input type="number" class="form-control @(ViewData.ModelState["Weight"]?.Errors.Count > 0 ? "is-invalid" : "")" 
-                                       id="Weight" name="Weight" value="@(Model?.Weight?.ToString("F1"))" 
+                                       id="Weight" name="Weight" value="@(Model?.Weight?.ToString("F1") ?? "")" 
                                        placeholder="Введіть Вашу вагу" step="0.1" min="20" max="500">
                                 @if (ViewData.ModelState["Weight"]?.Errors.Count > 0)
                                 {
                                     <div class="invalid-feedback d-block">
-                                        @foreach (var error in ViewData.ModelState["Weight"].Errors)
+                                        @foreach (var error in ViewData.ModelState["Weight"]!.Errors)
                                         {
                                             @error.ErrorMessage
                                         }
@@ -99,16 +96,15 @@
                                 }
                             </div>
 
-                            <!-- Зріст -->
                             <div class="col-md-6 mb-3">
                                 <label for="Height" class="form-label"><strong>Зріст</strong> (см)</label>
                                 <input type="number" class="form-control @(ViewData.ModelState["Height"]?.Errors.Count > 0 ? "is-invalid" : "")" 
-                                       id="Height" name="Height" value="@(Model?.Height?.ToString("F0"))" 
+                                       id="Height" name="Height" value="@(Model?.Height?.ToString("F0") ?? "")" 
                                        placeholder="Введіть Ваш зріст" step="1" min="100" max="250">
                                 @if (ViewData.ModelState["Height"]?.Errors.Count > 0)
                                 {
                                     <div class="invalid-feedback d-block">
-                                        @foreach (var error in ViewData.ModelState["Height"].Errors)
+                                        @foreach (var error in ViewData.ModelState["Height"]!.Errors)
                                         {
                                             @error.ErrorMessage
                                         }
@@ -116,16 +112,15 @@
                                 }
                             </div>
 
-                            <!-- Дата народження -->
                             <div class="col-md-6 mb-3">
                                 <label for="DateOfBirth" class="form-label"><strong>Дата народження</strong></label>
                                 <input type="date" class="form-control @(ViewData.ModelState["DateOfBirth"]?.Errors.Count > 0 ? "is-invalid" : "")" 
                                        id="DateOfBirth" name="DateOfBirth" 
-                                       value="@(Model?.DateOfBirth?.ToString("yyyy-MM-dd"))">
+                                       value="@(Model?.DateOfBirth?.ToString("yyyy-MM-dd") ?? "")">
                                 @if (ViewData.ModelState["DateOfBirth"]?.Errors.Count > 0)
                                 {
                                     <div class="invalid-feedback d-block">
-                                        @foreach (var error in ViewData.ModelState["DateOfBirth"].Errors)
+                                        @foreach (var error in ViewData.ModelState["DateOfBirth"]!.Errors)
                                         {
                                             @error.ErrorMessage
                                         }

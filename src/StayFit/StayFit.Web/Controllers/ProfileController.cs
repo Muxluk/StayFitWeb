@@ -24,20 +24,6 @@ public class ProfileController : Controller
     }
 
     /// <summary>
-    /// Отримати ID поточного користувача з claims
-    /// </summary>
-    private int GetCurrentUserId()
-    {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (int.TryParse(userIdClaim, out var userId))
-        {
-            return userId;
-        }
-
-        throw new InvalidOperationException("Не вдалося отримати ID користувача");
-    }
-
-    /// <summary>
     /// Сторінка редагування профілю поточного користувача
     /// GET: /profile/edit
     /// </summary>
@@ -46,18 +32,18 @@ public class ProfileController : Controller
     {
         var userId = GetCurrentUserId();
         _logger.LogInformation("Користувач {UserId} відкрив сторінку редагування", userId);
-        
+
         try
         {
             var profile = await _userProfileService.GetProfileAsync(userId);
-            
+
             var dto = new UpdateUserProfileDto
             {
                 FullName = profile?.FullName ?? string.Empty,
                 DateOfBirth = profile?.DateOfBirth,
                 Gender = profile?.Gender,
                 Weight = profile?.Weight,
-                Height = profile?.Height
+                Height = profile?.Height,
             };
 
             return View(dto);
@@ -78,7 +64,7 @@ public class ProfileController : Controller
     {
         var userId = GetCurrentUserId();
         _logger.LogInformation("Користувач {UserId} зберігає профіль", userId);
-        
+
         try
         {
             if (!ModelState.IsValid)
@@ -89,12 +75,12 @@ public class ProfileController : Controller
 
             // Спробуємо оновити існуючий профіль
             var updated = await _userProfileService.UpdateProfileAsync(userId, dto);
-            
+
             if (!updated)
             {
                 // Якщо профіль не існує, створюємо новий
                 _logger.LogInformation("Профіль не знайдено, створюємо новий для {UserId}", userId);
-                
+
                 var createDto = new CreateUserProfileDto
                 {
                     UserId = userId,
@@ -102,9 +88,9 @@ public class ProfileController : Controller
                     DateOfBirth = dto.DateOfBirth,
                     Gender = dto.Gender,
                     Weight = dto.Weight,
-                    Height = dto.Height
+                    Height = dto.Height,
                 };
-                
+
                 try
                 {
                     await _userProfileService.CreateProfileAsync(createDto);
@@ -135,15 +121,15 @@ public class ProfileController : Controller
     /// </summary>
     [HttpGet("view")]
     [HttpGet("")]
-    public async Task<IActionResult> View()
+    public new async Task<IActionResult> View()
     {
         var userId = GetCurrentUserId();
         _logger.LogInformation("Користувач {UserId} переглядає власний профіль", userId);
-        
+
         try
         {
             var profile = await _userProfileService.GetProfileAsync(userId);
-            
+
             if (profile == null)
             {
                 _logger.LogInformation("Профіль {UserId} не існує, перенаправляємо на редагування", userId);
@@ -168,11 +154,11 @@ public class ProfileController : Controller
     {
         var userId = GetCurrentUserId();
         _logger.LogInformation("Користувач {UserId} видаляє профіль", userId);
-        
+
         try
         {
             var result = await _userProfileService.DeleteProfileAsync(userId);
-            
+
             if (!result)
             {
                 _logger.LogWarning("Профіль {UserId} не знайдено", userId);
@@ -188,5 +174,19 @@ public class ProfileController : Controller
             _logger.LogError(ex, "Помилка при видаленні профілю {UserId}", userId);
             return StatusCode(500, "Помилка при видаленні профілю");
         }
+    }
+
+    /// <summary>
+    /// Отримати ID поточного користувача з claims
+    /// </summary>
+    private int GetCurrentUserId()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (int.TryParse(userIdClaim, out var userId))
+        {
+            return userId;
+        }
+
+        throw new InvalidOperationException("Не вдалося отримати ID користувача");
     }
 }
