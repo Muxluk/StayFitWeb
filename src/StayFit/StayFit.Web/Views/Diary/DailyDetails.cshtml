@@ -1,0 +1,82 @@
+@model StayFit.Web.Models.DailyDiaryViewModel
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Щоденник: @Model.Date.ToShortDateString()</h2>
+        <form asp-action="DailyDetails" method="get" class="d-flex">
+            <input type="date" name="date" value="@Model.Date.ToString("yyyy-MM-dd")" onchange="this.form.submit()" class="form-control" />
+        </form>
+    </div>
+
+    <div class="row mb-4 text-center">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white p-3">
+                <h5>Калорії</h5>
+                <h3>@Model.TotalCalories.ToString("F0")</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white p-3">
+                <h5>Білки</h5>
+                <h3>@Model.TotalProteins.ToString("F1") г</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark p-3">
+                <h5>Жири</h5>
+                <h3>@Model.TotalFats.ToString("F1") г</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white p-3">
+                <h5>Вуглеводи</h5>
+                <h3>@Model.TotalCarbs.ToString("F1") г</h3>
+            </div>
+        </div>
+    </div>
+
+    @foreach (var meal in Model.Meals)
+    {
+        <div class="card mb-3 shadow-sm">
+            <div class="card-header bg-light d-flex justify-content-between">
+                <strong>@meal.Name</strong>
+                <span class="text-muted">@meal.Time.ToString("HH:mm")</span>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-borderless text-muted small">
+                        <tr>
+                            <th class="ps-3">Назва</th>
+                            <th>Вага</th>
+                            <th>Ккал</th>
+                            <th>Б</th>
+                            <th>Ж</th>
+                            <th>В</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var log in meal.FoodLogs)
+                        {
+                            <tr>
+                                <td class="ps-3">@log.Food?.Name</td>
+                                <td>@log.Quantity г</td>
+                                <td>@((log.Food?.Calories * log.Quantity / 100)?.ToString("F0"))</td>
+                                <td>@((log.Food?.Proteins * log.Quantity / 100)?.ToString("F1"))</td>
+                                <td>@((log.Food?.Fats * log.Quantity / 100)?.ToString("F1"))</td>
+                                <td>@((log.Food?.Carbohydrates * log.Quantity / 100)?.ToString("F1"))</td>
+                                <td>
+                                    <button class="btn btn-link btn-sm text-danger p-0">Видалити</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    <div class="mt-4">
+        <a asp-controller="Food" asp-action="Index" class="btn btn-outline-primary">+ Додати продукт</a>
+    </div>
+</div>

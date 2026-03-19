@@ -106,6 +106,21 @@ public class FoodController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpPost]
+    public async Task<IActionResult> AddToLog(int foodId, double quantity)
+    {
+        var log = new FoodLog
+        {
+            FoodId = foodId,
+            Quantity = quantity,
+            LogDate = DateTime.Now,
+            UserEmail = User.Identity.Name
+        };
+
+        await _foodService.AddFoodToLogAsync(log);
+        return RedirectToAction("Index", "Diary");
+    }
+    
     private int GetCurrentUserId()
     {
         var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);

@@ -1,0 +1,43 @@
+@model IEnumerable<StayFit.Domain.Entities.FoodLog>
+
+@{
+    var date = (DateTime)ViewBag.SelectedDate;
+}
+
+<h2>Щоденник харчування на @date.ToShortDateString()</h2>
+
+<form method="get" asp-action="Index" class="mb-4">
+    <input type="date" name="date" value="@date.ToString("yyyy-MM-dd")" onchange="this.form.submit()" />
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Продукт</th>
+            <th>Кількість (г)</th>
+            <th>Калорії</th>
+            <th>Дії</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var log in Model)
+        {
+            <tr>
+                <td>@log.Food.Name</td>
+                <td>@log.Quantity</td>
+                <td>@(log.Food.Calories * log.Quantity / 100)</td>
+                <td>
+                    <form asp-action="DeleteEntry" asp-route-id="@log.Id" method="post">
+                        <button type="submit" class="btn btn-danger btn-sm">Видалити</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="alert alert-info">
+    <strong>Всього калорій:</strong> @Model.Sum(x => x.Food.Calories * x.Quantity / 100)
+</div>
+
+<a asp-controller="Food" asp-action="Index" class="btn btn-success">Додати їжу</a>

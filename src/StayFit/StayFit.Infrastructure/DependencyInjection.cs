@@ -26,11 +26,10 @@ public static class DependencyInjection
         services.AddScoped<IFoodRepository, FoodRepository>();
         services.AddScoped<IFoodLogRepository, FoodLogRepository>();
         services.AddScoped<IUserProfileRepository, UserProfileRepository>();
-
+        services.AddScoped<IMealRepository, MealRepository>();
         // Services
         services.AddScoped<IRegistrationService, RegistrationService>();
         services.AddScoped<IUserProfileService, UserProfileService>();
-
         return services;
     }
 }

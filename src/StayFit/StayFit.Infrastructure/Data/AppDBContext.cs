@@ -17,6 +17,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
     public DbSet<Food> Foods => Set<Food>();
     public DbSet<FoodLog> FoodLogs => Set<FoodLog>();
     public DbSet<UserProfile> UserProfiles => Set<UserProfile>();
+    public DbSet<MealEntry> MealEntries { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

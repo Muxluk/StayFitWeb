@@ -3,6 +3,7 @@ namespace StayFit.Domain.Entities;
 public class FoodLog
 {
     public int Id { get; set; }
+    public int? MealEntryId { get; set; }
     public int UserId { get; set; }
     public int FoodId { get; set; }
     public float AmountGrams { get; set; }

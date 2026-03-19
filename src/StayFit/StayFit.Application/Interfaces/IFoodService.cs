@@ -9,4 +9,7 @@ public interface IFoodService
     Task AddFoodAsync(Food food, int userId);
     Task UpdateFoodAsync(Food food, int userId);
     Task DeleteFoodAsync(int id, int userId);
+    Task<IEnumerable<FoodLog>> GetDailyLogAsync(string userEmail, DateTime date);
+    Task AddFoodToLogAsync(FoodLog log);
+    Task RemoveFromLogAsync(int logId);і
 }

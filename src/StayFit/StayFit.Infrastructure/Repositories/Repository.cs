@@ -47,4 +47,11 @@ public class Repository<T> : IRepository<T>
             await _context.SaveChangesAsync();
         }
     }
+    public async Task<List<FoodLog>> GetLogsAsync(string email, DateTime date)
+    {
+        return await _context.FoodLogs
+            .Include(f => f.Food)
+            .Where(f => f.UserEmail == email && f.LogDate.Date == date.Date)
+            .ToListAsync();
+    }
 }
