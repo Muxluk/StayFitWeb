@@ -4,17 +4,17 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace StayFit.Infrastructure.Migrations
+namespace StayFit.Infrastructure.Migrations;
+
+/// <inheritdoc />
+public partial class AddIdentityTables : Migration
 {
     /// <inheritdoc />
-    public partial class AddIdentityTables : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropForeignKey(
-                name: "FK_FoodLogs_Users_UserId",
-                table: "FoodLogs");
+        migrationBuilder.DropForeignKey(
+            name: "FK_FoodLogs_Users_UserId",
+            table: "FoodLogs");
 
             migrationBuilder.DropPrimaryKey(
                 name: "PK_Users",
@@ -280,6 +280,5 @@ namespace StayFit.Infrastructure.Migrations
                 principalTable: "Users",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Cascade);
-        }
     }
 }

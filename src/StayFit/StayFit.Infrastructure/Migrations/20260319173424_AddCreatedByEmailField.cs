@@ -2,27 +2,26 @@
 
 #nullable disable
 
-namespace StayFit.Infrastructure.Migrations
+namespace StayFit.Infrastructure.Migrations;
+
+/// <inheritdoc />
+public partial class AddCreatedByEmailField : Migration
 {
     /// <inheritdoc />
-    public partial class AddCreatedByEmailField : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AddColumn<string>(
-                name: "CreatedByEmail",
-                table: "Foods",
-                type: "text",
-                nullable: true);
-        }
+        migrationBuilder.AddColumn<string>(
+            name: "CreatedByEmail",
+            table: "Foods",
+            type: "text",
+            nullable: true);
+    }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropColumn(
-                name: "CreatedByEmail",
-                table: "Foods");
-        }
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropColumn(
+            name: "CreatedByEmail",
+            table: "Foods");
     }
 }

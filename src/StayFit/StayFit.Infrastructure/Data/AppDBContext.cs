@@ -16,6 +16,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
     public DbSet<User> DomainUsers => Set<User>();
     public DbSet<Food> Foods => Set<Food>();
     public DbSet<FoodLog> FoodLogs => Set<FoodLog>();
+    public DbSet<UserProfile> UserProfiles => Set<UserProfile>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -48,6 +49,13 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
                 .WithMany(f => f.FoodLogs)
                 .HasForeignKey(fl => fl.FoodId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<UserProfile>(entity =>
+        {
+            entity.HasKey(up => up.Id);
+            entity.Property(up => up.FullName).IsRequired().HasMaxLength(200);
+            entity.HasIndex(up => up.UserId).IsUnique();
         });
     }
 }
