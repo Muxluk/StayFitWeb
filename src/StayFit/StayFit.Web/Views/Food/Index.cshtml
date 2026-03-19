@@ -18,7 +18,7 @@
         <th>Білки</th>
         <th>Жири</th>
         <th>Вуглеводи</th>
-        <th>Дії</th>
+        <th>Додано користувачем</th> <th>Дії</th>
     </tr>
     </thead>
     <tbody>
@@ -30,6 +30,7 @@
             <td>@item.ProteinPer100g</td>
             <td>@item.FatPer100g</td>
             <td>@item.CarbsPer100g</td>
+            <td>@(string.IsNullOrEmpty(item.CreatedByEmail) ? "Система" : item.CreatedByEmail)</td> <td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Редагувати</a>
                 <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('Ви впевнені, що хочете видалити цей продукт?');">
