@@ -17,10 +17,12 @@ public class FoodController : Controller
     }
 
     // GET: Food
+    [AllowAnonymous]
     public async Task<IActionResult> Index()
     {
-        var currentUserId = GetCurrentUserId();
-        var foods = await _foodService.GetAllFoodsAsync(currentUserId);
+        var userId = GetCurrentUserId();
+        var foods = await _foodService.GetAllFoodsAsync(userId);
+
         return View(foods);
     }
 
@@ -37,8 +39,11 @@ public class FoodController : Controller
     {
         if (ModelState.IsValid)
         {
-            var currentUserId = GetCurrentUserId();
-            await _foodService.AddFoodAsync(food, currentUserId);
+            var userId = GetCurrentUserId();
+            food.CreatedByEmail = User.Identity?.Name;
+
+            await _foodService.AddFoodAsync(food, userId);
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -48,8 +53,9 @@ public class FoodController : Controller
     // GET: Food/Edit/5
     public async Task<IActionResult> Edit(int id)
     {
-        var currentUserId = GetCurrentUserId();
-        var food = await _foodService.GetFoodByIdAsync(id, currentUserId);
+        var userId = GetCurrentUserId();
+        var food = await _foodService.GetFoodByIdAsync(id, userId);
+
         if (food == null)
         {
             return NotFound();
@@ -70,20 +76,10 @@ public class FoodController : Controller
 
         if (ModelState.IsValid)
         {
-            var currentUserId = GetCurrentUserId();
-            var existingFood = await _foodService.GetFoodByIdAsync(id, currentUserId);
-            if (existingFood == null)
-            {
-                return NotFound();
-            }
+            var userId = GetCurrentUserId();
 
-            existingFood.Name = food.Name;
-            existingFood.CaloriesPer100g = food.CaloriesPer100g;
-            existingFood.ProteinPer100g = food.ProteinPer100g;
-            existingFood.FatPer100g = food.FatPer100g;
-            existingFood.CarbsPer100g = food.CarbsPer100g;
+            await _foodService.UpdateFoodAsync(food, userId);
 
-            await _foodService.UpdateFoodAsync(existingFood, currentUserId);
             return RedirectToAction(nameof(Index));
         }
 
@@ -98,8 +94,9 @@ public class FoodController : Controller
     {
         try
         {
-            var currentUserId = GetCurrentUserId();
-            await _foodService.DeleteFoodAsync(id, currentUserId);
+            var userId = GetCurrentUserId();
+
+            await _foodService.DeleteFoodAsync(id, userId);
         }
         catch (KeyNotFoundException)
         {
@@ -111,12 +108,8 @@ public class FoodController : Controller
 
     private int GetCurrentUserId()
     {
-        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (!int.TryParse(userIdClaim, out var userId))
-        {
-            throw new UnauthorizedAccessException("Неможливо визначити ідентифікатор користувача.");
-        }
+        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        return userId;
+        return int.TryParse(userIdStr, out var userId) ? userId : 0;
     }
 }

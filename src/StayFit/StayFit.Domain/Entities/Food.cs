@@ -9,6 +9,7 @@ public class Food
     public float ProteinPer100g { get; set; }
     public float FatPer100g { get; set; }
     public float CarbsPer100g { get; set; }
+    public string? CreatedByEmail { get; set; }
 
     public ICollection<FoodLog> FoodLogs { get; set; } = new List<FoodLog>();
 }
