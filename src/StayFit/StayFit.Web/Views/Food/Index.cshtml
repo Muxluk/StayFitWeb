@@ -37,6 +37,20 @@
                     <button type="submit" class="btn btn-sm btn-danger">Видалити</button>
                 </form>
             </td>
+            <td>
+                <form asp-action="AddToLog" method="post" class="d-flex align-items-center">
+                    <input type="hidden" name="foodId" value="@item.Id" />
+                    <input type="number" name="quantity" value="100" class="form-control form-control-sm me-2" style="width: 70px;" />
+                    <button type="submit" class="btn btn-sm btn-success">
+                        <i class="bi bi-plus-lg"></i> В раціон
+                    </button>
+                </form>
+                
+                @if (item.CreatedByEmail == User.Identity.Name)
+                {
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-warning mt-1">Ред.</a>
+                }
+            </td>
         </tr>
     }
     </tbody>
