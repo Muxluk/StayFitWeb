@@ -11,5 +11,11 @@ public class Food
     public float CarbsPer100g { get; set; }
     public string? CreatedByEmail { get; set; }
 
+    // Backward-compatible aliases used by existing web views.
+    public float Calories => CaloriesPer100g;
+    public float Proteins => ProteinPer100g;
+    public float Fats => FatPer100g;
+    public float Carbohydrates => CarbsPer100g;
+
     public ICollection<FoodLog> FoodLogs { get; set; } = new List<FoodLog>();
 }

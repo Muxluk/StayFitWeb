@@ -51,6 +51,7 @@ builder.Services
 builder.Services.AddScoped<LoggingService>();
 builder.Services.AddScoped<IFoodService, FoodService>();
 builder.Services.AddScoped<MealService>();
+
 // ─── Build ──────────────────────────────────────────────────────────────────
 var app = builder.Build();
 

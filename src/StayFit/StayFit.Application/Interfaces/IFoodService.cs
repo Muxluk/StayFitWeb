@@ -11,5 +11,5 @@ public interface IFoodService
     Task DeleteFoodAsync(int id, int userId);
     Task<IEnumerable<FoodLog>> GetDailyLogAsync(string userEmail, DateTime date);
     Task AddFoodToLogAsync(FoodLog log);
-    Task RemoveFromLogAsync(int logId);і
+    Task RemoveFromLogAsync(int logId);
 }

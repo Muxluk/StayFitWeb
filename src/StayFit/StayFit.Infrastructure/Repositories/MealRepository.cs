@@ -7,9 +7,10 @@ namespace StayFit.Infrastructure.Repositories;
 
 public class MealRepository : Repository<MealEntry>, IMealRepository
 {
-    private readonly AppDBContext _context;
+    private readonly AppDbContext _context;
 
-    public MealRepository(AppDBContext context) : base(context)
+    public MealRepository(AppDbContext context)
+        : base(context)
     {
         _context = context;
     }
