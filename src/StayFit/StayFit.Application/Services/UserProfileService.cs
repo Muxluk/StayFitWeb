@@ -72,7 +72,7 @@ public class UserProfileService : IUserProfileService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Помилка при оновленні профілю користувача {UserId}", userId);
-            throw;
+            return false;
         }
     }
 
@@ -134,7 +134,7 @@ public class UserProfileService : IUserProfileService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Помилка при видаленні профілю користувача {UserId}", userId);
-            throw;
+            return false;
         }
     }
 
