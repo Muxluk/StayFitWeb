@@ -3,6 +3,7 @@ namespace StayFit.Domain.Entities;
 public class Food
 {
     public int Id { get; set; }
+    public int OwnerUserId { get; set; }
     public string Name { get; set; } = string.Empty;
     public float CaloriesPer100g { get; set; }
     public float ProteinPer100g { get; set; }

@@ -26,11 +26,13 @@ public class FoodServiceTests
     {
         // Arrange
         var food = new Food { Name = "Яблуко", CaloriesPer100g = 52 };
+        const int userId = 7;
 
         // Act
-        await _foodService.AddFoodAsync(food);
+        await _foodService.AddFoodAsync(food, userId);
 
         // Assert
+        Assert.Equal(userId, food.OwnerUserId);
         _mockRepo.Verify(r => r.AddAsync(It.IsAny<Food>()), Times.Once);
     }
 
@@ -38,11 +40,12 @@ public class FoodServiceTests
     public async Task GetFoodByIdAsync_ShouldReturnFood_WhenFoodExists()
     {
         // Arrange
+        const int userId = 7;
         var expectedFood = new Food { Id = 1, Name = "Банан" };
-        _mockRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(expectedFood);
+        _mockRepo.Setup(r => r.GetByIdAndOwnerAsync(1, userId)).ReturnsAsync(expectedFood);
 
         // Act
-        var result = await _foodService.GetFoodByIdAsync(1);
+        var result = await _foodService.GetFoodByIdAsync(1, userId);
 
         // Assert
         Assert.NotNull(result);
@@ -54,11 +57,12 @@ public class FoodServiceTests
     public async Task DeleteFoodAsync_ShouldCallRepositoryDelete_WhenFoodExists()
     {
         // Arrange
+        const int userId = 7;
         var food = new Food { Id = 1, Name = "Курка" };
-        _mockRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(food);
+        _mockRepo.Setup(r => r.GetByIdAndOwnerAsync(1, userId)).ReturnsAsync(food);
 
         // Act
-        await _foodService.DeleteFoodAsync(1);
+        await _foodService.DeleteFoodAsync(1, userId);
 
         // Assert
         _mockRepo.Verify(r => r.DeleteAsync(1), Times.Once);
@@ -70,9 +74,10 @@ public class FoodServiceTests
     {
         // Arrange
         Food nullFood = null!;
+        const int userId = 7;
 
         // Act & Assert
-        await Assert.ThrowsAsync<ArgumentNullException>(() => _foodService.AddFoodAsync(nullFood));
+        await Assert.ThrowsAsync<ArgumentNullException>(() => _foodService.AddFoodAsync(nullFood, userId));
         _mockRepo.Verify(r => r.AddAsync(It.IsAny<Food>()), Times.Never);
     }
 
@@ -80,10 +85,11 @@ public class FoodServiceTests
     public async Task GetFoodByIdAsync_ShouldReturnNull_WhenFoodDoesNotExist()
     {
         // Arrange
-        _mockRepo.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((Food?)null);
+        const int userId = 7;
+        _mockRepo.Setup(r => r.GetByIdAndOwnerAsync(99, userId)).ReturnsAsync((Food?)null);
 
         // Act
-        var result = await _foodService.GetFoodByIdAsync(99);
+        var result = await _foodService.GetFoodByIdAsync(99, userId);
 
         // Assert
         Assert.Null(result);
@@ -93,10 +99,11 @@ public class FoodServiceTests
     public async Task DeleteFoodAsync_ShouldThrowKeyNotFoundException_WhenFoodDoesNotExist()
     {
         // Arrange
-        _mockRepo.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((Food?)null);
+        const int userId = 7;
+        _mockRepo.Setup(r => r.GetByIdAndOwnerAsync(99, userId)).ReturnsAsync((Food?)null);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() => _foodService.DeleteFoodAsync(99));
+        var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() => _foodService.DeleteFoodAsync(99, userId));
         Assert.Equal("Продукт з ID 99 не знайдено.", exception.Message);
 
         _mockRepo.Verify(r => r.DeleteAsync(It.IsAny<int>()), Times.Never);

@@ -1,9 +1,12 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StayFit.Application.Interfaces;
 using StayFit.Domain.Entities;
 
 namespace StayFit.Web.Controllers;
 
+[Authorize]
 public class FoodController : Controller
 {
     private readonly IFoodService _foodService;
@@ -16,7 +19,8 @@ public class FoodController : Controller
     // GET: Food
     public async Task<IActionResult> Index()
     {
-        var foods = await _foodService.GetAllFoodsAsync();
+        var currentUserId = GetCurrentUserId();
+        var foods = await _foodService.GetAllFoodsAsync(currentUserId);
         return View(foods);
     }
 
@@ -33,7 +37,8 @@ public class FoodController : Controller
     {
         if (ModelState.IsValid)
         {
-            await _foodService.AddFoodAsync(food);
+            var currentUserId = GetCurrentUserId();
+            await _foodService.AddFoodAsync(food, currentUserId);
             return RedirectToAction(nameof(Index));
         }
 
@@ -43,7 +48,8 @@ public class FoodController : Controller
     // GET: Food/Edit/5
     public async Task<IActionResult> Edit(int id)
     {
-        var food = await _foodService.GetFoodByIdAsync(id);
+        var currentUserId = GetCurrentUserId();
+        var food = await _foodService.GetFoodByIdAsync(id, currentUserId);
         if (food == null)
         {
             return NotFound();
@@ -64,7 +70,20 @@ public class FoodController : Controller
 
         if (ModelState.IsValid)
         {
-            await _foodService.UpdateFoodAsync(food);
+            var currentUserId = GetCurrentUserId();
+            var existingFood = await _foodService.GetFoodByIdAsync(id, currentUserId);
+            if (existingFood == null)
+            {
+                return NotFound();
+            }
+
+            existingFood.Name = food.Name;
+            existingFood.CaloriesPer100g = food.CaloriesPer100g;
+            existingFood.ProteinPer100g = food.ProteinPer100g;
+            existingFood.FatPer100g = food.FatPer100g;
+            existingFood.CarbsPer100g = food.CarbsPer100g;
+
+            await _foodService.UpdateFoodAsync(existingFood, currentUserId);
             return RedirectToAction(nameof(Index));
         }
 
@@ -79,7 +98,8 @@ public class FoodController : Controller
     {
         try
         {
-            await _foodService.DeleteFoodAsync(id);
+            var currentUserId = GetCurrentUserId();
+            await _foodService.DeleteFoodAsync(id, currentUserId);
         }
         catch (KeyNotFoundException)
         {
@@ -87,5 +107,16 @@ public class FoodController : Controller
         }
 
         return RedirectToAction(nameof(Index));
+    }
+
+    private int GetCurrentUserId()
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(userIdClaim, out var userId))
+        {
+            throw new UnauthorizedAccessException("Неможливо визначити ідентифікатор користувача.");
+        }
+
+        return userId;
     }
 }

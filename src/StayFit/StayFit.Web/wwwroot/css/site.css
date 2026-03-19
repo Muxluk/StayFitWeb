@@ -25,7 +25,13 @@ html {
 
 body {
     margin-bottom: 60px;
-    background: linear-gradient(180deg, #f4fbf5 0%, #ffffff 35%, #ffffff 100%);
+    background: linear-gradient(
+        180deg,
+        #e7f7e8 0%,
+        #f4fbf5 40%,
+        #ffffff 100%
+    ) !important;
+    background-color: #e7f7e8 !important;
 }
 
 .form-floating > .form-control-plaintext::placeholder,

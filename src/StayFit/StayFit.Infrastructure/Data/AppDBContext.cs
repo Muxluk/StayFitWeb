@@ -32,7 +32,9 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
         modelBuilder.Entity<Food>(entity =>
         {
             entity.HasKey(f => f.Id);
+            entity.Property(f => f.OwnerUserId).IsRequired();
             entity.Property(f => f.Name).IsRequired().HasMaxLength(200);
+            entity.HasIndex(f => new { f.OwnerUserId, f.Name });
         });
 
         modelBuilder.Entity<FoodLog>(entity =>
