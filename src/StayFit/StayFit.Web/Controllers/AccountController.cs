@@ -2,11 +2,14 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using StayFit.Application.DTOs;
+using StayFit.Application.Interfaces;
 using StayFit.Infrastructure.Identity;
 
 namespace StayFit.Web.Controllers;
 
 public class AccountController(
+    IRegistrationService registrationService,
     UserManager<ApplicationUser> userManager,
     SignInManager<ApplicationUser> signInManager)
     : Controller
@@ -28,20 +31,28 @@ public class AccountController(
             return View(model);
         }
 
-        var user = new ApplicationUser
-        {
-            UserName = model.UserName,
-            Email = model.Email,
-        };
+        var result = await registrationService.RegisterAsync(
+            new RegisterUserRequestDto
+            {
+                UserName = model.UserName,
+                Email = model.Email,
+                Password = model.Password,
+            });
 
-        var result = await userManager.CreateAsync(user, model.Password);
         if (!result.Succeeded)
         {
             foreach (var error in result.Errors)
             {
-                ModelState.AddModelError(string.Empty, error.Description);
+                ModelState.AddModelError(string.Empty, error);
             }
 
+            return View(model);
+        }
+
+        var user = await userManager.FindByEmailAsync(model.Email);
+        if (user is null)
+        {
+            ModelState.AddModelError(string.Empty, "Не вдалося знайти щойно створеного користувача");
             return View(model);
         }
 
