@@ -126,7 +126,7 @@ public class FoodController : Controller
     [HttpPost]
     public async Task<IActionResult> AddToLog(int foodId, double quantity, string mealName = "Перекус")
     {
-        var userEmail = User.Identity.Name;
+        var userEmail = User.Identity?.Name;
         if (string.IsNullOrEmpty(userEmail)) return Challenge();
 
         var log = new FoodLog

@@ -46,7 +46,7 @@
                     </button>
                 </form>
                 
-                @if (item.CreatedByEmail == User.Identity.Name)
+                @if (item.CreatedByEmail == User.Identity?.Name)
                 {
                     <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-warning mt-1">Ред.</a>
                 }
