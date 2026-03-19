@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Serilog;
+using StayFit.Application.Interfaces;
 using StayFit.Application.Services;
 using StayFit.Infrastructure;
 using StayFit.Infrastructure.Data;
@@ -48,6 +49,7 @@ builder.Services
 
 // ─── Application Services ───────────────────────────────────────────────────
 builder.Services.AddScoped<LoggingService>();
+builder.Services.AddScoped<IFoodService, FoodService>();
 
 // ─── Build ──────────────────────────────────────────────────────────────────
 var app = builder.Build();

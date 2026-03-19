@@ -1,0 +1,49 @@
+@model StayFit.Domain.Entities.Food
+
+@{
+    ViewData["Title"] = "Додати продукт";
+}
+
+<h1>Додати новий продукт</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group mb-3">
+                <label asp-for="Name" class="control-label">Назва</label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="CaloriesPer100g" class="control-label">Калорії (на 100г)</label>
+                <input asp-for="CaloriesPer100g" class="form-control" type="number" step="0.1" />
+                <span asp-validation-for="CaloriesPer100g" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="ProteinPer100g" class="control-label">Білки (на 100г)</label>
+                <input asp-for="ProteinPer100g" class="form-control" type="number" step="0.1" />
+                <span asp-validation-for="ProteinPer100g" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="FatPer100g" class="control-label">Жири (на 100г)</label>
+                <input asp-for="FatPer100g" class="form-control" type="number" step="0.1" />
+                <span asp-validation-for="FatPer100g" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="CarbsPer100g" class="control-label">Вуглеводи (на 100г)</label>
+                <input asp-for="CarbsPer100g" class="form-control" type="number" step="0.1" />
+                <span asp-validation-for="CarbsPer100g" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Зберегти" class="btn btn-success" />
+                <a asp-action="Index" class="btn btn-secondary">Назад до списку</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
