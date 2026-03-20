@@ -30,7 +30,11 @@ public static class DependencyInjection
 
         // Services
         services.AddScoped<IRegistrationService, RegistrationService>();
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IPasswordResetService, PasswordResetService>();
+        services.AddScoped<IEmailSender, SmtpEmailSender>();
         services.AddScoped<IUserProfileService, UserProfileService>();
+
         return services;
     }
 }

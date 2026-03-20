@@ -162,7 +162,8 @@ public class FoodController : Controller
             };
 
             await _foodService.AddFoodToLogAsync(log);
-            _logger.LogInformation("Запис в лог їжі створено: UserId={UserId}, FoodId={FoodId}, Quantity={Quantity}", user.Id, foodId, quantity);
+            _logger.LogInformation("Запис в лог їжі створено: UserId={UserId}, FoodId={FoodId}, Quantity={Quantity}",
+                user.Id, foodId, quantity);
 
             return RedirectToAction("Index", "Diary");
         }
@@ -172,6 +173,7 @@ public class FoodController : Controller
             return BadRequest("Помилка при додаванні в раціон");
         }
     }
+
     private int GetCurrentUserId()
     {
         var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
