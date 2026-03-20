@@ -78,6 +78,18 @@ public class FoodService : IFoodService
         var food = await _foodRepository.GetByIdAndOwnerAsync(id, userId);
         if (food != null)
         {
+            // Delete associated FoodLogs first to avoid foreign key constraint violation
+            if (_foodLogRepository != null)
+            {
+                var logs = await _foodLogRepository.GetByFoodIdAsync(id);
+                foreach (var log in logs)
+                {
+                    await _foodLogRepository.DeleteAsync(log.Id);
+                }
+
+                _logger.LogInformation("Видалено {LogCount} записів логу для продукту {FoodId}", logs.Count(), id);
+            }
+
             await _foodRepository.DeleteAsync(id);
         }
         else
@@ -100,8 +112,18 @@ public class FoodService : IFoodService
         var user = await _userRepository!.GetByEmailAsync(userEmail);
         if (user == null)
         {
-            _logger.LogWarning("Користувача з email {Email} не знайдено", userEmail);
-            return Enumerable.Empty<FoodLog>();
+            _logger.LogWarning("Користувача з email {Email} не знайдено, буде створено запис", userEmail);
+
+            // Lazy creation: create user on-the-fly for legacy users
+            user = new User
+            {
+                Email = userEmail,
+                Name = userEmail,
+                CreatedAt = DateTime.UtcNow,
+            };
+
+            await _userRepository!.AddAsync(user);
+            _logger.LogInformation("Запис користувача з email {Email} створено з ID {UserId}", userEmail, user.Id);
         }
 
         _logger.LogInformation("Отримання щоденного логу для користувача: {UserId}, дата: {Date}", user.Id, date.Date);

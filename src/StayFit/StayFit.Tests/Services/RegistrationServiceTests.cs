@@ -3,6 +3,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using StayFit.Application.DTOs;
+using StayFit.Domain.Entities;
+using StayFit.Domain.Interfaces;
 using StayFit.Infrastructure.Identity;
 using StayFit.Infrastructure.Services;
 
@@ -19,8 +21,11 @@ public sealed class RegistrationServiceTests
             .ReturnsAsync(IdentityResult.Success)
             .Callback<ApplicationUser, string>((user, _) => user.Id = 123);
 
+        var userRepositoryMock = new Mock<IUserRepository>();
+        userRepositoryMock.Setup(r => r.AddAsync(It.IsAny<User>())).Returns(Task.CompletedTask);
+
         var loggerMock = new Mock<ILogger<RegistrationService>>();
-        var sut = new RegistrationService(userManagerMock.Object, loggerMock.Object);
+        var sut = new RegistrationService(userManagerMock.Object, userRepositoryMock.Object, loggerMock.Object);
 
         var request = new RegisterUserRequestDto
         {
@@ -46,8 +51,9 @@ public sealed class RegistrationServiceTests
                 new IdentityError { Description = "Email is already taken." },
                 new IdentityError { Description = "Password is too weak." }));
 
+        var userRepositoryMock = new Mock<IUserRepository>();
         var loggerMock = new Mock<ILogger<RegistrationService>>();
-        var sut = new RegistrationService(userManagerMock.Object, loggerMock.Object);
+        var sut = new RegistrationService(userManagerMock.Object, userRepositoryMock.Object, loggerMock.Object);
 
         var request = new RegisterUserRequestDto
         {
@@ -82,8 +88,11 @@ public sealed class RegistrationServiceTests
                 user.Id = 999;
             });
 
+        var userRepositoryMock = new Mock<IUserRepository>();
+        userRepositoryMock.Setup(r => r.AddAsync(It.IsAny<User>())).Returns(Task.CompletedTask);
+
         var loggerMock = new Mock<ILogger<RegistrationService>>();
-        var sut = new RegistrationService(userManagerMock.Object, loggerMock.Object);
+        var sut = new RegistrationService(userManagerMock.Object, userRepositoryMock.Object, loggerMock.Object);
 
         var request = new RegisterUserRequestDto
         {
@@ -120,8 +129,9 @@ public sealed class RegistrationServiceTests
             .Setup(m => m.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
             .ReturnsAsync(IdentityResult.Failed(errors));
 
+        var userRepositoryMock = new Mock<IUserRepository>();
         var loggerMock = new Mock<ILogger<RegistrationService>>();
-        var sut = new RegistrationService(userManagerMock.Object, loggerMock.Object);
+        var sut = new RegistrationService(userManagerMock.Object, userRepositoryMock.Object, loggerMock.Object);
 
         var request = new RegisterUserRequestDto
         {
@@ -148,8 +158,9 @@ public sealed class RegistrationServiceTests
             .Setup(m => m.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
             .ThrowsAsync(new InvalidOperationException("boom"));
 
+        var userRepositoryMock = new Mock<IUserRepository>();
         var loggerMock = new Mock<ILogger<RegistrationService>>();
-        var sut = new RegistrationService(userManagerMock.Object, loggerMock.Object);
+        var sut = new RegistrationService(userManagerMock.Object, userRepositoryMock.Object, loggerMock.Object);
 
         var request = new RegisterUserRequestDto
         {

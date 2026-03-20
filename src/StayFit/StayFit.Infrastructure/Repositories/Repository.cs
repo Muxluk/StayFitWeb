@@ -34,6 +34,16 @@ public class Repository<T> : IRepository<T>
 
     public async Task UpdateAsync(T entity)
     {
+        // Detach any tracked instances (except the one we're updating) to avoid DbContext conflicts
+        var trackedEntries = Context.ChangeTracker.Entries<T>()
+            .Where(e => e.State != EntityState.Detached && e.Entity != entity)
+            .ToList();
+
+        foreach (var entry in trackedEntries)
+        {
+            Context.Entry(entry.Entity).State = EntityState.Detached;
+        }
+
         _dbSet.Update(entity);
         await _context.SaveChangesAsync();
     }

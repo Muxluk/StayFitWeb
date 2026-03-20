@@ -49,7 +49,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
             entity.HasOne(fl => fl.Food)
                 .WithMany(f => f.FoodLogs)
                 .HasForeignKey(fl => fl.FoodId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<UserProfile>(entity =>
