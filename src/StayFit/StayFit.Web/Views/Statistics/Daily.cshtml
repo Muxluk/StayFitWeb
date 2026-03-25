@@ -1,0 +1,163 @@
+@model IEnumerable<StayFit.Domain.Entities.FoodLog>
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "Статистика за день";
+
+    var selectedDate = ViewBag.SelectedDate is DateTime dateFromController
+        ? dateFromController.Date
+        : DateTime.Today;
+
+    var rows = Model?.ToList() ?? new List<StayFit.Domain.Entities.FoodLog>();
+
+    decimal totalCalories = 0m;
+    decimal totalProtein = 0m;
+    decimal totalFat = 0m;
+    decimal totalCarbs = 0m;
+
+    foreach (var log in rows)
+    {
+        var grams = (decimal)log.AmountGrams;
+        var food = log.Food;
+
+        totalCalories += (decimal)(food?.CaloriesPer100g ?? 0f) * grams / 100m;
+        totalProtein += (decimal)(food?.ProteinPer100g ?? 0f) * grams / 100m;
+        totalFat += (decimal)(food?.FatPer100g ?? 0f) * grams / 100m;
+        totalCarbs += (decimal)(food?.CarbsPer100g ?? 0f) * grams / 100m;
+    }
+
+    var chartItems = new[]
+    {
+        new { Label = "Калорії", Value = totalCalories, Unit = "ккал", Css = "bg-primary" },
+        new { Label = "Білки", Value = totalProtein, Unit = "г", Css = "bg-success" },
+        new { Label = "Жири", Value = totalFat, Unit = "г", Css = "bg-warning" },
+        new { Label = "Вуглеводи", Value = totalCarbs, Unit = "г", Css = "bg-info" },
+    };
+
+    var maxChartValue = chartItems.Max(i => i.Value);
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h2 class="mb-0">Статистика харчування за день</h2>
+    <a asp-controller="Diary" asp-action="Index" asp-route-date="@selectedDate.ToString("yyyy-MM-dd")" class="btn btn-outline-secondary btn-sm">До щоденника</a>
+</div>
+
+<form method="get" asp-action="Daily" class="card card-body mb-4">
+    <div class="row g-2 align-items-end">
+        <div class="col-sm-6 col-md-4 col-lg-3">
+            <label for="date" class="form-label mb-1">Оберіть дату</label>
+            <input id="date" type="date" name="date" value="@selectedDate.ToString("yyyy-MM-dd")" class="form-control" />
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Показати</button>
+        </div>
+    </div>
+</form>
+
+<div class="row g-3 mb-4">
+    <div class="col-12 col-lg-6">
+        <div class="card h-100">
+            <div class="card-header fw-semibold">Підсумок за день (@selectedDate.ToString("dd.MM.yyyy"))</div>
+            <div class="card-body">
+                <div class="row text-center g-3">
+                    <div class="col-6">
+                        <div class="border rounded p-2 h-100">
+                            <div class="text-muted small">Калорії</div>
+                            <div class="fs-5 fw-bold">@Math.Round(totalCalories, 1) ккал</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="border rounded p-2 h-100">
+                            <div class="text-muted small">Білки</div>
+                            <div class="fs-5 fw-bold">@Math.Round(totalProtein, 1) г</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="border rounded p-2 h-100">
+                            <div class="text-muted small">Жири</div>
+                            <div class="fs-5 fw-bold">@Math.Round(totalFat, 1) г</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="border rounded p-2 h-100">
+                            <div class="text-muted small">Вуглеводи</div>
+                            <div class="fs-5 fw-bold">@Math.Round(totalCarbs, 1) г</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+        <div class="card h-100">
+            <div class="card-header fw-semibold">Графік показників</div>
+            <div class="card-body">
+                @foreach (var item in chartItems)
+                {
+                    var width = maxChartValue <= 0 ? 0 : (item.Value / maxChartValue) * 100m;
+                    var widthCss = width.ToString("0.##", CultureInfo.InvariantCulture);
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span>@item.Label</span>
+                            <span class="fw-semibold">@Math.Round(item.Value, 1) @item.Unit</span>
+                        </div>
+                        <div class="progress" style="height: 0.9rem;">
+                            <div class="progress-bar @item.Css" role="progressbar" style="width: @widthCss%" aria-valuenow="@Math.Round(width, 2)" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header fw-semibold">Деталізація споживання</div>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Час</th>
+                    <th>Продукт</th>
+                    <th>Кількість (г)</th>
+                    <th>Калорії</th>
+                    <th>Білки</th>
+                    <th>Жири</th>
+                    <th>Вуглеводи</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (rows.Count == 0)
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">За обрану дату записів не знайдено.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var log in rows.OrderBy(x => x.LoggedAt))
+                    {
+                        var grams = (decimal)log.AmountGrams;
+                        var food = log.Food;
+                        var calories = (decimal)(food?.CaloriesPer100g ?? 0f) * grams / 100m;
+                        var protein = (decimal)(food?.ProteinPer100g ?? 0f) * grams / 100m;
+                        var fat = (decimal)(food?.FatPer100g ?? 0f) * grams / 100m;
+                        var carbs = (decimal)(food?.CarbsPer100g ?? 0f) * grams / 100m;
+
+                        <tr>
+                            <td>@log.LoggedAt.ToLocalTime().ToString("HH:mm")</td>
+                            <td>@(food?.Name ?? "-")</td>
+                            <td>@Math.Round(grams, 1)</td>
+                            <td>@Math.Round(calories, 1)</td>
+                            <td>@Math.Round(protein, 1)</td>
+                            <td>@Math.Round(fat, 1)</td>
+                            <td>@Math.Round(carbs, 1)</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -21,21 +21,17 @@ public class FoodLogRepository : Repository<FoodLog>, IFoodLogRepository
 
     public async Task<IEnumerable<FoodLog>> GetByUserIdAndDateAsync(int userId, DateTime date)
     {
-        // Convert local date boundaries to UTC
-        // DateTime.Today in Local -> convert to UTC range for that calendar day
-        var localDate = date.Date; // Get just the date part (00:00:00)
-        
-        // Start of day in local time, then convert to UTC
-        var startOfDayLocal = localDate;
-        var startOfDayUtc = startOfDayLocal.Kind == DateTimeKind.Local 
-            ? startOfDayLocal.ToUniversalTime() 
-            : startOfDayLocal;
-        
-        // End of day in local time, then convert to UTC
-        var endOfDayLocal = localDate.AddDays(1);
-        var endOfDayUtc = endOfDayLocal.Kind == DateTimeKind.Local 
-            ? endOfDayLocal.ToUniversalTime() 
-            : endOfDayLocal;
+        // UI-bound dates often come with DateTimeKind.Unspecified.
+        // Treat selected calendar date as local day and query UTC boundaries.
+        var localDay = date.Kind == DateTimeKind.Utc
+            ? date.ToLocalTime().Date
+            : date.Date;
+
+        var startOfDayLocal = DateTime.SpecifyKind(localDay, DateTimeKind.Local);
+        var endOfDayLocal = startOfDayLocal.AddDays(1);
+
+        var startOfDayUtc = startOfDayLocal.ToUniversalTime();
+        var endOfDayUtc = endOfDayLocal.ToUniversalTime();
 
         return await DbSet
             .Include(fl => fl.Food)

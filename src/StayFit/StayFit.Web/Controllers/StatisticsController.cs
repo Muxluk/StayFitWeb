@@ -8,12 +8,16 @@ namespace StayFit.Web.Controllers;
 public class StatisticsController(IFoodService foodService) : Controller
 {
     [HttpGet]
+    public IActionResult Index(DateTime? date) => RedirectToAction(nameof(Daily), new { date });
+
+    [HttpGet]
     public async Task<IActionResult> Daily(DateTime? date)
     {
-        var selectedDate = date ?? DateTime.Today;
+        var selectedDate = (date ?? DateTime.Today).Date;
         var userEmail = User.Identity?.Name ?? string.Empty;
 
         var logs = await foodService.GetDailyLogAsync(userEmail, selectedDate);
+        ViewBag.SelectedDate = selectedDate;
         return View(logs);
     }
 
