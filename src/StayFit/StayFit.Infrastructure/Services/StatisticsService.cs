@@ -7,7 +7,7 @@ using StayFit.Domain.Interfaces;
 namespace StayFit.Infrastructure.Services;
 
 public sealed class StatisticsService(
-    IFoodLogRepository foodLogRepository,
+    IStatisticsRepository statisticsRepository,
     IUserRepository userRepository,
     ILogger<StatisticsService> logger)
     : IStatisticsService
@@ -48,32 +48,18 @@ public sealed class StatisticsService(
             return Result<NutritionSummary>.Failure("Користувача не знайдено.");
         }
 
-        var allLogs = await foodLogRepository.GetByUserIdAsync(user.Id);
         var periodStart = startDate.Date;
         var periodEnd = endDate.Date;
-
-        var periodLogs = allLogs
-            .Where(log => log.LoggedAt.Date >= periodStart && log.LoggedAt.Date <= periodEnd)
-            .ToList();
-
-        var summary = new NutritionSummary
-        {
-            StartDate = periodStart,
-            EndDate = periodEnd,
-            TotalCalories = periodLogs.Sum(log => (decimal)(log.Food?.Calories ?? 0f) * (decimal)log.AmountGrams / 100m),
-            TotalProtein = periodLogs.Sum(log => (decimal)(log.Food?.Proteins ?? 0f) * (decimal)log.AmountGrams / 100m),
-            TotalFat = periodLogs.Sum(log => (decimal)(log.Food?.Fats ?? 0f) * (decimal)log.AmountGrams / 100m),
-            TotalCarbs = periodLogs.Sum(log => (decimal)(log.Food?.Carbohydrates ?? 0f) * (decimal)log.AmountGrams / 100m),
-            DaysWithLogs = periodLogs
-                .Select(log => log.LoggedAt.Date)
-                .Distinct()
-                .Count(),
-        };
+        var summary = await statisticsRepository.GetNutritionSummaryAsync(
+            user.Id,
+            periodStart,
+            periodEnd,
+            cancellationToken);
 
         logger.LogInformation(
-            "Statistics calculation completed for {Email}. Logs: {LogCount}, Calories: {Calories}",
+            "Statistics calculation completed for {Email}. DaysWithLogs: {DaysWithLogs}, Calories: {Calories}",
             userEmail,
-            periodLogs.Count,
+            summary.DaysWithLogs,
             summary.TotalCalories);
 
         return Result<NutritionSummary>.Success(summary);
