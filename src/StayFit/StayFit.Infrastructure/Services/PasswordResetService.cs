@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using StayFit.Application.DTOs;
 using StayFit.Application.Interfaces;
+using StayFit.Domain.Exceptions;
 using StayFit.Infrastructure.Identity;
 using System.Text;
 
@@ -62,23 +63,15 @@ public sealed class PasswordResetService(
             <p>Посилання дійсне 24 години.</p>
             """;
 
-        try
-        {
-            await emailSender.SendAsync(
-                request.Email,
-                "Відновлення пароля — StayFit",
-                html,
-                cancellationToken);
+        await emailSender.SendAsync(
+            request.Email,
+            "Відновлення пароля — StayFit",
+            html,
+            cancellationToken);
 
-            logger.LogInformation(
-                "Password reset email sent to {Email}, userId {UserId}",
-                request.Email, user.Id);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Failed to send password reset email to {Email}", request.Email);
-            return false;
-        }
+        logger.LogInformation(
+            "Password reset email sent to {Email}, userId {UserId}",
+            request.Email, user.Id);
 
         return true;
     }
@@ -96,16 +89,7 @@ public sealed class PasswordResetService(
             return ["Невірний або прострочений запит на скидання пароля."];
         }
 
-        string decodedToken;
-        try
-        {
-            decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Token));
-        }
-        catch (Exception ex)
-        {
-            logger.LogWarning(ex, "Invalid token format for email {Email}", request.Email);
-            return ["Невірний або прострочений запит на скидання пароля."];
-        }
+        var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Token));
 
         var result = await userManager.ResetPasswordAsync(user, decodedToken, request.NewPassword);
 

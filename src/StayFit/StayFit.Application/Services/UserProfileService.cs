@@ -2,6 +2,7 @@
 using StayFit.Application.DTOs;
 using StayFit.Application.Interfaces;
 using StayFit.Domain.Entities;
+using StayFit.Domain.Exceptions;
 using StayFit.Domain.Interfaces;
 
 namespace StayFit.Application.Services;
@@ -23,119 +24,91 @@ public class UserProfileService : IUserProfileService
     public async Task<UserProfileDto?> GetProfileAsync(int userId)
     {
         _logger.LogInformation("Отримання профілю користувача з ID {UserId}", userId);
-        try
-        {
-            var profile = await _repository.GetByUserIdAsync(userId);
 
-            if (profile == null)
-            {
-                _logger.LogWarning("Профіль користувача {UserId} не знайдено", userId);
-                return null;
-            }
+        var profile = await _repository.GetByUserIdAsync(userId);
 
-            var dto = MapToDto(profile);
-            _logger.LogInformation("Профіль користувача {UserId} успішно отримано", userId);
-            return dto;
-        }
-        catch (Exception ex)
+        if (profile == null)
         {
-            _logger.LogError(ex, "Помилка при отриманні профілю користувача {UserId}", userId);
-            throw;
+            _logger.LogWarning("Профіль користувача {UserId} не знайдено", userId);
+            return null;
         }
+
+        var dto = MapToDto(profile);
+        _logger.LogInformation("Профіль користувача {UserId} успішно отримано", userId);
+        return dto;
     }
 
     public async Task<bool> UpdateProfileAsync(int userId, UpdateUserProfileDto dto)
     {
         _logger.LogInformation("Оновлення профілю користувача {UserId}", userId);
-        try
+
+        var profile = await _repository.GetByUserIdAsync(userId);
+
+        if (profile == null)
         {
-            var profile = await _repository.GetByUserIdAsync(userId);
-
-            if (profile == null)
-            {
-                _logger.LogWarning("Профіль для оновлення користувача {UserId} не знайдено", userId);
-                return false;
-            }
-
-            profile.FullName = dto.FullName;
-            profile.DateOfBirth = dto.DateOfBirth;
-            profile.Gender = dto.Gender;
-            profile.Weight = dto.Weight;
-            profile.Height = dto.Height;
-            profile.UpdatedAt = DateTime.UtcNow;
-
-            await _repository.UpdateAsync(profile);
-            _logger.LogInformation("Профіль користувача {UserId} успішно оновлено", userId);
-
-            return true;
+            _logger.LogWarning("Профіль для оновлення користувача {UserId} не знайдено", userId);
+            throw new NotFoundException("Профіль користувача", userId);
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Помилка при оновленні профілю користувача {UserId}", userId);
-            return false;
-        }
+
+        profile.FullName = dto.FullName;
+        profile.DateOfBirth = dto.DateOfBirth;
+        profile.Gender = dto.Gender;
+        profile.Weight = dto.Weight;
+        profile.Height = dto.Height;
+        profile.UpdatedAt = DateTime.UtcNow;
+
+        await _repository.UpdateAsync(profile);
+        _logger.LogInformation("Профіль користувача {UserId} успішно оновлено", userId);
+
+        return true;
     }
 
     public async Task<UserProfileDto> CreateProfileAsync(CreateUserProfileDto dto)
     {
         _logger.LogInformation("Створення профілю для користувача {UserId}", dto.UserId);
-        try
+
+        var exists = await _repository.ExistsForUserAsync(dto.UserId);
+
+        if (exists)
         {
-            var exists = await _repository.ExistsForUserAsync(dto.UserId);
-
-            if (exists)
-            {
-                _logger.LogWarning("Профіль для користувача {UserId} вже існує", dto.UserId);
-                throw new InvalidOperationException($"Профіль для користувача {dto.UserId} вже існує");
-            }
-
-            var profile = new UserProfile
-            {
-                UserId = dto.UserId,
-                FullName = dto.FullName,
-                DateOfBirth = dto.DateOfBirth,
-                Gender = dto.Gender,
-                Weight = dto.Weight,
-                Height = dto.Height,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-            };
-
-            await _repository.AddAsync(profile);
-            _logger.LogInformation("Профіль для користувача {UserId} успішно створено", dto.UserId);
-
-            return MapToDto(profile);
+            _logger.LogWarning("Профіль для користувача {UserId} вже існує", dto.UserId);
+            throw new InvalidOperationException($"Профіль для користувача {dto.UserId} вже існує");
         }
-        catch (Exception ex)
+
+        var profile = new UserProfile
         {
-            _logger.LogError(ex, "Помилка при створенні профілю для користувача {UserId}", dto.UserId);
-            throw;
-        }
+            UserId = dto.UserId,
+            FullName = dto.FullName,
+            DateOfBirth = dto.DateOfBirth,
+            Gender = dto.Gender,
+            Weight = dto.Weight,
+            Height = dto.Height,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+        };
+
+        await _repository.AddAsync(profile);
+        _logger.LogInformation("Профіль для користувача {UserId} успішно створено", dto.UserId);
+
+        return MapToDto(profile);
     }
 
     public async Task<bool> DeleteProfileAsync(int userId)
     {
         _logger.LogInformation("Видалення профілю користувача {UserId}", userId);
-        try
+
+        var profile = await _repository.GetByUserIdAsync(userId);
+
+        if (profile == null)
         {
-            var profile = await _repository.GetByUserIdAsync(userId);
-
-            if (profile == null)
-            {
-                _logger.LogWarning("Профіль користувача {UserId} не знайдено для видалення", userId);
-                return false;
-            }
-
-            await _repository.DeleteAsync(profile.Id);
-            _logger.LogInformation("Профіль користувача {UserId} успішно видалено", userId);
-
-            return true;
+            _logger.LogWarning("Профіль користувача {UserId} не знайдено для видалення", userId);
+            throw new NotFoundException("Профіль користувача", userId);
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Помилка при видаленні профілю користувача {UserId}", userId);
-            return false;
-        }
+
+        await _repository.DeleteAsync(profile.Id);
+        _logger.LogInformation("Профіль користувача {UserId} успішно видалено", userId);
+
+        return true;
     }
 
     private static UserProfileDto MapToDto(UserProfile profile) =>

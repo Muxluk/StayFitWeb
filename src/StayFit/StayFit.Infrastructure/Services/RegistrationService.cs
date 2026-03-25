@@ -43,30 +43,19 @@ public sealed class RegistrationService(
         }
 
         // Create corresponding DomainUser
-        try
+        var domainUser = new User
         {
-            var domainUser = new User
-            {
-                Id = user.Id,
-                Name = request.UserName,
-                Email = request.Email,
-                CreatedAt = DateTime.UtcNow,
-            };
+            Id = user.Id,
+            Name = request.UserName,
+            Email = request.Email,
+            CreatedAt = DateTime.UtcNow,
+        };
 
-            await userRepository.AddAsync(domainUser);
-            logger.LogInformation(
-                "Registration succeeded. Identity UserId {UserId}, Domain UserId {DomainUserId}",
-                user.Id,
-                domainUser.Id);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(
-                ex,
-                "Failed to create DomainUser for email {Email} after successful Identity registration",
-                request.Email);
-            throw;
-        }
+        await userRepository.AddAsync(domainUser);
+        logger.LogInformation(
+            "Registration succeeded. Identity UserId {UserId}, Domain UserId {DomainUserId}",
+            user.Id,
+            domainUser.Id);
 
         return new RegisterUserResultDto
         {

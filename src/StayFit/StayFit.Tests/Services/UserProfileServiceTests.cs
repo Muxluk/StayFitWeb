@@ -3,6 +3,7 @@ using Moq;
 using StayFit.Application.DTOs;
 using StayFit.Application.Services;
 using StayFit.Domain.Entities;
+using StayFit.Domain.Exceptions;
 using StayFit.Domain.Interfaces;
 using Xunit;
 
@@ -176,7 +177,7 @@ public class UserProfileServiceTests
     }
 
     [Fact]
-    public async Task UpdateProfileAsync_WithNonExistentProfile_ReturnsFalse()
+    public async Task UpdateProfileAsync_WithNonExistentProfile_ThrowsNotFoundException()
     {
         // Arrange
         int userId = 999;
@@ -188,16 +189,13 @@ public class UserProfileServiceTests
 
         _mockRepository.Setup(r => r.GetByUserIdAsync(userId)).ReturnsAsync((UserProfile?)null);
 
-        // Act
-        var result = await _service.UpdateProfileAsync(userId, updateDto);
-
-        // Assert
-        Assert.False(result);
+        // Act & Assert
+        await Assert.ThrowsAsync<NotFoundException>(() => _service.UpdateProfileAsync(userId, updateDto));
         _mockRepository.Verify(r => r.UpdateAsync(It.IsAny<UserProfile>()), Times.Never);
     }
 
     [Fact]
-    public async Task UpdateProfileAsync_WhenRepositoryThrows_ReturnsFalse()
+    public async Task UpdateProfileAsync_WhenRepositoryThrows_ThrowsException()
     {
         // Arrange
         int userId = 1;
@@ -223,11 +221,8 @@ public class UserProfileServiceTests
         _mockRepository.Setup(r => r.GetByUserIdAsync(userId)).ReturnsAsync(profile);
         _mockRepository.Setup(r => r.UpdateAsync(It.IsAny<UserProfile>())).ThrowsAsync(new Exception("DB Error"));
 
-        // Act
-        var result = await _service.UpdateProfileAsync(userId, updateDto);
-
-        // Assert
-        Assert.False(result);
+        // Act & Assert
+        await Assert.ThrowsAsync<Exception>(() => _service.UpdateProfileAsync(userId, updateDto));
     }
 
     [Fact]
@@ -257,22 +252,19 @@ public class UserProfileServiceTests
     }
 
     [Fact]
-    public async Task DeleteProfileAsync_WithNonExistentProfile_ReturnsFalse()
+    public async Task DeleteProfileAsync_WithNonExistentProfile_ThrowsNotFoundException()
     {
         // Arrange
         int userId = 999;
         _mockRepository.Setup(r => r.GetByUserIdAsync(userId)).ReturnsAsync((UserProfile?)null);
 
-        // Act
-        var result = await _service.DeleteProfileAsync(userId);
-
-        // Assert
-        Assert.False(result);
+        // Act & Assert
+        await Assert.ThrowsAsync<NotFoundException>(() => _service.DeleteProfileAsync(userId));
         _mockRepository.Verify(r => r.DeleteAsync(It.IsAny<int>()), Times.Never);
     }
 
     [Fact]
-    public async Task DeleteProfileAsync_WhenRepositoryThrows_ReturnsFalse()
+    public async Task DeleteProfileAsync_WhenRepositoryThrows_ThrowsException()
     {
         // Arrange
         int userId = 1;
@@ -289,10 +281,7 @@ public class UserProfileServiceTests
         _mockRepository.Setup(r => r.GetByUserIdAsync(userId)).ReturnsAsync(profile);
         _mockRepository.Setup(r => r.DeleteAsync(It.IsAny<int>())).ThrowsAsync(new Exception("DB Error"));
 
-        // Act
-        var result = await _service.DeleteProfileAsync(userId);
-
-        // Assert
-        Assert.False(result);
+        // Act & Assert
+        await Assert.ThrowsAsync<Exception>(() => _service.DeleteProfileAsync(userId));
     }
 }

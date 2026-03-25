@@ -17,19 +17,11 @@ public class MealService
 
     public async Task CreateMealAsync(MealEntry meal)
     {
-        try
-        {
-            _logger.LogInformation("Attempting to create a meal: {MealName} for user {User}", meal.Name, meal.UserEmail);
+        _logger.LogInformation("Attempting to create a meal: {MealName} for user {User}", meal.Name, meal.UserEmail);
 
-            await _mealRepository.AddAsync(meal);
+        await _mealRepository.AddAsync(meal);
 
-            _logger.LogInformation("Meal {MealId} successfully created.", meal.Id);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while creating meal {MealName}", meal.Name);
-            throw;
-        }
+        _logger.LogInformation("Meal {MealId} successfully created.", meal.Id);
     }
 
     public async Task<IEnumerable<MealEntry>> GetUserMealsAsync(string email)

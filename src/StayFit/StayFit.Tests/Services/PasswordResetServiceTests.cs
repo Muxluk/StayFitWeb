@@ -88,7 +88,7 @@ public sealed class PasswordResetServiceTests
     // ─── SendPasswordResetTokenAsync — негативні ────────────────────────────
 
     [Fact]
-    public async Task SendPasswordResetTokenAsync_WhenEmailSenderThrows_ReturnsFalse()
+    public async Task SendPasswordResetTokenAsync_WhenEmailSenderThrows_ThrowsException()
     {
         var user = new ApplicationUser { Id = 2, Email = "fail@example.com", UserName = "failuser" };
 
@@ -107,13 +107,10 @@ public sealed class PasswordResetServiceTests
 
         var sut = CreateSut(userManagerMock, emailSenderMock);
 
-        var result = await sut.SendPasswordResetTokenAsync(new ForgotPasswordDto
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.SendPasswordResetTokenAsync(new ForgotPasswordDto
         {
             Email = "fail@example.com",
-        });
-
-        // Не кидаємо exception назовні — повертаємо false
-        Assert.False(result);
+        }));
     }
 
     // ─── ResetPasswordAsync — позитивні ─────────────────────────────────────

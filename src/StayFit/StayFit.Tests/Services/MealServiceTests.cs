@@ -64,7 +64,7 @@ public class MealServiceTests
     }
 
     [Fact]
-    public async Task CreateMealAsync_ShouldLogErrorAndThrow_WhenRepositoryFails()
+    public async Task CreateMealAsync_ShouldThrow_WhenRepositoryFails()
     {
         var meal = new MealEntry { Name = "Вечеря" };
         var exceptionMessage = "Database connection failed";
@@ -74,14 +74,5 @@ public class MealServiceTests
 
         var exception = await Assert.ThrowsAsync<Exception>(() => _mealService.CreateMealAsync(meal));
         Assert.Equal(exceptionMessage, exception.Message);
-
-        _loggerMock.Verify(
-            x => x.Log(
-                LogLevel.Error,
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-            Times.Once);
     }
 }

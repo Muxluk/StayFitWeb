@@ -5,6 +5,7 @@ using StayFit.Application.Services;
 using StayFit.Infrastructure;
 using StayFit.Infrastructure.Data;
 using StayFit.Infrastructure.Identity;
+using StayFit.Web.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +30,10 @@ builder.Host.UseSerilog((context, configuration) =>
 
 // ─── MVC ────────────────────────────────────────────────────────────────────
 builder.Services.AddControllersWithViews();
+
+// ─── Global Exception Handler ───────────────────────────────────────────────
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 // ─── Infrastructure (БД + репозиторії) ─────────────────────────────────────
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -55,9 +60,11 @@ builder.Services.AddScoped<MealService>();
 // ─── Build ──────────────────────────────────────────────────────────────────
 var app = builder.Build();
 
+// ─── Exception Handler ──────────────────────────────────────────────────────
+app.UseExceptionHandler();
+
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 
