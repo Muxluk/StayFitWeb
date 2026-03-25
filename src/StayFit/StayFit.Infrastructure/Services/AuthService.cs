@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using StayFit.Application.Common;
 using StayFit.Application.DTOs;
 using StayFit.Application.Interfaces;
 using StayFit.Infrastructure.Identity;
@@ -16,7 +17,7 @@ public sealed class AuthService(
     ILogger<AuthService> logger)
     : IAuthService
 {
-    public async Task<LoginResultDto> LoginAsync(
+    public async Task<Result<string>> LoginAsync(
         LoginRequestDto request,
         CancellationToken cancellationToken = default)
     {
@@ -26,14 +27,14 @@ public sealed class AuthService(
         if (user is null)
         {
             logger.LogWarning("Login failed: user not found for email {Email}", request.Email);
-            return LoginResultDto.Failure("Невірний email або пароль.");
+            return Result<string>.Failure("Невірний email або пароль.");
         }
 
         // Перевіряємо lockout вручну
         if (await userManager.IsLockedOutAsync(user))
         {
             logger.LogWarning("Login failed: account locked out for email {Email}", request.Email);
-            return LoginResultDto.LockedOut();
+            return Result<string>.Failure("Акаунт заблоковано. Спробуйте пізніше.");
         }
 
         var passwordValid = await userManager.CheckPasswordAsync(user, request.Password);
@@ -43,7 +44,7 @@ public sealed class AuthService(
             await userManager.AccessFailedAsync(user);
 
             logger.LogWarning("Login failed: invalid password for email {Email}", request.Email);
-            return LoginResultDto.Failure("Невірний email або пароль.");
+            return Result<string>.Failure("Невірний email або пароль.");
         }
 
         // Скидаємо лічильник невдалих спроб після успішного входу
@@ -53,6 +54,6 @@ public sealed class AuthService(
             "Login credentials verified for email {Email}, userId {UserId}",
             request.Email, user.Id);
 
-        return LoginResultDto.Success(user.UserName!);
+        return Result<string>.Success(user.UserName!);
     }
 }

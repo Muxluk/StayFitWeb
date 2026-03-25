@@ -2,9 +2,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using StayFit.Application.Common;
 using StayFit.Application.DTOs;
 using StayFit.Application.Interfaces;
-using StayFit.Domain.Exceptions;
 using StayFit.Infrastructure.Identity;
 using System.Text;
 
@@ -20,7 +20,7 @@ public sealed class PasswordResetService(
     ILogger<PasswordResetService> logger)
     : IPasswordResetService
 {
-    public async Task<bool> SendPasswordResetTokenAsync(
+    public async Task<Result> SendPasswordResetTokenAsync(
         ForgotPasswordDto request,
         CancellationToken cancellationToken = default)
     {
@@ -33,7 +33,7 @@ public sealed class PasswordResetService(
             logger.LogWarning(
                 "Password reset: no user found for email {Email}. Silently returning success.",
                 request.Email);
-            return true;
+            return Result.Success();
         }
 
         var token = await userManager.GeneratePasswordResetTokenAsync(user);
@@ -73,10 +73,10 @@ public sealed class PasswordResetService(
             "Password reset email sent to {Email}, userId {UserId}",
             request.Email, user.Id);
 
-        return true;
+        return Result.Success();
     }
 
-    public async Task<IReadOnlyList<string>> ResetPasswordAsync(
+    public async Task<Result> ResetPasswordAsync(
         ResetPasswordDto request,
         CancellationToken cancellationToken = default)
     {
@@ -86,10 +86,19 @@ public sealed class PasswordResetService(
         if (user is null)
         {
             logger.LogWarning("Password reset failed: user not found for email {Email}", request.Email);
-            return ["Невірний або прострочений запит на скидання пароля."];
+            return Result.Failure("Невірний або прострочений запит на скидання пароля.");
         }
 
-        var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Token));
+        string decodedToken;
+        try
+        {
+            decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Token));
+        }
+        catch (FormatException ex)
+        {
+            logger.LogWarning(ex, "Password reset failed: invalid token format for email {Email}", request.Email);
+            return Result.Failure("Невірний або прострочений запит на скидання пароля.");
+        }
 
         var result = await userManager.ResetPasswordAsync(user, decodedToken, request.NewPassword);
 
@@ -100,12 +109,12 @@ public sealed class PasswordResetService(
                 "Password reset failed for email {Email}. Errors: {Errors}",
                 request.Email,
                 string.Join("; ", errors));
-            return errors;
+            return Result.Failure(errors);
         }
 
         logger.LogInformation(
             "Password reset succeeded for email {Email}, userId {UserId}",
             request.Email, user.Id);
-        return Array.Empty<string>();
+        return Result.Success();
     }
 }

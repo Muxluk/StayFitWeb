@@ -1,3 +1,4 @@
+using StayFit.Application.Common;
 using StayFit.Application.DTOs;
 
 namespace StayFit.Application.Interfaces;
@@ -10,7 +11,7 @@ public interface IAuthService
     /// <summary>
     /// Виконує вхід користувача за email та паролем.
     /// </summary>
-    Task<LoginResultDto> LoginAsync(
+    Task<Result<string>> LoginAsync(
         LoginRequestDto request,
         CancellationToken cancellationToken = default);
 }

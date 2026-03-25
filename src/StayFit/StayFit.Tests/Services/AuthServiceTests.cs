@@ -31,10 +31,9 @@ public sealed class AuthServiceTests
             Password = "password123",
         });
 
-        Assert.True(result.Succeeded);
-        Assert.Equal("testuser", result.UserName);
-        Assert.Null(result.Error);
-        Assert.False(result.IsLockedOut);
+        Assert.True(result.IsSuccess);
+        Assert.Equal("testuser", result.Value);
+        Assert.Empty(result.Errors);
     }
 
     // ─── Негативні сценарії ──────────────────────────────────────────────────
@@ -55,9 +54,8 @@ public sealed class AuthServiceTests
             Password = "password123",
         });
 
-        Assert.False(result.Succeeded);
-        Assert.NotNull(result.Error);
-        Assert.False(result.IsLockedOut);
+        Assert.True(result.IsFailure);
+        Assert.NotEmpty(result.Errors);
 
         // CheckPassword не має викликатись якщо юзер не знайдений
         userManagerMock.Verify(
@@ -84,15 +82,15 @@ public sealed class AuthServiceTests
             Password = "wrongpass",
         });
 
-        Assert.False(result.Succeeded);
-        Assert.NotNull(result.Error);
+        Assert.True(result.IsFailure);
+        Assert.NotEmpty(result.Errors);
 
         // Лічильник невдалих спроб має збільшитись
         userManagerMock.Verify(m => m.AccessFailedAsync(user), Times.Once);
     }
 
     [Fact]
-    public async Task LoginAsync_WhenAccountIsLockedOut_ReturnsLockedOutResult()
+    public async Task LoginAsync_WhenAccountIsLockedOut_ReturnsFailureWithLockoutMessage()
     {
         var user = new ApplicationUser { Id = 3, UserName = "lockeduser", Email = "locked@example.com" };
 
@@ -108,9 +106,8 @@ public sealed class AuthServiceTests
             Password = "anypass",
         });
 
-        Assert.False(result.Succeeded);
-        Assert.True(result.IsLockedOut);
-        Assert.NotNull(result.Error);
+        Assert.True(result.IsFailure);
+        Assert.Contains("Акаунт заблоковано", result.Errors[0]);
 
         // CheckPassword не має викликатись для заблокованого акаунту
         userManagerMock.Verify(
@@ -158,7 +155,7 @@ public sealed class AuthServiceTests
         var wrongPassResult = await sut.LoginAsync(new LoginRequestDto { Email = "u@x.com", Password = "wrongpass" });
 
         // Однакові повідомлення — не розкриваємо причину
-        Assert.Equal(notFoundResult.Error, wrongPassResult.Error);
+        Assert.Equal(notFoundResult.Errors[0], wrongPassResult.Errors[0]);
     }
 
     // ─── Хелпери ────────────────────────────────────────────────────────────

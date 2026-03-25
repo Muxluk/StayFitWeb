@@ -39,7 +39,7 @@ public sealed class PasswordResetServiceTests
             Email = "user@example.com",
         });
 
-        Assert.True(result);
+        Assert.True(result.IsSuccess);
 
         // Токен має бути згенерований
         userManagerMock.Verify(m => m.GeneratePasswordResetTokenAsync(user), Times.Once);
@@ -72,7 +72,7 @@ public sealed class PasswordResetServiceTests
             Email = "ghost@example.com",
         });
 
-        Assert.True(result);
+        Assert.True(result.IsSuccess);
 
         // Email не має відправлятись
         emailSenderMock.Verify(
@@ -132,14 +132,15 @@ public sealed class PasswordResetServiceTests
 
         var sut = CreateSut(userManagerMock, new Mock<IEmailSender>());
 
-        var errors = await sut.ResetPasswordAsync(new ResetPasswordDto
+        var result = await sut.ResetPasswordAsync(new ResetPasswordDto
         {
             Email = "reset@example.com",
             Token = encodedToken,
             NewPassword = "NewPass123!",
         });
 
-        Assert.Empty(errors);
+        Assert.True(result.IsSuccess);
+        Assert.Empty(result.Errors);
     }
 
     // ─── ResetPasswordAsync — негативні ─────────────────────────────────────
@@ -156,14 +157,15 @@ public sealed class PasswordResetServiceTests
 
         var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes("any-token"));
 
-        var errors = await sut.ResetPasswordAsync(new ResetPasswordDto
+        var result = await sut.ResetPasswordAsync(new ResetPasswordDto
         {
             Email = "nobody@example.com",
             Token = encodedToken,
             NewPassword = "NewPass123!",
         });
 
-        Assert.NotEmpty(errors);
+        Assert.True(result.IsFailure);
+        Assert.NotEmpty(result.Errors);
 
         userManagerMock.Verify(
             m => m.ResetPasswordAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>(), It.IsAny<string>()),
@@ -176,14 +178,15 @@ public sealed class PasswordResetServiceTests
         var userManagerMock = CreateUserManagerMock();
         var sut = CreateSut(userManagerMock, new Mock<IEmailSender>());
 
-        var errors = await sut.ResetPasswordAsync(new ResetPasswordDto
+        var result = await sut.ResetPasswordAsync(new ResetPasswordDto
         {
             Email = "user@example.com",
             Token = "!!!not-valid-base64!!!",
             NewPassword = "NewPass123!",
         });
 
-        Assert.NotEmpty(errors);
+        Assert.True(result.IsFailure);
+        Assert.NotEmpty(result.Errors);
     }
 
     [Fact]
@@ -204,15 +207,16 @@ public sealed class PasswordResetServiceTests
 
         var sut = CreateSut(userManagerMock, new Mock<IEmailSender>());
 
-        var errors = await sut.ResetPasswordAsync(new ResetPasswordDto
+        var result = await sut.ResetPasswordAsync(new ResetPasswordDto
         {
             Email = "expired@example.com",
             Token = encodedToken,
             NewPassword = "AnyPass123!",
         });
 
-        Assert.Single(errors);
-        Assert.Contains("Invalid token.", errors);
+        Assert.True(result.IsFailure);
+        Assert.Single(result.Errors);
+        Assert.Contains("Invalid token.", result.Errors);
     }
 
     [Fact]
@@ -233,16 +237,17 @@ public sealed class PasswordResetServiceTests
 
         var sut = CreateSut(userManagerMock, new Mock<IEmailSender>());
 
-        var errors = await sut.ResetPasswordAsync(new ResetPasswordDto
+        var result = await sut.ResetPasswordAsync(new ResetPasswordDto
         {
             Email = "weak@example.com",
             Token = encodedToken,
             NewPassword = "123",
         });
 
-        Assert.Equal(2, errors.Count);
-        Assert.Contains("Password too short.", errors);
-        Assert.Contains("Password requires uppercase.", errors);
+        Assert.True(result.IsFailure);
+        Assert.Equal(2, result.Errors.Count);
+        Assert.Contains("Password too short.", result.Errors);
+        Assert.Contains("Password requires uppercase.", result.Errors);
     }
 
     // ─── Хелпери ────────────────────────────────────────────────────────────

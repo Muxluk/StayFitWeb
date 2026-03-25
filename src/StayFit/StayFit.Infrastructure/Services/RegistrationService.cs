@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using StayFit.Application.Common;
 using StayFit.Application.DTOs;
 using StayFit.Application.Interfaces;
 using StayFit.Domain.Entities;
@@ -14,7 +15,7 @@ public sealed class RegistrationService(
     ILogger<RegistrationService> logger)
     : IRegistrationService
 {
-    public async Task<RegisterUserResultDto> RegisterAsync(
+    public async Task<Result<int>> RegisterAsync(
         RegisterUserRequestDto request,
         CancellationToken cancellationToken = default)
     {
@@ -35,11 +36,7 @@ public sealed class RegistrationService(
                 request.Email,
                 string.Join("; ", errors));
 
-            return new RegisterUserResultDto
-            {
-                Succeeded = false,
-                Errors = errors,
-            };
+            return Result<int>.Failure(errors);
         }
 
         // Create corresponding DomainUser
@@ -57,10 +54,6 @@ public sealed class RegistrationService(
             user.Id,
             domainUser.Id);
 
-        return new RegisterUserResultDto
-        {
-            Succeeded = true,
-            UserId = user.Id.ToString(),
-        };
+        return Result<int>.Success(user.Id);
     }
 }

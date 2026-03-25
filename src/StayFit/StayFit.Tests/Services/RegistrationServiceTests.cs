@@ -36,8 +36,8 @@ public sealed class RegistrationServiceTests
 
         var result = await sut.RegisterAsync(request);
 
-        Assert.True(result.Succeeded);
-        Assert.Equal("123", result.UserId);
+        Assert.True(result.IsSuccess);
+        Assert.Equal(123, result.Value);
         Assert.Empty(result.Errors);
     }
 
@@ -64,8 +64,8 @@ public sealed class RegistrationServiceTests
 
         var result = await sut.RegisterAsync(request);
 
-        Assert.False(result.Succeeded);
-        Assert.Null(result.UserId);
+        Assert.True(result.IsFailure);
+        Assert.Equal(default, result.Value);
         Assert.Equal(2, result.Errors.Count);
         Assert.Contains("Email is already taken.", result.Errors);
         Assert.Contains("Password is too weak.", result.Errors);
@@ -142,7 +142,7 @@ public sealed class RegistrationServiceTests
 
         var result = await sut.RegisterAsync(request);
 
-        Assert.False(result.Succeeded);
+        Assert.True(result.IsFailure);
         Assert.Equal(errors.Length, result.Errors.Count);
         foreach (var e in errors)
         {

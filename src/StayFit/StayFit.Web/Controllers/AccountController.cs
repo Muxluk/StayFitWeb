@@ -37,7 +37,7 @@ public class AccountController(
             Password = model.Password,
         });
 
-        if (!result.Succeeded)
+        if (result.IsFailure)
         {
             foreach (var error in result.Errors)
                 ModelState.AddModelError(string.Empty, error);
@@ -51,9 +51,9 @@ public class AccountController(
             Password = model.Password,
         });
 
-        if (loginResult.Succeeded)
+        if (loginResult.IsSuccess)
         {
-            var newUser = await userManager.FindByNameAsync(loginResult.UserName!);
+            var newUser = await userManager.FindByNameAsync(loginResult.Value!);
             await signInManager.SignInAsync(newUser!, isPersistent: false);
         }
 
@@ -82,14 +82,14 @@ public class AccountController(
             Password = model.Password,
         });
 
-        if (!result.Succeeded)
+        if (result.IsFailure)
         {
-            ModelState.AddModelError(string.Empty, result.Error ?? "Невірний email або пароль.");
+            ModelState.AddModelError(string.Empty, result.Errors.FirstOrDefault() ?? "Невірний email або пароль.");
             return View(model);
         }
 
         // Встановлюємо auth cookie через SignInManager (Web-шар)
-        var user = await userManager.FindByNameAsync(result.UserName!);
+        var user = await userManager.FindByNameAsync(result.Value!);
         await signInManager.SignInAsync(user!, isPersistent: false);
 
         if (!string.IsNullOrWhiteSpace(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
@@ -123,10 +123,18 @@ public class AccountController(
         if (!ModelState.IsValid)
             return View(model);
 
-        await passwordResetService.SendPasswordResetTokenAsync(new ForgotPasswordDto
+        var result = await passwordResetService.SendPasswordResetTokenAsync(new ForgotPasswordDto
         {
             Email = model.Email,
         });
+
+        if (result.IsFailure)
+        {
+            foreach (var error in result.Errors)
+                ModelState.AddModelError(string.Empty, error);
+
+            return View(model);
+        }
 
         return RedirectToAction(nameof(ForgotPasswordConfirmation));
     }
@@ -155,16 +163,16 @@ public class AccountController(
         if (!ModelState.IsValid)
             return View(model);
 
-        var errors = await passwordResetService.ResetPasswordAsync(new ResetPasswordDto
+        var result = await passwordResetService.ResetPasswordAsync(new ResetPasswordDto
         {
             Email = model.Email,
             Token = model.Token,
             NewPassword = model.NewPassword,
         });
 
-        if (errors.Count > 0)
+        if (result.IsFailure)
         {
-            foreach (var error in errors)
+            foreach (var error in result.Errors)
                 ModelState.AddModelError(string.Empty, error);
             return View(model);
         }
