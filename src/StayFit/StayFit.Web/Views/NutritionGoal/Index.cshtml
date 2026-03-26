@@ -4,10 +4,10 @@
     var goal = ViewBag.Goal as StayFit.Application.DTOs.NutritionGoalDto;
     var logs = ViewBag.CurrentNutrition as IEnumerable<StayFit.Domain.Entities.FoodLog>;
 
-    float curCalories = (float)(logs?.Sum(l => (double)(l.Food?.Calories ?? 0) * (l.Quantity / 100.0)) ?? 0);
-    float curProteins = (float)(logs?.Sum(l => (double)(l.Food?.Proteins ?? 0) * (l.Quantity / 100.0)) ?? 0);
-    float curFats = (float)(logs?.Sum(l => (double)(l.Food?.Fats ?? 0) * (l.Quantity / 100.0)) ?? 0);
-    float curCarbs = (float)(logs?.Sum(l => (double)(l.Food?.Carbohydrates ?? 0) * (l.Quantity / 100.0)) ?? 0);
+    float curCalories = (float)(logs?.Sum(l => (double)(l.Food?.CaloriesPer100g ?? 0) * (l.Quantity / 100.0)) ?? 0);
+    float curProteins = (float)(logs?.Sum(l => (double)(l.Food?.ProteinPer100g ?? 0) * (l.Quantity / 100.0)) ?? 0);
+    float curFats = (float)(logs?.Sum(l => (double)(l.Food?.FatPer100g ?? 0) * (l.Quantity / 100.0)) ?? 0);
+    float curCarbs = (float)(logs?.Sum(l => (double)(l.Food?.CarbsPer100g ?? 0) * (l.Quantity / 100.0)) ?? 0);
 }
 
 <div class="container mt-4">
