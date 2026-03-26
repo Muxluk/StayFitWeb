@@ -18,6 +18,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
     public DbSet<FoodLog> FoodLogs => Set<FoodLog>();
     public DbSet<UserProfile> UserProfiles => Set<UserProfile>();
     public DbSet<MealEntry> MealEntries { get; set; }
+    public DbSet<NutritionGoal> NutritionGoals => Set<NutritionGoal>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -50,6 +51,13 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
                 .WithMany(f => f.FoodLogs)
                 .HasForeignKey(fl => fl.FoodId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<NutritionGoal>(entity =>
+        {
+            entity.HasKey(ng => ng.Id);
+            entity.HasIndex(ng => ng.UserId).IsUnique();
+            entity.Property(ng => ng.UserId).IsRequired();
         });
 
         modelBuilder.Entity<UserProfile>(entity =>
