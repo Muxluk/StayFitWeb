@@ -37,7 +37,7 @@
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Profile" asp-action="View" title="Мій профіль">👤 @User.Identity.Name</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Profile" asp-action="Edit" title="Мій профіль">👤 @User.Identity.Name</a>
                             </li>
                             <li class="nav-item">
                                 <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">

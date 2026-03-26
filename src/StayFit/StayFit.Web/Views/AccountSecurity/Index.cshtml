@@ -1,0 +1,172 @@
+@using StayFit.Domain.Entities
+@using StayFit.Web.Controllers
+@model AccountSecurityViewModel
+
+@{
+    ViewData["Title"] = "Безпека акаунта";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <h1>Безпека акаунта</h1>
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <!-- Змінення пароля -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Змінення пароля</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="@Url.Action("ChangePassword")">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            <label for="currentPassword" class="form-label">Поточний пароль</label>
+                            <input type="password" class="form-control" name="CurrentPassword" id="currentPassword" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="newPassword" class="form-label">Новий пароль</label>
+                            <input type="password" class="form-control" name="NewPassword" id="newPassword" required minlength="8">
+                            <small class="form-text text-muted">Мінімум 8 символів</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label">Підтвердження пароля</label>
+                            <input type="password" class="form-control" name="ConfirmPassword" id="confirmPassword" required minlength="8">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Змінити пароль</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Активні сесії -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Активні сесії</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.ActiveSessions.Any())
+                    {
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>IP адреса</th>
+                                    <th>Пристрій</th>
+                                    <th>Дата</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var session in Model.ActiveSessions)
+                                {
+                                    <tr>
+                                        <td>@session.IpAddress</td>
+                                        <td>@session.UserAgent</td>
+                                        <td>@session.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+
+                        <form method="post" action="@Url.Action("LogoutAll")" style="display:inline;">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-warning btn-sm">Вийти зі всіх сесій</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Немає активних сесій</p>
+                    }
+                </div>
+            </div>
+
+            <!-- Видалення акаунта -->
+            <div class="card border-danger mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">Видалення акаунта</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-danger"><strong>Увага!</strong> Ця дія не можна відмінити. Усі ваші дані будуть видалені.</p>
+
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                        Видалити акаунт
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal для підтвердження видалення -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Підтвердження видалення</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="@Url.Action("DeleteAccount")">
+                @Html.AntiForgeryToken()
+
+                <div class="modal-body">
+                    <p>Ви впевнені, що хочете видалити свій акаунт?</p>
+                    <p class="text-danger"><strong>Ця дія не можна відмінити!</strong></p>
+
+                    <div class="mb-3">
+                        <label for="confirmationToken" class="form-label">
+                            Напишіть "ВИДАЛИТИ" для підтвердження
+                        </label>
+                        <input type="text" class="form-control" name="ConfirmationToken" id="confirmationToken" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
+                    <button type="submit" class="btn btn-danger">Видалити акаунт</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Валідація пароля
+        document.querySelector('form').addEventListener('submit', function (e) {
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (newPassword !== confirmPassword) {
+                e.preventDefault();
+                alert('Паролі не збігаються!');
+                return false;
+            }
+        });
+
+        // Валідація токена видалення
+        document.querySelector('form[action*="DeleteAccount"]')?.addEventListener('submit', function (e) {
+            const token = document.getElementById('confirmationToken').value.toUpperCase();
+            if (token !== 'ВИДАЛИТИ') {
+                e.preventDefault();
+                alert('Введіть точно "ВИДАЛИТИ"');
+                return false;
+            }
+        });
+    </script>
+}

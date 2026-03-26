@@ -1,3 +1,4 @@
+@using StayFit.Domain.Entities
 @model StayFit.Application.DTOs.UpdateUserProfileDto
 
 @{
@@ -6,158 +7,329 @@
 
 <div class="container mt-5 mb-5">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">👤 Мій профіль</h3>
+        <div class="col-md-10">
+            <!-- Успіх / Помилка повідомлення -->
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    ✅ @TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
-                <div class="card-body">
-                    @if (!ViewData.ModelState.IsValid)
-                    {
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <h5>⚠️ Помилки у формі:</h5>
-                            <ul class="mb-0">
-                                @foreach (var modelState in ViewData.ModelState.Values)
-                                {
-                                    @foreach (var error in modelState.Errors)
-                                    {
-                                        <li>@error.ErrorMessage</li>
-                                    }
-                                }
-                            </ul>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    ❌ @TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <!-- TABS для переключення між Профілем та Безпекою -->
+            <ul class="nav nav-tabs mb-4" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane" type="button" role="tab">
+                        👤 Мой профіль
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security-tab-pane" type="button" role="tab">
+                        🔐 Безпека акаунту
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <!-- TAB 1: ПРОФІЛЬ -->
+                <div class="tab-pane fade show active" id="profile-tab-pane" role="tabpanel">
+                    <div class="card shadow">
+                        <div class="card-header bg-primary text-white">
+                            <h3 class="mb-0">👤 Мій профіль</h3>
                         </div>
-                    }
-
-                    <form method="post" action="@Url.Action("Edit", "Profile")" novalidate>
-                        @Html.AntiForgeryToken()
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="FullName" class="form-label"><strong>Ім'я</strong> <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @(ViewData.ModelState["FullName"]?.Errors.Count > 0 ? "is-invalid" : "")" 
-                                       id="FullName" name="FullName" value="@(Model?.FullName ?? "")" 
-                                       placeholder="Введіть Ваше ім'я" required>
-                                @if (ViewData.ModelState["FullName"]?.Errors.Count > 0)
-                                {
-                                    <div class="invalid-feedback d-block">
-                                        @foreach (var error in ViewData.ModelState["FullName"]!.Errors)
+                        <div class="card-body">
+                            @if (!ViewData.ModelState.IsValid)
+                            {
+                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    <h5>⚠️ Помилки у формі:</h5>
+                                    <ul class="mb-0">
+                                        @foreach (var modelState in ViewData.ModelState.Values)
                                         {
-                                            @error.ErrorMessage
-                                        }
-                                    </div>
-                                }
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label for="Gender" class="form-label"><strong>Стать</strong></label>
-                                <select class="form-select @(ViewData.ModelState["Gender"]?.Errors.Count > 0 ? "is-invalid" : "")" 
-                                        id="Gender" name="Gender">
-                                    <option value="">-- Виберіть стать --</option>
-                                    @{
-                                        string[] genders = { "Чоловік", "Жінка", "Інше" };
-                                        foreach (var gender in genders)
-                                        {
-                                            if (Model?.Gender == gender)
+                                            @foreach (var error in modelState.Errors)
                                             {
-                                                <option value="@gender" selected>@gender</option>
-                                            }
-                                            else
-                                            {
-                                                <option value="@gender">@gender</option>
+                                                <li>@error.ErrorMessage</li>
                                             }
                                         }
-                                    }
-                                </select>
-                                @if (ViewData.ModelState["Gender"]?.Errors.Count > 0)
-                                {
-                                    <div class="invalid-feedback d-block">
-                                        @foreach (var error in ViewData.ModelState["Gender"]!.Errors)
-                                        {
-                                            @error.ErrorMessage
-                                        }
-                                    </div>
-                                }
-                            </div>
+                                    </ul>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            }
 
-                            <div class="col-md-6 mb-3">
-                                <label for="Weight" class="form-label"><strong>Вага</strong> (кг)</label>
-                                <input type="number" class="form-control @(ViewData.ModelState["Weight"]?.Errors.Count > 0 ? "is-invalid" : "")" 
-                                       id="Weight" name="Weight" value="@(Model?.Weight?.ToString("F1") ?? "")" 
-                                       placeholder="Введіть Вашу вагу" step="0.1" min="20" max="500">
-                                @if (ViewData.ModelState["Weight"]?.Errors.Count > 0)
-                                {
-                                    <div class="invalid-feedback d-block">
-                                        @foreach (var error in ViewData.ModelState["Weight"]!.Errors)
-                                        {
-                                            @error.ErrorMessage
-                                        }
-                                    </div>
-                                }
-                            </div>
+                            <form method="post" action="@Url.Action("Edit", "Profile")" novalidate>
+                                @Html.AntiForgeryToken()
 
-                            <div class="col-md-6 mb-3">
-                                <label for="Height" class="form-label"><strong>Зріст</strong> (см)</label>
-                                <input type="number" class="form-control @(ViewData.ModelState["Height"]?.Errors.Count > 0 ? "is-invalid" : "")" 
-                                       id="Height" name="Height" value="@(Model?.Height?.ToString("F0") ?? "")" 
-                                       placeholder="Введіть Ваш зріст" step="1" min="100" max="250">
-                                @if (ViewData.ModelState["Height"]?.Errors.Count > 0)
-                                {
-                                    <div class="invalid-feedback d-block">
-                                        @foreach (var error in ViewData.ModelState["Height"]!.Errors)
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="FullName" class="form-label"><strong>Ім'я</strong> <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control @(ViewData.ModelState["FullName"]?.Errors.Count > 0 ? "is-invalid" : "")" 
+                                               id="FullName" name="FullName" value="@(Model?.FullName ?? "")" 
+                                               placeholder="Введіть Ваше ім'я" required>
+                                        @if (ViewData.ModelState["FullName"]?.Errors.Count > 0)
                                         {
-                                            @error.ErrorMessage
+                                            <div class="invalid-feedback d-block">
+                                                @foreach (var error in ViewData.ModelState["FullName"]!.Errors)
+                                                {
+                                                    @error.ErrorMessage
+                                                }
+                                            </div>
                                         }
                                     </div>
-                                }
-                            </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label for="DateOfBirth" class="form-label"><strong>Дата народження</strong></label>
-                                <input type="date" class="form-control @(ViewData.ModelState["DateOfBirth"]?.Errors.Count > 0 ? "is-invalid" : "")" 
-                                       id="DateOfBirth" name="DateOfBirth" 
-                                       value="@(Model?.DateOfBirth?.ToString("yyyy-MM-dd") ?? "")">
-                                @if (ViewData.ModelState["DateOfBirth"]?.Errors.Count > 0)
-                                {
-                                    <div class="invalid-feedback d-block">
-                                        @foreach (var error in ViewData.ModelState["DateOfBirth"]!.Errors)
+                                    <div class="col-md-6 mb-3">
+                                        <label for="Gender" class="form-label"><strong>Стать</strong></label>
+                                        <select class="form-select @(ViewData.ModelState["Gender"]?.Errors.Count > 0 ? "is-invalid" : "")" 
+                                                id="Gender" name="Gender">
+                                            <option value="">-- Виберіть стать --</option>
+                                            @{
+                                                string[] genders = { "Чоловік", "Жінка", "Інше" };
+                                                foreach (var gender in genders)
+                                                {
+                                                    if (Model?.Gender == gender)
+                                                    {
+                                                        <option value="@gender" selected>@gender</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@gender">@gender</option>
+                                                    }
+                                                }
+                                            }
+                                        </select>
+                                        @if (ViewData.ModelState["Gender"]?.Errors.Count > 0)
                                         {
-                                            @error.ErrorMessage
+                                            <div class="invalid-feedback d-block">
+                                                @foreach (var error in ViewData.ModelState["Gender"]!.Errors)
+                                                {
+                                                    @error.ErrorMessage
+                                                }
+                                            </div>
                                         }
                                     </div>
-                                }
-                                <small class="text-muted">Необов'язково</small>
-                            </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="Weight" class="form-label"><strong>Вага</strong> (кг)</label>
+                                        <input type="number" class="form-control @(ViewData.ModelState["Weight"]?.Errors.Count > 0 ? "is-invalid" : "")" 
+                                               id="Weight" name="Weight" value="@(Model?.Weight?.ToString("F1") ?? "")" 
+                                               placeholder="Введіть Вашу вагу" step="0.1" min="20" max="500">
+                                        @if (ViewData.ModelState["Weight"]?.Errors.Count > 0)
+                                        {
+                                            <div class="invalid-feedback d-block">
+                                                @foreach (var error in ViewData.ModelState["Weight"]!.Errors)
+                                                {
+                                                    @error.ErrorMessage
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="Height" class="form-label"><strong>Зріст</strong> (см)</label>
+                                        <input type="number" class="form-control @(ViewData.ModelState["Height"]?.Errors.Count > 0 ? "is-invalid" : "")" 
+                                               id="Height" name="Height" value="@(Model?.Height?.ToString("F0") ?? "")" 
+                                               placeholder="Введіть Ваш зріст" step="1" min="100" max="250">
+                                        @if (ViewData.ModelState["Height"]?.Errors.Count > 0)
+                                        {
+                                            <div class="invalid-feedback d-block">
+                                                @foreach (var error in ViewData.ModelState["Height"]!.Errors)
+                                                {
+                                                    @error.ErrorMessage
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="DateOfBirth" class="form-label"><strong>Дата народження</strong></label>
+                                        <input type="date" class="form-control @(ViewData.ModelState["DateOfBirth"]?.Errors.Count > 0 ? "is-invalid" : "")" 
+                                               id="DateOfBirth" name="DateOfBirth" 
+                                               value="@(Model?.DateOfBirth?.ToString("yyyy-MM-dd") ?? "")">
+                                        @if (ViewData.ModelState["DateOfBirth"]?.Errors.Count > 0)
+                                        {
+                                            <div class="invalid-feedback d-block">
+                                                @foreach (var error in ViewData.ModelState["DateOfBirth"]!.Errors)
+                                                {
+                                                    @error.ErrorMessage
+                                                }
+                                            </div>
+                                        }
+                                        <small class="text-muted">Необов'язково</small>
+                                    </div>
+                                </div>
+
+                                <hr class="my-4">
+
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="bi bi-check-circle"></i> Зберегти профіль
+                                    </button>
+                                    <a href="@Url.Action("View", "Profile")" class="btn btn-secondary btn-lg">
+                                        <i class="bi bi-arrow-left"></i> Скасувати
+                                    </a>
+                                </div>
+                            </form>
                         </div>
+                    </div>
+                </div>
 
-                        <hr class="my-4">
+                <!-- TAB 2: БЕЗПЕКА -->
+                <div class="tab-pane fade" id="security-tab-pane" role="tabpanel">
+                    <div class="card shadow mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">Змінення пароля</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" action="@Url.Action("ChangePassword", "AccountSecurity")">
+                                @Html.AntiForgeryToken()
 
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-check-circle"></i> Зберегти профіль
+                                <div class="mb-3">
+                                    <label for="currentPassword" class="form-label">Поточний пароль</label>
+                                    <input type="password" class="form-control" name="CurrentPassword" id="currentPassword" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="newPassword" class="form-label">Новий пароль</label>
+                                    <input type="password" class="form-control" name="NewPassword" id="newPassword" required minlength="8">
+                                    <small class="form-text text-muted">Мінімум 8 символів</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="confirmPassword" class="form-label">Підтвердження пароля</label>
+                                    <input type="password" class="form-control" name="ConfirmPassword" id="confirmPassword" required minlength="8">
+                                </div>
+
+                                <button type="submit" class="btn btn-success">Змінити пароль</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card shadow mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">Активні сеанси</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>IP адреса</th>
+                                        <th>Пристрій (User Agent)</th>
+                                        <th>Час створення</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>127.0.0.1</td>
+                                        <td>Mozilla/5.0 (локальний розвиток)</td>
+                                        <td>@DateTime.Now.ToString("dd.MM.yyyy HH:mm")</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <form method="post" action="@Url.Action("LogoutAll", "AccountSecurity")" style="display:inline;">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-warning btn-sm">Вийти зі всіх сеансів</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card shadow border-danger">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0">Видалення акаунту</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-danger"><strong>⚠️ Увага!</strong> Цю дію не можна відмінити. Усі ваші дані будуть видалені.</p>
+
+                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                                Видалити акаунт
                             </button>
-                            <a href="@Url.Action("View", "Profile")" class="btn btn-secondary btn-lg">
-                                <i class="bi bi-arrow-left"></i> Скасувати
-                            </a>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<style>
-    .button-group {
-        display: flex;
-        gap: 10px;
-    }
+<!-- Modal для підтвердження видалення -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Підтвердження видалення акаунту</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="@Url.Action("DeleteAccount", "AccountSecurity")">
+                @Html.AntiForgeryToken()
 
-    .form-label {
-        font-weight: 500;
-    }
+                <div class="modal-body">
+                    <p>Ви впевнені, що хочете видалити свій акаунт?</p>
+                    <p class="text-danger"><strong>Ця дія не можна відмінити!</strong></p>
 
-    .text-danger {
-        color: #dc3545;
-    }
-</style>
+                    <div class="mb-3">
+                        <label for="confirmationToken" class="form-label">
+                            Напишіть "ВИДАЛИТИ" для підтвердження
+                        </label>
+                        <input type="text" class="form-control" name="ConfirmationToken" id="confirmationToken" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
+                    <button type="submit" class="btn btn-danger">Видалити акаунт</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Якщо є alert повідомлення про безпеку - активувати Security таб
+        @if (TempData["Success"] != null || TempData["Error"] != null)
+        {
+            <text>
+        document.addEventListener('DOMContentLoaded', function() {
+            const securityTab = document.getElementById('security-tab');
+            if (securityTab) {
+                const tab = new bootstrap.Tab(securityTab);
+                tab.show();
+            }
+        });
+            </text>
+        }
+
+        // Валідація пароля при зміні
+        const changePasswordForm = document.querySelector('form[action*="ChangePassword"]');
+        if (changePasswordForm) {
+            changePasswordForm.addEventListener('submit', function (e) {
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+
+                if (newPassword !== confirmPassword) {
+                    e.preventDefault();
+                    alert('Паролі не збігаються!');
+                    return false;
+                }
+            });
+        }
+
+        // Валідація токена видалення
+        const deleteForm = document.querySelector('form[action*="DeleteAccount"]');
+        if (deleteForm) {
+            deleteForm.addEventListener('submit', function (e) {
+                const token = document.getElementById('confirmationToken').value.toUpperCase();
+                if (token !== 'ВИДАЛИТИ') {
+                    e.preventDefault();
+                    alert('Введіть точно "ВИДАЛИТИ"');
+                    return false;
+                }
+            });
+        }
+    </script>
+}

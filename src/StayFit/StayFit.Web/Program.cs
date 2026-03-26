@@ -5,6 +5,7 @@ using StayFit.Application.Services;
 using StayFit.Infrastructure;
 using StayFit.Infrastructure.Data;
 using StayFit.Infrastructure.Identity;
+using StayFit.Infrastructure.Repositories;
 using StayFit.Web.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -56,6 +57,8 @@ builder.Services
 builder.Services.AddScoped<LoggingService>();
 builder.Services.AddScoped<IFoodService, FoodService>();
 builder.Services.AddScoped<MealService>();
+builder.Services.AddScoped<AccountSecurityService>();
+builder.Services.AddScoped<IAccountSecurityRepository, AccountSecurityRepository>();
 
 // ─── Build ──────────────────────────────────────────────────────────────────
 var app = builder.Build();
