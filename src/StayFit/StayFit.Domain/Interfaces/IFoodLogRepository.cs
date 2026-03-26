@@ -7,4 +7,5 @@ public interface IFoodLogRepository : IRepository<FoodLog>
     Task<IEnumerable<FoodLog>> GetByUserIdAsync(int userId);
     Task<IEnumerable<FoodLog>> GetByUserIdAndDateAsync(int userId, DateTime date);
     Task<IEnumerable<FoodLog>> GetByFoodIdAsync(int foodId);
+    Task<IEnumerable<FoodLog>> GetByUserIdAndDateRangeAsync(int userId, DateTime from, DateTime to);
 }

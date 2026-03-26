@@ -12,10 +12,13 @@ namespace StayFit.Web.Controllers;
 public class FoodController : Controller
 {
     private readonly IFoodService _foodService;
+    private readonly IUserRepository _userRepository;
     private readonly ILogger<FoodController> _logger;
-    public FoodController(IFoodService foodService, ILogger<FoodController> logger)
+
+    public FoodController(IFoodService foodService, IUserRepository userRepository, ILogger<FoodController> logger)
     {
         _foodService = foodService;
+        _userRepository = userRepository;
         _logger = logger;
     }
 
@@ -112,7 +115,33 @@ public class FoodController : Controller
             return Challenge();
         }
 
-        await _foodService.AddFoodToLogAsync(foodId, quantity, userEmail);
+        var user = await _userRepository.GetByEmailAsync(userEmail);
+
+        if (user == null)
+        {
+            user = new User
+            {
+                Email = userEmail,
+                Name = userEmail,
+                CreatedAt = DateTime.UtcNow,
+            };
+
+            await _userRepository.AddAsync(user);
+            _logger.LogInformation("Новий користувач створено: {Email}, ID: {UserId}", userEmail, user.Id);
+        }
+
+        var log = new FoodLog
+        {
+            UserId = user.Id,
+            FoodId = foodId,
+            AmountGrams = (float)quantity,
+            LoggedAt = DateTime.UtcNow,
+            UserEmail = userEmail,
+        };
+
+        await _foodService.AddFoodToLogAsync(user.Id, foodId, quantity.ToString());
+        _logger.LogInformation("Запис в лог їжі створено: UserId={UserId}, FoodId={FoodId}, Quantity={Quantity}",
+            user.Id, foodId, quantity);
 
         return RedirectToAction("Index", "Diary");
     }
