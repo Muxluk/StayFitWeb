@@ -28,6 +28,7 @@ public static class DependencyInjection
         services.AddScoped<IUserProfileRepository, UserProfileRepository>();
         services.AddScoped<IMealRepository, MealRepository>();
         services.AddScoped<IStatisticsRepository, StatisticsRepository>();
+        services.AddScoped<INutritionGoalRepository, NutritionGoalRepository>();
 
         // Services
         services.AddScoped<IRegistrationService, RegistrationService>();
@@ -36,6 +37,7 @@ public static class DependencyInjection
         services.AddScoped<IEmailSender, SmtpEmailSender>();
         services.AddScoped<IUserProfileService, UserProfileService>();
         services.AddScoped<IStatisticsService, StatisticsService>();
+        services.AddScoped<INutritionGoalService, NutritionGoalService>();
 
         return services;
     }

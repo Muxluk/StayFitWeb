@@ -1,0 +1,125 @@
+@model StayFit.Application.DTOs.SetNutritionGoalDto
+@{
+    ViewData["Title"] = "Мої цілі";
+    var goal = ViewBag.Goal as StayFit.Application.DTOs.NutritionGoalDto;
+    var logs = ViewBag.CurrentNutrition as IEnumerable<StayFit.Domain.Entities.FoodLog>;
+
+    float curCalories = (float)(logs?.Sum(l => (double)(l.Food?.Calories ?? 0) * (l.Quantity / 100.0)) ?? 0);
+    float curProteins = (float)(logs?.Sum(l => (double)(l.Food?.Proteins ?? 0) * (l.Quantity / 100.0)) ?? 0);
+    float curFats = (float)(logs?.Sum(l => (double)(l.Food?.Fats ?? 0) * (l.Quantity / 100.0)) ?? 0);
+    float curCarbs = (float)(logs?.Sum(l => (double)(l.Food?.Carbohydrates ?? 0) * (l.Quantity / 100.0)) ?? 0);
+}
+
+<div class="container mt-4">
+    <h2>🎯 Встановлення цілей харчування</h2>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    <div class="row mt-4">
+        <div class="col-md-5">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Редагувати цілі</h5>
+                    <form asp-action="Index" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="CaloriesGoal" class="form-label">Ціль калорій (ккал)</label>
+                            <input asp-for="CaloriesGoal" class="form-control" type="number" step="1" />
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="ProteinGoal" class="form-label">Білки (г)</label>
+                                <input asp-for="ProteinGoal" class="form-control" />
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="FatGoal" class="form-label">Жири (г)</label>
+                                <input asp-for="FatGoal" class="form-control" />
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="CarbsGoal" class="form-label">Вугл. (г)</label>
+                                <input asp-for="CarbsGoal" class="form-control" />
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Зберегти зміни</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Прогрес за сьогодні</h5>
+                    
+                    @{
+                    void RenderProgress(string label, float cur, float target, string unit)
+                    {
+                        var rawPercent = target > 0 ? (cur / target) * 100 : 0;
+                        var displayPercent = Math.Min(rawPercent, 100); 
+                        
+                        string colorClass;
+                        
+                        if (rawPercent < 50) 
+                        {
+                            colorClass = "bg-danger";
+                        }
+                        else if (rawPercent < 95) 
+                        {
+                            colorClass = "bg-warning";
+                        }
+                        else if (rawPercent <= 105) 
+                        {
+                            colorClass = "bg-success";
+                        }
+                        else if (rawPercent <= 110) 
+                        {
+                            colorClass = "bg-warning";
+                        }
+                        else 
+                        {
+                            colorClass = "bg-danger";
+                        }
+
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span><strong>@label:</strong> @cur.ToString("0") / @target.ToString("0") @unit</span>
+                                <span class="fw-bold" style="color: @(colorClass == "bg-danger" ? "#dc3545" : "inherit")">
+                                    @rawPercent.ToString("0")%
+                                </span>
+                            </div>
+                            <div class="progress" style="height: 22px; border-radius: 10px; background-color: #e9ecef;">
+                                <div class="progress-bar @colorClass shadow-sm" role="progressbar" 
+                                    style="width: @(displayPercent.ToString("0", System.Globalization.CultureInfo.InvariantCulture))%; transition: width 0.6s ease;" 
+                                    aria-valuenow="@displayPercent" aria-valuemin="0" aria-valuemax="100">
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+
+                    @if (goal != null)
+                    {
+                        RenderProgress("Калорії", curCalories, goal.CaloriesGoal, "ккал");
+                        RenderProgress("Білки", curProteins, goal.ProteinGoal, "г");
+                        RenderProgress("Жири", curFats, goal.FatGoal, "г");
+                        RenderProgress("Вуглеводи", curCarbs, goal.CarbsGoal, "г");
+                    }
+                    else
+                    {
+                        <p class="text-muted">Встановіть цілі, щоб бачити прогрес.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
