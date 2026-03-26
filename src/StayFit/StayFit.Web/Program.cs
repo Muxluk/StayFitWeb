@@ -56,6 +56,7 @@ builder.Services
 // ─── Application Services ───────────────────────────────────────────────────
 builder.Services.AddScoped<LoggingService>();
 builder.Services.AddScoped<IFoodService, FoodService>();
+builder.Services.AddScoped<IProductSearchService, ProductSearchService>();
 builder.Services.AddScoped<MealService>();
 builder.Services.AddScoped<AccountSecurityService>();
 builder.Services.AddScoped<IAccountSecurityRepository, AccountSecurityRepository>();

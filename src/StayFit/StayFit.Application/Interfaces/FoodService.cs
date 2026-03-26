@@ -130,14 +130,39 @@ public class FoodService : IFoodService
         return await _foodLogRepository!.GetByUserIdAndDateAsync(user.Id, date.Date);
     }
 
-    public async Task AddFoodToLogAsync(FoodLog log)
+    public async Task AddFoodToLogAsync(int foodId, double quantity, string userEmail)
     {
         EnsureFoodLogDependencies();
 
-        if (log == null)
+        if (string.IsNullOrWhiteSpace(userEmail))
         {
-            throw new ArgumentNullException(nameof(log));
+            throw new ArgumentNullException(nameof(userEmail));
         }
+
+        var user = await _userRepository!.GetByEmailAsync(userEmail);
+
+        if (user == null)
+        {
+            user = new User
+            {
+                Email = userEmail,
+                Name = userEmail,
+                CreatedAt = DateTime.UtcNow,
+            };
+
+            await _userRepository.AddAsync(user);
+            _logger.LogInformation("Новий користувач створено: {Email}, ID: {UserId}", userEmail, user.Id);
+        }
+
+        var log = new FoodLog
+        {
+            UserId = user.Id,
+            FoodId = foodId,
+            AmountGrams = (float)quantity,
+            Quantity = quantity,
+            LoggedAt = DateTime.UtcNow,
+            UserEmail = userEmail,
+        };
 
         _logger.LogInformation("Додавання запису в лог їжі. UserId: {UserId}, FoodId: {FoodId}", log.UserId, log.FoodId);
         await _foodLogRepository!.AddAsync(log);

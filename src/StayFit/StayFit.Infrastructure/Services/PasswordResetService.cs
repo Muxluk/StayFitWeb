@@ -89,16 +89,7 @@ public sealed class PasswordResetService(
             return Result.Failure("Невірний або прострочений запит на скидання пароля.");
         }
 
-        string decodedToken;
-        try
-        {
-            decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Token));
-        }
-        catch (FormatException ex)
-        {
-            logger.LogWarning(ex, "Password reset failed: invalid token format for email {Email}", request.Email);
-            return Result.Failure("Невірний або прострочений запит на скидання пароля.");
-        }
+        string decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Token));
 
         var result = await userManager.ResetPasswordAsync(user, decodedToken, request.NewPassword);
 

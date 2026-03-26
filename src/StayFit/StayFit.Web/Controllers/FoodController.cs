@@ -12,13 +12,10 @@ namespace StayFit.Web.Controllers;
 public class FoodController : Controller
 {
     private readonly IFoodService _foodService;
-    private readonly IUserRepository _userRepository;
     private readonly ILogger<FoodController> _logger;
-
-    public FoodController(IFoodService foodService, IUserRepository userRepository, ILogger<FoodController> logger)
+    public FoodController(IFoodService foodService, ILogger<FoodController> logger)
     {
         _foodService = foodService;
-        _userRepository = userRepository;
         _logger = logger;
     }
 
@@ -82,25 +79,12 @@ public class FoodController : Controller
 
         if (ModelState.IsValid)
         {
-            try
-            {
-                var userId = GetCurrentUserId();
+            var userId = GetCurrentUserId();
 
-                await _foodService.UpdateFoodAsync(food, userId);
-                _logger.LogInformation("Продукт з ID {FoodId} оновлено користувачем {UserId}", id, userId);
+            await _foodService.UpdateFoodAsync(food, userId);
+            _logger.LogInformation("Продукт з ID {FoodId} оновлено користувачем {UserId}", id, userId);
 
-                return RedirectToAction(nameof(Index));
-            }
-            catch (KeyNotFoundException)
-            {
-                _logger.LogWarning("Спроба редагувати неіснуючий продукт з ID {FoodId}", id);
-                return NotFound();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Помилка при редагуванні продукту з ID {FoodId}", id);
-                ModelState.AddModelError("", "Помилка при збереженні змін. Спробуйте ще раз.");
-            }
+            return RedirectToAction(nameof(Index));
         }
 
         return View(food);
@@ -112,16 +96,9 @@ public class FoodController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        try
-        {
-            var userId = GetCurrentUserId();
+        var userId = GetCurrentUserId();
 
-            await _foodService.DeleteFoodAsync(id, userId);
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
+        await _foodService.DeleteFoodAsync(id, userId);
 
         return RedirectToAction(nameof(Index));
     }
@@ -135,43 +112,9 @@ public class FoodController : Controller
             return Challenge();
         }
 
-        try
-        {
-            var user = await _userRepository.GetByEmailAsync(userEmail);
+        await _foodService.AddFoodToLogAsync(foodId, quantity, userEmail);
 
-            if (user == null)
-            {
-                user = new User
-                {
-                    Email = userEmail,
-                    Name = userEmail,
-                    CreatedAt = DateTime.UtcNow,
-                };
-
-                await _userRepository.AddAsync(user);
-                _logger.LogInformation("Новий користувач створено: {Email}, ID: {UserId}", userEmail, user.Id);
-            }
-
-            var log = new FoodLog
-            {
-                UserId = user.Id,
-                FoodId = foodId,
-                AmountGrams = (float)quantity,
-                LoggedAt = DateTime.Now.ToUniversalTime(),
-                UserEmail = userEmail,
-            };
-
-            await _foodService.AddFoodToLogAsync(log);
-            _logger.LogInformation("Запис в лог їжі створено: UserId={UserId}, FoodId={FoodId}, Quantity={Quantity}",
-                user.Id, foodId, quantity);
-
-            return RedirectToAction("Index", "Diary");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Помилка при додаванні запису в лог їжі для користувача {Email}", userEmail);
-            return BadRequest("Помилка при додаванні в раціон");
-        }
+        return RedirectToAction("Index", "Diary");
     }
 
     private int GetCurrentUserId()

@@ -18,31 +18,23 @@ public class LoggingService
     {
         _logger.LogInformation("Почато обробку даних: {Data}", data);
 
-        try
+        _logger.LogDebug("Перевірка вхідних даних");
+
+        if (string.IsNullOrEmpty(data))
         {
-            _logger.LogDebug("Перевірка вхідних даних");
-
-            if (string.IsNullOrEmpty(data))
-            {
-                _logger.LogWarning("Отримані порожні дані для обробки");
-                return "Помилка: дані порожні";
-            }
-
-            _logger.LogInformation("Дані успішно перевірені. Довжина: {Length}", data.Length);
-
-            // Симуляція асинхронної обробки
-            await Task.Delay(100);
-
-            var result = data.ToUpper();
-            _logger.LogInformation("Обробка завершена успішно. Результат: {Result}", result);
-
-            return result;
+            _logger.LogWarning("Отримані порожні дані для обробки");
+            return "Помилка: дані порожні";
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Помилка при обробці даних: {Data}", data);
-            throw;
-        }
+
+        _logger.LogInformation("Дані успішно перевірені. Довжина: {Length}", data.Length);
+
+        // Симуляція асинхронної обробки
+        await Task.Delay(100);
+
+        var result = data.ToUpper();
+        _logger.LogInformation("Обробка завершена успішно. Результат: {Result}", result);
+
+        return result;
     }
 
     public void LogApplicationEvent(string eventName, string details)

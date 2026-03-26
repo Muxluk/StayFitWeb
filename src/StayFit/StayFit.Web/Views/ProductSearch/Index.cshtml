@@ -1,0 +1,121 @@
+@model StayFit.Application.DTOs.PagedResult<StayFit.Domain.Entities.Food>
+@using StayFit.Domain.Enums
+
+@functions {
+    string TranslateCategory(FoodCategory cat) => cat switch {
+        FoodCategory.General => "Загальне",
+        FoodCategory.Meat => "М'ясо",
+        FoodCategory.Dairy => "Молочні продукти",
+        FoodCategory.Vegetables => "Овочі",
+        FoodCategory.Fruits => "Фрукти",
+        FoodCategory.Sweets => "Солодощі",
+        FoodCategory.Drinks => "Напої",
+        _ => cat.ToString()
+    };
+}
+
+@{
+    ViewData["Title"] = "Пошук продуктів";
+    var searchTerm = ViewBag.SearchTerm as string;
+    var categoryFilter = ViewBag.CategoryFilter as FoodCategory?;
+}
+
+<div class="container mt-4">
+    <h2>Пошук продуктів</h2>
+
+    <form method="get" asp-controller="ProductSearch" asp-action="Index" class="row g-3 mb-4 mt-2">
+        <div class="col-md-5">
+            <input type="text" name="searchTerm" class="form-control" placeholder="Пошук за назвою чи брендом..." value="@searchTerm" />
+        </div>
+        <div class="col-md-5">
+            <select name="category" class="form-select">
+                <option value="">Всі категорії</option>
+                @foreach (var cat in Enum.GetValues(typeof(FoodCategory)).Cast<FoodCategory>())
+                {
+                    if (categoryFilter == cat)
+                    {
+                        <option value="@cat" selected>@TranslateCategory(cat)</option>
+                    }
+                    else
+                    {
+                        <option value="@cat">@TranslateCategory(cat)</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Шукати</button>
+        </div>
+    </form>
+
+    @if (Model == null || !Model.Items.Any())
+    {
+        <div class="alert alert-warning">
+            Нічого не знайдено.
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            @foreach (var item in Model.Items)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        @if (!string.IsNullOrEmpty(item.ImageUrl))
+                        {
+                            <img src="@item.ImageUrl" class="card-img-top" alt="@item.Name" style="max-height: 200px; object-fit: cover;">
+                        }
+                        
+                        <div class="card-body">
+                            <h5 class="card-title">@item.Name</h5>
+                            @if (!string.IsNullOrEmpty(item.Brand))
+                            {
+                                <h6 class="card-subtitle mb-2 text-muted">@item.Brand</h6>
+                            }
+                            @if (item.IsVerified)
+                            {
+                                <span class="badge bg-success mb-2">Підтверджено</span>
+                            }
+                            
+                            <p class="card-text mb-1">
+                                <small class="text-muted">Категорія:</small> <strong>@TranslateCategory(item.Category)</strong><br/>
+                                <small class="text-muted">Ккал/100г:</small> <strong>@item.CaloriesPer100g</strong><br/>
+                                <small class="text-muted">Б/Ж/В:</small> @item.ProteinPer100g / @item.FatPer100g / @item.CarbsPer100g
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <form asp-controller="Food" asp-action="AddToLog" method="post" class="d-flex">
+                                <input type="hidden" name="foodId" value="@item.Id" />
+                                <input type="number" name="quantity" class="form-control form-control-sm me-2" placeholder="Вага (г)" value="100" min="1" required />
+                                <button type="submit" class="btn btn-outline-success btn-sm w-100">В щоденник</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Пагінація -->
+        @if (Model.TotalPages > 1)
+        {
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item @(Model.PageNumber == 1 ? "disabled" : "")">
+                        <a class="page-link" asp-route-searchTerm="@searchTerm" asp-route-category="@categoryFilter" asp-route-page="@(Model.PageNumber - 1)">Попередня</a>
+                    </li>
+                    
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(Model.PageNumber == i ? "active" : "")">
+                            <a class="page-link" asp-route-searchTerm="@searchTerm" asp-route-category="@categoryFilter" asp-route-page="@i">@i</a>
+                        </li>
+                    }
+
+                    <li class="page-item @(Model.PageNumber == Model.TotalPages ? "disabled" : "")">
+                        <a class="page-link" asp-route-searchTerm="@searchTerm" asp-route-category="@categoryFilter" asp-route-page="@(Model.PageNumber + 1)">Наступна</a>
+                    </li>
+                </ul>
+            </nav>
+        }
+    }
+</div>

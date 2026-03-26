@@ -61,10 +61,10 @@
                             <tr>
                                 <td class="ps-3">@log.Food?.Name</td>
                                 <td>@log.Quantity г</td>
-                                <td>@((log.Food?.Calories * log.Quantity / 100)?.ToString("F0"))</td>
-                                <td>@((log.Food?.Proteins * log.Quantity / 100)?.ToString("F1"))</td>
-                                <td>@((log.Food?.Fats * log.Quantity / 100)?.ToString("F1"))</td>
-                                <td>@((log.Food?.Carbohydrates * log.Quantity / 100)?.ToString("F1"))</td>
+                                <td>@((log.Food?.CaloriesPer100g * log.Quantity / 100)?.ToString("F0"))</td>
+                                <td>@((log.Food?.ProteinPer100g * log.Quantity / 100)?.ToString("F1"))</td>
+                                <td>@((log.Food?.FatPer100g * log.Quantity / 100)?.ToString("F1"))</td>
+                                <td>@((log.Food?.CarbsPer100g * log.Quantity / 100)?.ToString("F1"))</td>
                                 <td>
                                     <button class="btn btn-link btn-sm text-danger p-0">Видалити</button>
                                 </td>

@@ -315,7 +315,7 @@ public class AccountSecurityServiceTests
     // ────────────────────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task ChangePasswordAsync_WhenExceptionThrown_ReturnsFail()
+    public async Task ChangePasswordAsync_WhenExceptionThrown_Throws()
     {
         // Arrange
         var userId = 1;
@@ -327,12 +327,7 @@ public class AccountSecurityServiceTests
             .Setup(r => r.ChangePasswordAsync(userId, currentPassword, newPassword))
             .ThrowsAsync(new InvalidOperationException("Database error"));
 
-        // Act
-        var result = await _service.ChangePasswordAsync(userId, currentPassword, newPassword, confirmPassword);
-
-        // Assert
-        Assert.IsType<Result<bool>.Failure>(result);
-        var failure = (Result<bool>.Failure)result;
-        Assert.Equal("INTERNAL_ERROR", failure.ErrorCode);
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.ChangePasswordAsync(userId, currentPassword, newPassword, confirmPassword));
     }
 }

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using StayFit.Domain.Entities;
+using StayFit.Domain.Enums;
 using StayFit.Domain.Interfaces;
 using StayFit.Infrastructure.Data;
 
@@ -22,8 +23,35 @@ public class FoodRepository : Repository<Food>, IFoodRepository
         await DbSet
             .FirstOrDefaultAsync(f => f.Id == id && f.OwnerUserId == ownerUserId);
 
-    public async Task<IEnumerable<Food>> SearchByNameAsync(string name) =>
-        await DbSet
-            .Where(f => f.Name.Contains(name, StringComparison.OrdinalIgnoreCase))
+    // Пошук з пагінацією та фільтрацією за категорією
+    public async Task<(IEnumerable<Food> Items, int TotalCount)> SearchAsync(string? searchTerm, FoodCategory? category, int page, int pageSize, int userId)
+    {
+
+        var query = DbSet.Where(f => f.OwnerUserId == userId || f.OwnerUserId == 0).AsQueryable();
+
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            query = query.Where(f => EF.Functions.ILike(f.Name, $"%{searchTerm}%") ||
+                                     (f.Brand != null && EF.Functions.ILike(f.Brand, $"%{searchTerm}%")));
+        }
+
+
+        if (category.HasValue)
+        {
+            query = query.Where(f => f.Category == category.Value);
+        }
+
+
+        var totalCount = await query.CountAsync();
+
+
+        var items = await query
+            .OrderBy(f => f.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
+
+        return (items, totalCount);
+    }
 }

@@ -25,7 +25,7 @@
             <tr>
                 <td>@log.Food.Name</td>
                 <td>@log.Quantity</td>
-                <td>@(log.Food.Calories * log.Quantity / 100)</td>
+                <td>@(log.Food.CaloriesPer100g * log.Quantity / 100)</td>
                 <td>
                     <form asp-action="DeleteEntry" asp-route-id="@log.Id" method="post">
                         <button type="submit" class="btn btn-danger btn-sm">Видалити</button>
@@ -37,7 +37,7 @@
 </table>
 
 <div class="alert alert-info">
-    <strong>Всього калорій:</strong> @Model.Sum(x => x.Food.Calories * x.Quantity / 100)
+    <strong>Всього калорій:</strong> @Model.Sum(x => x.Food.CaloriesPer100g * x.Quantity / 100)
 </div>
 
 <a asp-controller="Food" asp-action="Index" class="btn btn-success">Додати їжу</a>
