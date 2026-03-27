@@ -114,7 +114,7 @@ public class FoodController : Controller
         {
             return Challenge();
         }
-
+        await _foodService.AddFoodToLogAsync(foodId, quantity, userEmail);
         var user = await _userRepository.GetByEmailAsync(userEmail);
 
         if (user == null)
