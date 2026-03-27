@@ -38,6 +38,7 @@ public static class DependencyInjection
         services.AddScoped<IUserProfileService, UserProfileService>();
         services.AddScoped<IStatisticsService, StatisticsService>();
         services.AddScoped<INutritionGoalService, NutritionGoalService>();
+        services.AddScoped<IExportService, ExportService>();
 
         return services;
     }

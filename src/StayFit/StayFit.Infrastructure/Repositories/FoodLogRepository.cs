@@ -44,4 +44,16 @@ public class FoodLogRepository : Repository<FoodLog>, IFoodLogRepository
         await DbSet
             .Where(fl => fl.FoodId == foodId)
             .ToListAsync();
+
+    public async Task<IEnumerable<FoodLog>> GetByUserIdAndDateRangeAsync(int userId, DateTime from, DateTime to)
+    {
+        var fromUtc = DateTime.SpecifyKind(from.Date, DateTimeKind.Local).ToUniversalTime();
+        var toUtc = DateTime.SpecifyKind(to.Date.AddDays(1), DateTimeKind.Local).ToUniversalTime();
+
+        return await DbSet
+            .Include(fl => fl.Food)
+            .Where(fl => fl.UserId == userId && fl.LoggedAt >= fromUtc && fl.LoggedAt < toUtc)
+            .OrderBy(fl => fl.LoggedAt)
+            .ToListAsync();
+    }
 }
