@@ -17,8 +17,17 @@ public interface IAdminUserRepository
         int userId,
         CancellationToken cancellationToken = default);
 
+    Task<(bool Succeeded, IReadOnlyList<string> Errors)> UnblockUserAsync(
+        int userId,
+        CancellationToken cancellationToken = default);
+
     Task<(bool Succeeded, IReadOnlyList<string> Errors)> ResetPasswordAsync(
         int userId,
         string newPassword,
+        CancellationToken cancellationToken = default);
+
+    Task<(bool Succeeded, IReadOnlyList<string> Errors)> UpdateUserAsync(
+        int userId,
+        AdminUpdateUserRequestDto request,
         CancellationToken cancellationToken = default);
 }

@@ -17,8 +17,17 @@ public interface IAdminUserService
         int userId,
         CancellationToken cancellationToken = default);
 
+    Task<Result> UnblockUserAsync(
+        int userId,
+        CancellationToken cancellationToken = default);
+
     Task<Result> ResetPasswordAsync(
         int userId,
         string newPassword,
+        CancellationToken cancellationToken = default);
+
+    Task<Result> UpdateUserAsync(
+        int userId,
+        AdminUpdateUserRequestDto request,
         CancellationToken cancellationToken = default);
 }

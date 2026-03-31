@@ -32,4 +32,33 @@ public sealed class AdminUserDetailsViewModel
 {
     public AdminUserDetailsDto? User { get; set; }
     public AdminResetPasswordViewModel ResetPassword { get; set; } = new();
+    public AdminUpdateUserViewModel UpdateUser { get; set; } = new();
+}
+
+public sealed class AdminUpdateUserViewModel
+{
+    [Required(ErrorMessage = "Вкажіть ім'я користувача")]
+    [Display(Name = "Ім'я користувача")]
+    public string UserName { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Вкажіть email")]
+    [EmailAddress(ErrorMessage = "Некоректний email")]
+    [Display(Name = "Email")]
+    public string Email { get; set; } = string.Empty;
+
+    [Display(Name = "Повне ім'я")]
+    public string? FullName { get; set; }
+
+    [Display(Name = "Дата народження")]
+    [DataType(DataType.Date)]
+    public DateOnly? DateOfBirth { get; set; }
+
+    [Display(Name = "Стать")]
+    public string? Gender { get; set; }
+
+    [Display(Name = "Вага (кг)")]
+    public decimal? Weight { get; set; }
+
+    [Display(Name = "Зріст (см)")]
+    public decimal? Height { get; set; }
 }
