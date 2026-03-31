@@ -1,10 +1,7 @@
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using StayFit.Application.Common;
 using StayFit.Application.DTOs;
 using StayFit.Application.Interfaces;
-using StayFit.Infrastructure.Identity;
 
 namespace StayFit.Infrastructure.Services;
 
@@ -12,7 +9,7 @@ namespace StayFit.Infrastructure.Services;
 /// Адмін-сервіс для керування обліковими записами користувачів.
 /// </summary>
 public sealed class AdminUserService(
-    UserManager<ApplicationUser> userManager,
+    IAdminUserRepository adminUserRepository,
     ILogger<AdminUserService> logger)
     : IAdminUserService
 {
@@ -25,34 +22,13 @@ public sealed class AdminUserService(
             request.UserId,
             request.Email);
 
-        var query = userManager.Users.AsNoTracking();
-
-        if (request.UserId.HasValue)
-        {
-            query = query.Where(u => u.Id == request.UserId.Value);
-        }
-
-        if (!string.IsNullOrWhiteSpace(request.Email))
-        {
-            var email = request.Email.Trim().ToLowerInvariant();
-            query = query.Where(u => u.Email != null && u.Email.ToLower().Contains(email));
-        }
-
-        var users = await query
-            .OrderBy(u => u.Id)
-            .Take(100)
-            .Select(u => new AdminUserListItemDto
-            {
-                UserId = u.Id,
-                UserName = u.UserName ?? string.Empty,
-                Email = u.Email ?? string.Empty,
-                IsLocked = u.LockoutEnd.HasValue && u.LockoutEnd > DateTimeOffset.UtcNow,
-                LockoutEnd = u.LockoutEnd,
-            })
-            .ToListAsync(cancellationToken);
+        var users = await adminUserRepository.SearchUsersAsync(
+            request.UserId,
+            request.Email,
+            cancellationToken);
 
         logger.LogInformation("Admin user search completed. Found {Count} users", users.Count);
-        return users;
+        return Result<IReadOnlyList<AdminUserListItemDto>>.Success(users);
     }
 
     public async Task<Result<AdminUserDetailsDto>> GetUserDetailsAsync(
@@ -61,19 +37,7 @@ public sealed class AdminUserService(
     {
         logger.LogInformation("Admin requested user details for userId={UserId}", userId);
 
-        var user = await userManager.Users
-            .AsNoTracking()
-            .Where(u => u.Id == userId)
-            .Select(u => new AdminUserDetailsDto
-            {
-                UserId = u.Id,
-                UserName = u.UserName ?? string.Empty,
-                Email = u.Email ?? string.Empty,
-                IsLocked = u.LockoutEnd.HasValue && u.LockoutEnd > DateTimeOffset.UtcNow,
-                LockoutEnd = u.LockoutEnd,
-                AccessFailedCount = u.AccessFailedCount,
-            })
-            .SingleOrDefaultAsync(cancellationToken);
+        var user = await adminUserRepository.GetUserDetailsAsync(userId, cancellationToken);
 
         if (user is null)
         {
@@ -81,7 +45,7 @@ public sealed class AdminUserService(
             return Result<AdminUserDetailsDto>.Failure("Користувача не знайдено");
         }
 
-        return user;
+        return Result<AdminUserDetailsDto>.Success(user);
     }
 
     public async Task<Result> BlockUserAsync(
@@ -90,18 +54,9 @@ public sealed class AdminUserService(
     {
         logger.LogInformation("Admin requested block for userId={UserId}", userId);
 
-        var user = await userManager.FindByIdAsync(userId.ToString());
-        if (user is null)
+        var (succeeded, errors) = await adminUserRepository.BlockUserAsync(userId, cancellationToken);
+        if (!succeeded)
         {
-            logger.LogWarning("Admin block failed: userId={UserId} not found", userId);
-            return Result.Failure("Користувача не знайдено");
-        }
-
-        user.LockoutEnabled = true;
-        var lockoutResult = await userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddYears(100));
-        if (!lockoutResult.Succeeded)
-        {
-            var errors = lockoutResult.Errors.Select(e => e.Description).ToArray();
             logger.LogWarning(
                 "Admin block failed for userId={UserId}. Errors: {Errors}",
                 userId,
@@ -125,27 +80,15 @@ public sealed class AdminUserService(
             return Result.Failure("Новий пароль обов'язковий");
         }
 
-        var user = await userManager.FindByIdAsync(userId.ToString());
-        if (user is null)
+        var (succeeded, errors) = await adminUserRepository.ResetPasswordAsync(userId, newPassword, cancellationToken);
+        if (!succeeded)
         {
-            logger.LogWarning("Admin password reset failed: userId={UserId} not found", userId);
-            return Result.Failure("Користувача не знайдено");
-        }
-
-        var token = await userManager.GeneratePasswordResetTokenAsync(user);
-        var resetResult = await userManager.ResetPasswordAsync(user, token, newPassword);
-
-        if (!resetResult.Succeeded)
-        {
-            var errors = resetResult.Errors.Select(e => e.Description).ToArray();
             logger.LogWarning(
                 "Admin password reset failed for userId={UserId}. Errors: {Errors}",
                 userId,
                 string.Join("; ", errors));
             return Result.Failure(errors);
         }
-
-        await userManager.ResetAccessFailedCountAsync(user);
 
         logger.LogInformation("Admin password reset succeeded for userId={UserId}", userId);
         return Result.Success();
