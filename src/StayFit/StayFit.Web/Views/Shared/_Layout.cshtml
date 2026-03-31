@@ -28,8 +28,6 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Food" asp-action="Index">Мої продукти</a>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Food" asp-action="Index">Продукти</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Diary" asp-action="Index">Мій щоденник</a>
@@ -41,8 +39,14 @@
                             <a class="nav-link text-dark" asp-controller="NutritionGoal" asp-action="Index">Мої цілі</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Export" asp-action="Index">📤 Експорт</a>
+                            <a class="nav-link text-dark" asp-controller="Export" asp-action="Index">Експорт</a>
                         </li>
+                        @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="AdminUser" asp-action="Index">Керування користувачами</a>
+                            </li>
+                        }
                     </ul>
                     <ul class="navbar-nav">
                         @if (User.Identity?.IsAuthenticated == true)

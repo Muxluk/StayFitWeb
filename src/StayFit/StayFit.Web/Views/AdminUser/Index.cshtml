@@ -1,0 +1,107 @@
+@model StayFit.Web.Models.AdminUserSearchViewModel
+
+@{
+    ViewData["Title"] = "Користувачі";
+}
+
+<div class="container mt-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h2 class="mb-0">Керування користувачами</h2>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" asp-action="Index" asp-controller="AdminUser" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label asp-for="UserId" class="form-label"></label>
+                    <input asp-for="UserId" class="form-control" placeholder="Напр. 12" />
+                    <span asp-validation-for="UserId" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-5">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control" placeholder="user@example.com" />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Пошук</button>
+                    <a asp-action="Index" asp-controller="AdminUser" class="btn btn-outline-secondary">Скинути</a>
+                </div>
+            </form>
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger mt-3 mb-0">
+                    <ul class="mb-0">
+                        @foreach (var modelState in ViewData.ModelState.Values)
+                        {
+                            foreach (var error in modelState.Errors)
+                            {
+                                <li>@error.ErrorMessage</li>
+                            }
+                        }
+                    </ul>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Логін</th>
+                            <th>Email</th>
+                            <th>Статус</th>
+                            <th>Lockout End</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Users.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">Немає результатів. Введіть ID або Email для пошуку.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var user in Model.Users)
+                            {
+                                <tr>
+                                    <td>@user.UserId</td>
+                                    <td>@user.UserName</td>
+                                    <td>@user.Email</td>
+                                    <td>
+                                        @if (user.IsLocked)
+                                        {
+                                            <span class="badge bg-danger">Заблокований</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success">Активний</span>
+                                        }
+                                    </td>
+                                    <td>@(user.LockoutEnd?.ToLocalTime().ToString("dd.MM.yyyy HH:mm") ?? "-")</td>
+                                    <td class="text-end">
+                                        <a asp-action="Details" asp-controller="AdminUser" asp-route-userId="@user.UserId" class="btn btn-sm btn-outline-primary">
+                                            Керувати
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

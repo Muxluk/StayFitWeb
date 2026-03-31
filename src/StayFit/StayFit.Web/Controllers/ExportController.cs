@@ -6,7 +6,7 @@ using StayFit.Web.Models;
 namespace StayFit.Web.Controllers;
 
 [Authorize]
-public class ExportController : Controller
+public class ExportController : BaseController
 {
     private readonly IExportService _exportService;
 
@@ -28,7 +28,7 @@ public class ExportController : Controller
         if (!ModelState.IsValid)
             return View("Index", model);
 
-        var userEmail = User.Identity?.Name ?? string.Empty;
+        var userEmail = GetCurrentUserEmailOrEmpty();
 
         var result = await _exportService.ExportFoodLogsAsync(
             userEmail,
@@ -36,16 +36,12 @@ public class ExportController : Controller
             model.To,
             model.Format);
 
-        if (result.IsFailure)
-        {
-            var failure = (StayFit.Domain.Results.Result<StayFit.Application.Interfaces.ExportResult>.Failure)result;
-            ModelState.AddModelError(string.Empty, failure.ErrorMessage);
-            return View("Index", model);
-        }
-
-        var success = (StayFit.Domain.Results.Result<StayFit.Application.Interfaces.ExportResult>.Success)result;
-        var export = success.Data;
-
-        return File(export.FileBytes, export.ContentType, export.FileName);
+        return MatchResult(result,
+            export => File(export.FileBytes, export.ContentType, export.FileName),
+            failure =>
+            {
+                ModelState.AddModelError(string.Empty, failure.ErrorMessage);
+                return View("Index", model);
+            });
     }
 }

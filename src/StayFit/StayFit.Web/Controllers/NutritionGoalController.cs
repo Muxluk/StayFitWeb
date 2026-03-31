@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StayFit.Application.DTOs;
@@ -8,7 +7,7 @@ namespace StayFit.Web.Controllers;
 
 [Authorize]
 [Route("nutrition-goal")]
-public class NutritionGoalController : Controller
+public class NutritionGoalController : BaseController
 {
     private readonly INutritionGoalService _nutritionGoalService;
     private readonly IFoodService _foodService;
@@ -24,8 +23,8 @@ public class NutritionGoalController : Controller
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        var userEmail = User.Identity?.Name ?? "";
+        var userId = GetRequiredCurrentUserId().ToString();
+        var userEmail = GetCurrentUserEmailOrEmpty();
 
         var goalResult = await _nutritionGoalService.GetGoalAsync(userId);
         var logs = await _foodService.GetDailyLogAsync(userEmail, DateTime.Today);
@@ -49,7 +48,7 @@ public class NutritionGoalController : Controller
     {
         if (!ModelState.IsValid) return await Index(); 
 
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var userId = GetRequiredCurrentUserId().ToString();
         var result = await _nutritionGoalService.SetGoalAsync(userId, dto);
 
         if (result.IsSuccess)

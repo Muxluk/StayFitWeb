@@ -64,6 +64,9 @@ builder.Services.AddScoped<IAccountSecurityRepository, AccountSecurityRepository
 // ─── Build ──────────────────────────────────────────────────────────────────
 var app = builder.Build();
 
+await IdentityRoleSeeder.SeedRolesAsync(app.Services);
+await IdentityRoleSeeder.SeedAdminUserAsync(app.Services, app.Configuration);
+
 // ─── Exception Handler ──────────────────────────────────────────────────────
 app.UseExceptionHandler();
 

@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -9,7 +8,7 @@ using StayFit.Domain.Interfaces;
 namespace StayFit.Web.Controllers;
 
 [Authorize]
-public class FoodController : Controller
+public class FoodController : BaseController
 {
     private readonly IFoodService _foodService;
     private readonly IUserRepository _userRepository;
@@ -26,7 +25,7 @@ public class FoodController : Controller
     [AllowAnonymous]
     public async Task<IActionResult> Index()
     {
-        var userId = GetCurrentUserId();
+        var userId = GetCurrentUserIdOrDefault();
         var foods = await _foodService.GetAllFoodsAsync(userId);
 
         return View(foods);
@@ -45,7 +44,7 @@ public class FoodController : Controller
     {
         if (ModelState.IsValid)
         {
-            var userId = GetCurrentUserId();
+            var userId = GetCurrentUserIdOrDefault();
             food.CreatedByEmail = User.Identity?.Name;
 
             await _foodService.AddFoodAsync(food, userId);
@@ -59,7 +58,7 @@ public class FoodController : Controller
     // GET: Food/Edit/5
     public async Task<IActionResult> Edit(int id)
     {
-        var userId = GetCurrentUserId();
+        var userId = GetCurrentUserIdOrDefault();
         var food = await _foodService.GetFoodByIdAsync(id, userId);
 
         if (food == null)
@@ -82,7 +81,7 @@ public class FoodController : Controller
 
         if (ModelState.IsValid)
         {
-            var userId = GetCurrentUserId();
+            var userId = GetCurrentUserIdOrDefault();
 
             await _foodService.UpdateFoodAsync(food, userId);
             _logger.LogInformation("Продукт з ID {FoodId} оновлено користувачем {UserId}", id, userId);
@@ -99,7 +98,7 @@ public class FoodController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        var userId = GetCurrentUserId();
+        var userId = GetCurrentUserIdOrDefault();
 
         await _foodService.DeleteFoodAsync(id, userId);
 
@@ -146,10 +145,4 @@ public class FoodController : Controller
         return RedirectToAction("Index", "Diary");
     }
 
-    private int GetCurrentUserId()
-    {
-        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        return int.TryParse(userIdStr, out var userId) ? userId : 0;
-    }
 }
