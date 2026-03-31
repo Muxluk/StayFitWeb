@@ -36,6 +36,8 @@ public sealed class Result<T> : Result
     public static Result<T> Success(T value) =>
         new(true, value, Array.Empty<string>());
 
+    public static implicit operator Result<T>(T value) => Success(value);
+
     public new static Result<T> Failure(params string[] errors) =>
         new(false, default, errors.Length == 0 ? ["Operation failed."] : errors);
 
