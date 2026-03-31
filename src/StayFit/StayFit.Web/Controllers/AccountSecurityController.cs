@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -16,7 +15,7 @@ namespace StayFit.Web.Controllers;
 [Authorize]
 [Route("account/security")]
 [ApiExplorerSettings(IgnoreApi = true)]
-public class AccountSecurityController : Controller
+public class AccountSecurityController : BaseController
 {
     private readonly AccountSecurityService _accountSecurityService;
     private readonly ILogger<AccountSecurityController> _logger;
@@ -60,15 +59,15 @@ public class AccountSecurityController : Controller
         if (!ModelState.IsValid)
             return RedirectToAction("Edit", "Profile");
 
-        var userId = GetUserId();
+        var userId = GetRequiredCurrentUserId();
         var result = await _accountSecurityService.ChangePasswordAsync(
             userId,
             request.CurrentPassword ?? string.Empty,
             request.NewPassword ?? string.Empty,
             request.ConfirmPassword ?? string.Empty);
 
-        return result.Match(
-            success =>
+        return MatchResult(result,
+            _ =>
             {
                 TempData["Success"] = "Пароль успішно змінено";
                 return RedirectToAction("Edit", "Profile");
@@ -87,11 +86,11 @@ public class AccountSecurityController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> LogoutAll()
     {
-        var userId = GetUserId();
+        var userId = GetRequiredCurrentUserId();
         var result = await _accountSecurityService.LogoutAllSessionsAsync(userId);
 
-        return result.Match(
-            success =>
+        return MatchResult(result,
+            _ =>
             {
                 // Вилогінити користувача з усіх сеансів
                 _signInManager.SignOutAsync().Wait();
@@ -115,13 +114,13 @@ public class AccountSecurityController : Controller
         if (!ModelState.IsValid)
             return RedirectToAction(nameof(Index));
 
-        var userId = GetUserId();
+        var userId = GetRequiredCurrentUserId();
         var result = await _accountSecurityService.DeleteAccountAsync(
             userId,
             request.ConfirmationToken ?? string.Empty);
 
-        return result.Match(
-            success =>
+        return MatchResult(result,
+            _ =>
             {
                 TempData["Success"] = "Акаунт успішно видалено";
                 return RedirectToAction("Index", "Home");
@@ -137,16 +136,6 @@ public class AccountSecurityController : Controller
     // Helpers
     // ────────────────────────────────────────────────────────────────────────
 
-    private int GetUserId()
-    {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (int.TryParse(userIdClaim, out var userId))
-        {
-            return userId;
-        }
-
-        throw new InvalidOperationException("Не вдалося отримати ID користувача");
-    }
 }
 
 // ────────────────────────────────────────────────────────────────────────────

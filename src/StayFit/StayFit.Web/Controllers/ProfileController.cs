@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -12,7 +11,7 @@ namespace StayFit.Web.Controllers;
 /// </summary>
 [Authorize]
 [Route("profile")]
-public class ProfileController : Controller
+public class ProfileController : BaseController
 {
     private readonly IUserProfileService _userProfileService;
     private readonly ILogger<ProfileController> _logger;
@@ -30,7 +29,7 @@ public class ProfileController : Controller
     [HttpGet("edit")]
     public async Task<IActionResult> Edit()
     {
-        var userId = GetCurrentUserId();
+        var userId = GetRequiredCurrentUserId();
         _logger.LogInformation("Користувач {UserId} відкрив сторінку редагування", userId);
 
         var profile = await _userProfileService.GetProfileAsync(userId);
@@ -54,7 +53,7 @@ public class ProfileController : Controller
     [HttpPost("edit")]
     public async Task<IActionResult> Edit(UpdateUserProfileDto dto)
     {
-        var userId = GetCurrentUserId();
+        var userId = GetRequiredCurrentUserId();
         _logger.LogInformation("Користувач {UserId} зберігає профіль", userId);
 
         if (!ModelState.IsValid)
@@ -97,7 +96,7 @@ public class ProfileController : Controller
     [HttpGet("")]
     public new async Task<IActionResult> View()
     {
-        var userId = GetCurrentUserId();
+        var userId = GetRequiredCurrentUserId();
         _logger.LogInformation("Користувач {UserId} переглядає власний профіль", userId);
 
         var profile = await _userProfileService.GetProfileAsync(userId);
@@ -118,7 +117,7 @@ public class ProfileController : Controller
     [HttpDelete("delete")]
     public async Task<IActionResult> Delete()
     {
-        var userId = GetCurrentUserId();
+        var userId = GetRequiredCurrentUserId();
         _logger.LogInformation("Користувач {UserId} видаляє профіль", userId);
 
         var result = await _userProfileService.DeleteProfileAsync(userId);
@@ -134,17 +133,4 @@ public class ProfileController : Controller
         return RedirectToAction("Index", "Home");
     }
 
-    /// <summary>
-    /// Отримати поточний ID користувача з контексту
-    /// </summary>
-    private int GetCurrentUserId()
-    {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (int.TryParse(userIdClaim, out var userId))
-        {
-            return userId;
-        }
-
-        throw new InvalidOperationException("Не вдалося отримати ID користувача");
-    }
 }

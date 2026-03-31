@@ -14,7 +14,7 @@ public class AccountController(
     IPasswordResetService passwordResetService,
     UserManager<ApplicationUser> userManager,
     SignInManager<ApplicationUser> signInManager)
-    : Controller
+    : BaseController
 {
     // ─── Реєстрація ─────────────────────────────────────────────────────────
 
@@ -39,8 +39,7 @@ public class AccountController(
 
         if (result.IsFailure)
         {
-            foreach (var error in result.Errors)
-                ModelState.AddModelError(string.Empty, error);
+            AddResultErrorsToModelState(result);
             return View(model);
         }
 
@@ -130,8 +129,7 @@ public class AccountController(
 
         if (result.IsFailure)
         {
-            foreach (var error in result.Errors)
-                ModelState.AddModelError(string.Empty, error);
+            AddResultErrorsToModelState(result);
 
             return View(model);
         }
@@ -172,8 +170,7 @@ public class AccountController(
 
         if (result.IsFailure)
         {
-            foreach (var error in result.Errors)
-                ModelState.AddModelError(string.Empty, error);
+            AddResultErrorsToModelState(result);
             return View(model);
         }
 
