@@ -41,6 +41,12 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Export" asp-action="Index">Експорт</a>
                         </li>
+                        @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="AdminUser" asp-action="Index">Керування користувачами</a>
+                            </li>
+                        }
                     </ul>
                     <ul class="navbar-nav">
                         @if (User.Identity?.IsAuthenticated == true)
