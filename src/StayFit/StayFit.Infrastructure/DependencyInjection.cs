@@ -39,6 +39,7 @@ public static class DependencyInjection
         services.AddScoped<IStatisticsService, StatisticsService>();
         services.AddScoped<INutritionGoalService, NutritionGoalService>();
         services.AddScoped<IExportService, ExportService>();
+        services.AddScoped<IAdminUserService, AdminUserService>();
 
         return services;
     }
