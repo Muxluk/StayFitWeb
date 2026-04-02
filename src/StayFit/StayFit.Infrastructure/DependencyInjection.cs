@@ -43,7 +43,7 @@ public static class DependencyInjection
         services.AddScoped<IExportService, ExportService>();
         services.AddScoped<IAdminUserService, AdminUserService>();
         services.AddScoped<IProgressService, ProgressService>();
-
+        services.AddScoped<IProductModerationService, ProductModerationService>();
         return services;
     }
 }
