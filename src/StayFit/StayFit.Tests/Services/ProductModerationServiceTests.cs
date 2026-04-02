@@ -1,0 +1,54 @@
+using Microsoft.Extensions.Logging;
+using Moq;
+using StayFit.Application.Services;
+using StayFit.Domain.Entities;
+using StayFit.Domain.Interfaces;
+using Xunit;
+
+namespace StayFit.Tests.Services;
+
+public class ProductModerationServiceTests
+{
+    private readonly Mock<IFoodRepository> _foodRepositoryMock;
+    private readonly Mock<ILogger<ProductModerationService>> _loggerMock;
+    private readonly ProductModerationService _service;
+
+    public ProductModerationServiceTests()
+    {
+        _foodRepositoryMock = new Mock<IFoodRepository>();
+        _loggerMock = new Mock<ILogger<ProductModerationService>>();
+        
+        _service = new ProductModerationService(
+            _foodRepositoryMock.Object, 
+            _loggerMock.Object);
+    }
+
+    [Fact]
+    public async Task ApproveProductAsync_ShouldReturnSuccess_WhenProductExists()
+    {
+        // Arrange
+        var productId = 1;
+        var food = new Food { Id = productId, Name = "Test", IsApproved = false };
+        _foodRepositoryMock.Setup(r => r.GetByIdAsync(productId)).ReturnsAsync(food);
+
+        // Act
+        var result = await _service.ApproveProductAsync(productId);
+
+        // Assert
+        Assert.True(result.IsSuccess); // Замість .Should().BeTrue()
+        _foodRepositoryMock.Verify(r => r.UpdateProductStatusAsync(productId, true), Times.Once);
+    }
+
+    [Fact]
+    public async Task ApproveProductAsync_ShouldReturnFailure_WhenProductDoesNotExist()
+    {
+        // Arrange
+        _foodRepositoryMock.Setup(r => r.GetByIdAsync(It.IsAny<int>())).ReturnsAsync((Food?)null);
+
+        // Act
+        var result = await _service.ApproveProductAsync(999);
+
+        // Assert
+        Assert.True(result.IsFailure);
+    }
+}
