@@ -7,7 +7,7 @@ using StayFit.Web.Models;
 namespace StayFit.Web.Controllers;
 
 [Authorize]
-public class DiaryController : Controller
+public class DiaryController : BaseController
 {
     private readonly IFoodService _foodService;
     private readonly IMealRepository _mealRepository;
@@ -21,7 +21,7 @@ public class DiaryController : Controller
     public async Task<IActionResult> Index(DateTime? date)
     {
         var selectedDate = date ?? DateTime.Today;
-        var userEmail = User.Identity?.Name ?? string.Empty;
+        var userEmail = GetCurrentUserEmailOrEmpty();
 
         var logs = await _foodService.GetDailyLogAsync(userEmail, selectedDate);
 
@@ -39,7 +39,7 @@ public class DiaryController : Controller
     public async Task<IActionResult> DailyDetails(DateTime? date)
     {
         var selectedDate = date ?? DateTime.Today;
-        var userEmail = User.Identity?.Name ?? string.Empty;
+        var userEmail = GetCurrentUserEmailOrEmpty();
 
         var meals = await _mealRepository.GetMealsWithFoodsAsync(userEmail, selectedDate);
 

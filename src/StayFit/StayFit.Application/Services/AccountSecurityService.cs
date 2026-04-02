@@ -54,7 +54,7 @@ public class AccountSecurityService
         if (success)
         {
             _logger.LogInformation("Пароль успішно змінено для користувача {UserId}", userId);
-            return new Result<bool>.Success(true);
+            return true;
         }
 
         _logger.LogError("Не вдалося змінити пароль для користувача {UserId}", userId);
@@ -88,7 +88,7 @@ public class AccountSecurityService
         if (success)
         {
             _logger.LogInformation("Користувач {UserId} вийшов зі всіх сесій", userId);
-            return new Result<bool>.Success(true);
+            return true;
         }
 
         _logger.LogError("Не вдалося завершити всі сесії для користувача {UserId}", userId);
@@ -123,7 +123,7 @@ public class AccountSecurityService
         if (success)
         {
             _logger.LogWarning("Акаунт видалено для користувача {UserId}", userId);
-            return new Result<bool>.Success(true);
+            return true;
         }
 
         _logger.LogError("Не вдалося видалити акаунт для користувача {UserId}", userId);

@@ -51,6 +51,6 @@ public class ProductSearchService : IProductSearchService
         _logger.LogInformation("Знайдено {Count} продуктів. Сторінка {Page} з {TotalPages}", 
             totalCount, page, pagedResult.TotalPages == 0 ? 1 : pagedResult.TotalPages);
 
-        return Result<PagedResult<Food>>.Success(pagedResult);
+        return pagedResult;
     }
 }

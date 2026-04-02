@@ -41,6 +41,7 @@ public static class DependencyInjection
         services.AddScoped<INutritionGoalService, NutritionGoalService>();
         services.AddScoped<IExportService, ExportService>();
         services.AddScoped<IAdminUserService, AdminUserService>();
+        services.AddScoped<IProgressService, ProgressService>();
 
         return services;
     }

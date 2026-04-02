@@ -17,10 +17,30 @@ public class MealRepository : Repository<MealEntry>, IMealRepository
 
     public async Task<IEnumerable<MealEntry>> GetMealsWithFoodsAsync(string userEmail, DateTime date)
     {
+        var startOfDayLocal = DateTime.SpecifyKind(date.Date, DateTimeKind.Local);
+        var startOfDayUtc = startOfDayLocal.ToUniversalTime();
+        var endOfDayUtc = startOfDayUtc.AddDays(1);
+
         return await _context.Set<MealEntry>()
             .Include(m => m.FoodLogs)
                 .ThenInclude(fl => fl.Food)
-            .Where(m => m.UserEmail == userEmail && m.Time.Date == date.Date)
+            .Where(m => m.UserEmail == userEmail && m.Time >= startOfDayUtc && m.Time < endOfDayUtc)
+            .OrderBy(m => m.Time)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<MealEntry>> GetMealsForDateRangeAsync(string userEmail, DateTime startDate, DateTime endDate)
+    {
+        var startOfDayLocal = DateTime.SpecifyKind(startDate.Date, DateTimeKind.Local);
+        var startOfDayUtc = startOfDayLocal.ToUniversalTime();
+        
+        var endOfDayLocal = DateTime.SpecifyKind(endDate.Date, DateTimeKind.Local);
+        var endOfDayUtc = endOfDayLocal.ToUniversalTime().AddDays(1);
+
+        return await _context.Set<MealEntry>()
+            .Include(m => m.FoodLogs)
+                .ThenInclude(fl => fl.Food)
+            .Where(m => m.UserEmail == userEmail && m.Time >= startOfDayUtc && m.Time < endOfDayUtc)
             .OrderBy(m => m.Time)
             .ToListAsync();
     }

@@ -1,0 +1,18 @@
+<ul class="nav nav-tabs mb-4">
+    <li class="nav-item">
+        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Daily" ? "active" : "")" 
+           asp-controller="Statistics" asp-action="Daily">За день</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Weekly" ? "active" : "")" 
+           asp-controller="Statistics" asp-action="Weekly">За тиждень</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Monthly" ? "active" : "")" 
+           asp-controller="Statistics" asp-action="Monthly">За місяць</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Progress" ? "active" : "")" 
+           asp-controller="Statistics" asp-action="Progress">Аналіз прогресу</a>
+    </li>
+</ul>

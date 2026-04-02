@@ -5,7 +5,7 @@ using StayFit.Web.Models;
 
 namespace StayFit.Web.Controllers;
 
-public class HomeController : Controller
+public class HomeController : BaseController
 {
     private readonly ILogger<HomeController> _logger;
     private readonly LoggingService _loggingService;

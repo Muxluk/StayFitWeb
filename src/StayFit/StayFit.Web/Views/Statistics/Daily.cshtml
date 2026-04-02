@@ -42,6 +42,16 @@
     <a asp-controller="Diary" asp-action="Index" asp-route-date="@selectedDate.ToString("yyyy-MM-dd")" class="btn btn-outline-secondary btn-sm">До щоденника</a>
 </div>
 
+<partial name="_StatisticsNav" />
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
 <form method="get" asp-action="Daily" class="card card-body mb-4">
     <div class="row g-2 align-items-end">
         <div class="col-sm-6 col-md-4 col-lg-3">

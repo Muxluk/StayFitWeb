@@ -110,37 +110,12 @@ public class FoodController : BaseController
     {
         var userEmail = User.Identity?.Name;
         if (string.IsNullOrEmpty(userEmail))
-        {
             return Challenge();
-        }
+
         await _foodService.AddFoodToLogAsync(foodId, quantity, userEmail);
-        var user = await _userRepository.GetByEmailAsync(userEmail);
 
-        if (user == null)
-        {
-            user = new User
-            {
-                Email = userEmail,
-                Name = userEmail,
-                CreatedAt = DateTime.UtcNow,
-            };
-
-            await _userRepository.AddAsync(user);
-            _logger.LogInformation("Новий користувач створено: {Email}, ID: {UserId}", userEmail, user.Id);
-        }
-
-        var log = new FoodLog
-        {
-            UserId = user.Id,
-            FoodId = foodId,
-            AmountGrams = (float)quantity,
-            LoggedAt = DateTime.UtcNow,
-            UserEmail = userEmail,
-        };
-
-        await _foodService.AddFoodToLogAsync(user.Id, foodId, quantity.ToString());
-        _logger.LogInformation("Запис в лог їжі створено: UserId={UserId}, FoodId={FoodId}, Quantity={Quantity}",
-            user.Id, foodId, quantity);
+        _logger.LogInformation("Запис в лог їжі створено: FoodId={FoodId}, Quantity={Quantity}, Email={Email}",
+            foodId, quantity, userEmail);
 
         return RedirectToAction("Index", "Diary");
     }

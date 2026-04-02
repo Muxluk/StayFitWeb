@@ -30,7 +30,7 @@ public class NutritionGoalService : INutritionGoalService
             return Result<NutritionGoalDto>.Failure("Цілі не встановлено");
         }
 
-        return Result<NutritionGoalDto>.Success(MapToDto(goal));
+        return MapToDto(goal);
     }
 
     public async Task<Result<NutritionGoalDto>> SetGoalAsync(string userId, SetNutritionGoalDto dto)
@@ -66,7 +66,7 @@ public class NutritionGoalService : INutritionGoalService
             await _repository.AddAsync(goal);
         }
 
-        return Result<NutritionGoalDto>.Success(MapToDto(goal));
+        return MapToDto(goal);
     }
 
     private static NutritionGoalDto MapToDto(NutritionGoal goal) =>

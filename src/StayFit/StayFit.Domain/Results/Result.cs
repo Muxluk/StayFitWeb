@@ -109,4 +109,6 @@ public abstract class Result<T>
 
     public bool IsSuccess => this is Success;
     public bool IsFailure => this is Failure;
+
+    public static implicit operator Result<T>(T data) => new Success(data);
 }
