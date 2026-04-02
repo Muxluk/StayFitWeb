@@ -1,0 +1,124 @@
+@model StayFit.Application.DTOs.DashboardDto
+@{
+    ViewData["Title"] = "Дашборд";
+}
+
+<div class="container mt-4">
+    <h2>📊 Дашборд</h2>
+    
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger">
+            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <p>@error.ErrorMessage</p>
+            }
+        </div>
+    }
+
+    @if (Model != null)
+    {
+        <div class="row mt-4">
+            <!-- Калорії -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">🔥 Калорії</h5>
+                        <div class="mb-3">
+                            <p class="mb-1"><strong>Спожито:</strong> <span class="text-primary">@Model.ActualCalories.ToString("F1")</span> ккал</p>
+                            <p class="mb-1"><strong>Ціль:</strong> <span class="text-success">@Model.TargetCalories.ToString("F1")</span> ккал</p>
+                            <p class="mt-2">
+                                <small class="text-muted">
+                                    @{
+                                        var calPercent = Model.TargetCalories > 0 ? (Model.ActualCalories / Model.TargetCalories * 100) : 0;
+                                    }
+                                    Виконано: @calPercent.ToString("F1")%
+                                </small>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Білки -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">💪 Білки</h5>
+                        <div class="mb-3">
+                            <p class="mb-1"><strong>Спожито:</strong> <span class="text-primary">@Model.ActualProtein.ToString("F1")</span> г</p>
+                            <p class="mb-1"><strong>Ціль:</strong> <span class="text-success">@Model.TargetProtein.ToString("F1")</span> г</p>
+                            <p class="mt-2">
+                                <small class="text-muted">
+                                    @{
+                                        var proteinPercent = Model.TargetProtein > 0 ? (Model.ActualProtein / Model.TargetProtein * 100) : 0;
+                                    }
+                                    Виконано: @proteinPercent.ToString("F1")%
+                                </small>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Жири -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">🧈 Жири</h5>
+                        <div class="mb-3">
+                            <p class="mb-1"><strong>Спожито:</strong> <span class="text-primary">@Model.ActualFat.ToString("F1")</span> г</p>
+                            <p class="mb-1"><strong>Ціль:</strong> <span class="text-success">@Model.TargetFat.ToString("F1")</span> г</p>
+                            <p class="mt-2">
+                                <small class="text-muted">
+                                    @{
+                                        var fatPercent = Model.TargetFat > 0 ? (Model.ActualFat / Model.TargetFat * 100) : 0;
+                                    }
+                                    Виконано: @fatPercent.ToString("F1")%
+                                </small>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Вуглеводи -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">🍞 Вуглеводи</h5>
+                        <div class="mb-3">
+                            <p class="mb-1"><strong>Спожито:</strong> <span class="text-primary">@Model.ActualCarbs.ToString("F1")</span> г</p>
+                            <p class="mb-1"><strong>Ціль:</strong> <span class="text-success">@Model.TargetCarbs.ToString("F1")</span> г</p>
+                            <p class="mt-2">
+                                <small class="text-muted">
+                                    @{
+                                        var carbsPercent = Model.TargetCarbs > 0 ? (Model.ActualCarbs / Model.TargetCarbs * 100) : 0;
+                                    }
+                                    Виконано: @carbsPercent.ToString("F1")%
+                                </small>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .card {
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+</style>
