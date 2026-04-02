@@ -60,6 +60,7 @@ builder.Services.AddScoped<IProductSearchService, ProductSearchService>();
 builder.Services.AddScoped<MealService>();
 builder.Services.AddScoped<AccountSecurityService>();
 builder.Services.AddScoped<IAccountSecurityRepository, AccountSecurityRepository>();
+builder.Services.AddScoped<IFoodCategoryService, FoodCategoryService>();
 
 // ─── Build ──────────────────────────────────────────────────────────────────
 var app = builder.Build();

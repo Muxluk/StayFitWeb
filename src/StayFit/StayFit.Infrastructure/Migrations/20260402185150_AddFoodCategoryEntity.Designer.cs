@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using StayFit.Infrastructure.Data;
@@ -11,9 +12,11 @@ using StayFit.Infrastructure.Data;
 namespace StayFit.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260402185150_AddFoodCategoryEntity")]
+    partial class AddFoodCategoryEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -183,9 +186,6 @@ namespace StayFit.Infrastructure.Migrations
                     b.Property<float>("FatPer100g")
                         .HasColumnType("real");
 
-                    b.Property<int?>("FoodCategoryEntityId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("ImageUrl")
                         .HasColumnType("text");
 
@@ -205,40 +205,9 @@ namespace StayFit.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FoodCategoryEntityId");
-
                     b.HasIndex("OwnerUserId", "Name");
 
                     b.ToTable("Foods");
-                });
-
-            modelBuilder.Entity("StayFit.Domain.Entities.FoodCategoryEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("FoodCategories");
                 });
 
             modelBuilder.Entity("StayFit.Domain.Entities.FoodLog", b =>
@@ -526,13 +495,6 @@ namespace StayFit.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("StayFit.Domain.Entities.Food", b =>
-                {
-                    b.HasOne("StayFit.Domain.Entities.FoodCategoryEntity", null)
-                        .WithMany("Foods")
-                        .HasForeignKey("FoodCategoryEntityId");
-                });
-
             modelBuilder.Entity("StayFit.Domain.Entities.FoodLog", b =>
                 {
                     b.HasOne("StayFit.Domain.Entities.Food", "Food")
@@ -559,11 +521,6 @@ namespace StayFit.Infrastructure.Migrations
             modelBuilder.Entity("StayFit.Domain.Entities.Food", b =>
                 {
                     b.Navigation("FoodLogs");
-                });
-
-            modelBuilder.Entity("StayFit.Domain.Entities.FoodCategoryEntity", b =>
-                {
-                    b.Navigation("Foods");
                 });
 
             modelBuilder.Entity("StayFit.Domain.Entities.MealEntry", b =>

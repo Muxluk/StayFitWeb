@@ -30,6 +30,7 @@ public static class DependencyInjection
         services.AddScoped<IStatisticsRepository, StatisticsRepository>();
         services.AddScoped<INutritionGoalRepository, NutritionGoalRepository>();
         services.AddScoped<IAdminUserRepository, AdminUserRepository>();
+        services.AddScoped<IFoodCategoryRepository, FoodCategoryRepository>();
 
         // Services
         services.AddScoped<IRegistrationService, RegistrationService>();
