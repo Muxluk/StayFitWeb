@@ -59,6 +59,7 @@ builder.Services.AddScoped<IFoodService, FoodService>();
 builder.Services.AddScoped<IProductSearchService, ProductSearchService>();
 builder.Services.AddScoped<MealService>();
 builder.Services.AddScoped<AccountSecurityService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IAccountSecurityRepository, AccountSecurityRepository>();
 builder.Services.AddScoped<IFoodCategoryService, FoodCategoryService>();
 
