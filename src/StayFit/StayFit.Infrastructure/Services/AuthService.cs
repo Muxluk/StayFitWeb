@@ -47,13 +47,12 @@ public sealed class AuthService(
             return Result<string>.Failure("Невірний email або пароль.");
         }
 
-        // Скидаємо лічильник невдалих спроб після успішного входу
         await userManager.ResetAccessFailedCountAsync(user);
 
         logger.LogInformation(
             "Login credentials verified for email {Email}, userId {UserId}",
             request.Email, user.Id);
 
-        return Result<string>.Success(user.UserName!);
+        return user.UserName!;
     }
 }

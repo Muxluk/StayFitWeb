@@ -62,6 +62,6 @@ public sealed class StatisticsService(
             summary.DaysWithLogs,
             summary.TotalCalories);
 
-        return Result<NutritionSummary>.Success(summary);
+        return summary;
     }
 }

@@ -36,9 +36,6 @@
                             <a class="nav-link text-dark" asp-controller="Statistics" asp-action="Daily">Статистика</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="Index">Дашборд</a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="NutritionGoal" asp-action="Index">Мої цілі</a>
                         </li>
                         <li class="nav-item">
@@ -47,15 +44,7 @@
                         @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="AdminUser" asp-action="Index">Керування користувачами</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="AdminCategory" asp-action="Index">Керування категоріями</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-white bg-danger rounded-pill px-3" asp-controller="AdminProduct" asp-action="Index">
-                                    <i class="bi bi-shield-lock"></i> Модерація
-                                </a>
+                                <a class="nav-link text-dark" asp-controller="Admin" asp-action="Index">Адміністрування</a>
                             </li>
                         }
                     </ul>

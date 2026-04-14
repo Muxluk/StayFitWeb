@@ -74,7 +74,7 @@ public class ExportService : IExportService
             "Експорт успішно завершено. Формат: {Format}, Розмір: {Size} байт",
             format, exportResult.FileBytes.Length);
 
-        return new Result<ExportResult>.Success(exportResult);
+        return exportResult;
     }
 
     // ─── CSV ────────────────────────────────────────────────────────────────

@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using StayFit.Application.Interfaces;
+using StayFit.Application.DTOs;
 using StayFit.Application.Services;
 using StayFit.Web.Models;
 
@@ -9,14 +11,19 @@ public class HomeController : BaseController
 {
     private readonly ILogger<HomeController> _logger;
     private readonly LoggingService _loggingService;
+    private readonly IDashboardService _dashboardService;
 
-    public HomeController(ILogger<HomeController> logger, LoggingService loggingService)
+    public HomeController(
+        ILogger<HomeController> logger,
+        LoggingService loggingService,
+        IDashboardService dashboardService)
     {
         _logger = logger;
         _loggingService = loggingService;
+        _dashboardService = dashboardService;
     }
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
         _logger.LogInformation("Користувач відвідав сторінку Index");
         try
@@ -26,7 +33,25 @@ public class HomeController : BaseController
             // Використання LoggingService
             _loggingService.LogApplicationEvent("PageVisit", "Користувач відвідав головну сторінку");
 
-            return View();
+            DashboardDto? model = null;
+
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                var userId = GetRequiredCurrentUserId();
+                var userEmail = GetCurrentUserEmailOrEmpty();
+                var dashboardResult = await _dashboardService.GetTodayDashboardAsync(userId, userEmail);
+
+                if (dashboardResult.IsFailure)
+                {
+                    AddResultErrorsToModelState(dashboardResult);
+                }
+                else
+                {
+                    model = dashboardResult.Value;
+                }
+            }
+
+            return View(model);
         }
         catch (Exception ex)
         {

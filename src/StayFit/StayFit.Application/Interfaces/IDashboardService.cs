@@ -5,5 +5,5 @@ namespace StayFit.Application.Interfaces;
 
 public interface IDashboardService
 {
-    Task<Result<DashboardDto>> GetTodayDashboardAsync(int userId);
+    Task<Result<DashboardDto>> GetTodayDashboardAsync(int authUserId, string userEmail);
 }

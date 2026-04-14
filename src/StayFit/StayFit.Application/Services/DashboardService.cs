@@ -11,25 +11,34 @@ public class DashboardService : IDashboardService
 {
     private readonly IFoodLogRepository _foodLogRepository;
     private readonly INutritionGoalRepository _nutritionGoalRepository;
+    private readonly IUserRepository _userRepository;
     private readonly ILogger<DashboardService> _logger;
 
     public DashboardService(
         IFoodLogRepository foodLogRepository,
         INutritionGoalRepository nutritionGoalRepository,
+        IUserRepository userRepository,
         ILogger<DashboardService> logger)
     {
         _foodLogRepository = foodLogRepository;
         _nutritionGoalRepository = nutritionGoalRepository;
+        _userRepository = userRepository;
         _logger = logger;
     }
 
-    public async Task<Result<DashboardDto>> GetTodayDashboardAsync(int userId)
+    public async Task<Result<DashboardDto>> GetTodayDashboardAsync(int authUserId, string userEmail)
     {
-        _logger.LogInformation("Отримання даних дашборду для користувача {UserId}", userId);
+        _logger.LogInformation(
+            "Отримання даних дашборду для auth-користувача {AuthUserId} та email {Email}",
+            authUserId,
+            userEmail);
 
         // Отримання записів їжі за сьогодні
         var today = DateTime.Today;
-        var foodLogs = await _foodLogRepository.GetByUserIdAndDateAsync(userId, today);
+        var domainUser = await _userRepository.GetByEmailAsync(userEmail);
+        var foodLogs = domainUser is null
+            ? Enumerable.Empty<FoodLog>()
+            : await _foodLogRepository.GetByUserIdAndDateAsync(domainUser.Id, today);
 
         // Обчислення фактичних калорій та БЖВ
         float actualCalories = 0;
@@ -49,11 +58,11 @@ public class DashboardService : IDashboardService
         }
 
         // Отримання цільових значень
-        var goal = await _nutritionGoalRepository.GetByUserIdAsync(userId.ToString());
+        var goal = await _nutritionGoalRepository.GetByUserIdAsync(authUserId.ToString());
 
         if (goal == null)
         {
-            _logger.LogWarning("Цілі харчування не встановлені для користувача {UserId}", userId);
+            _logger.LogWarning("Цілі харчування не встановлені для користувача {UserId}", authUserId);
             return Result<DashboardDto>.Failure("Цілі харчування не встановлені");
         }
 
@@ -74,6 +83,6 @@ public class DashboardService : IDashboardService
             actualCalories, goal.CaloriesGoal, actualProtein, goal.ProteinGoal,
             actualFat, goal.FatGoal, actualCarbs, goal.CarbsGoal);
 
-        return Result<DashboardDto>.Success(dashboard);
+        return dashboard;
     }
 }

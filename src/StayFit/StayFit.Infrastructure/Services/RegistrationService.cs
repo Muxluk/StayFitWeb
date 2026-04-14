@@ -54,6 +54,6 @@ public sealed class RegistrationService(
             user.Id,
             domainUser.Id);
 
-        return Result<int>.Success(user.Id);
+        return user.Id;
     }
 }

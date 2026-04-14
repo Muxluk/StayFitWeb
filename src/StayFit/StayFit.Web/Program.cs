@@ -53,6 +53,12 @@ builder.Services
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.AccessDeniedPath = "/Error/403";
+});
+
 // ─── Application Services ───────────────────────────────────────────────────
 builder.Services.AddScoped<LoggingService>();
 builder.Services.AddScoped<IFoodService, FoodService>();
@@ -80,6 +86,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+app.UseStatusCodePagesWithReExecute("/Error/{0}");
 
 app.UseAuthentication();
 app.UseAuthorization();
