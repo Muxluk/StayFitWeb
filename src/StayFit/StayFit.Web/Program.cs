@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Identity;
 using Serilog;
 using StayFit.Application.Interfaces;
+using StayFit.Application.Options;
 using StayFit.Application.Services;
 using StayFit.Infrastructure;
 using StayFit.Infrastructure.Data;
 using StayFit.Infrastructure.Identity;
 using StayFit.Infrastructure.Repositories;
+using StayFit.Web.Filters;
 using StayFit.Web.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,7 +32,11 @@ builder.Host.UseSerilog((context, configuration) =>
         .Enrich.WithProperty("Application", "StayFit"));
 
 // ─── MVC ────────────────────────────────────────────────────────────────────
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    // Застосувати фільтр перевірки профіля до всіх дій
+    options.Filters.Add<RequireCompleteProfileAttribute>();
+});
 
 // ─── Global Exception Handler ───────────────────────────────────────────────
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -60,13 +66,13 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 // ─── Application Services ───────────────────────────────────────────────────
+builder.Services.Configure<ProfileSetupOptions>(builder.Configuration.GetSection("ProfileSetup"));
 builder.Services.AddScoped<LoggingService>();
 builder.Services.AddScoped<IFoodService, FoodService>();
 builder.Services.AddScoped<IProductSearchService, ProductSearchService>();
 builder.Services.AddScoped<MealService>();
-builder.Services.AddScoped<AccountSecurityService>();
+builder.Services.AddScoped<IProfileSetupService, ProfileSetupService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
-builder.Services.AddScoped<IAccountSecurityRepository, AccountSecurityRepository>();
 builder.Services.AddScoped<IFoodCategoryService, FoodCategoryService>();
 
 // ─── Build ──────────────────────────────────────────────────────────────────

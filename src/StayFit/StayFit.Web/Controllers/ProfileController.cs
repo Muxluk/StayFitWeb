@@ -62,29 +62,10 @@ public class ProfileController : BaseController
             return View(dto);
         }
 
-        // Спробуємо оновити існуючий профіль
-        var updated = await _userProfileService.UpdateProfileAsync(userId, dto);
-
-        if (!updated)
-        {
-            // Якщо профіль не існує, створюємо новий
-            _logger.LogInformation("Профіль не знайдено, створюємо новий для {UserId}", userId);
-
-            var createDto = new CreateUserProfileDto
-            {
-                UserId = userId,
-                FullName = dto.FullName,
-                DateOfBirth = dto.DateOfBirth,
-                Gender = dto.Gender,
-                Weight = dto.Weight,
-                Height = dto.Height,
-            };
-
-            await _userProfileService.CreateProfileAsync(createDto);
-        }
+        await _userProfileService.UpdateProfileAsync(userId, dto);
 
         _logger.LogInformation("Профіль {UserId} успішно збережено", userId);
-        TempData["SuccessMessage"] = "Профіль успішно збережено!";
+        TempData["Success"] = "Профіль успішно збережено!";
         return RedirectToAction(nameof(View));
     }
 
@@ -129,7 +110,7 @@ public class ProfileController : BaseController
         }
 
         _logger.LogInformation("Профіль {UserId} успішно видалено", userId);
-        TempData["SuccessMessage"] = "Профіль видалено!";
+        TempData["Success"] = "Профіль видалено!";
         return RedirectToAction("Index", "Home");
     }
 
