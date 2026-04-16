@@ -33,7 +33,7 @@ public class FoodCategoryService : IFoodCategoryService
             var categories = await _repository.GetAllAsync();
             
             _logger.LogInformation("Успішно завантажено {Count} категорій", categories.Count());
-            
+
             return new Result<IEnumerable<FoodCategoryEntity>>.Success(categories);
         }
         catch (Exception ex)
@@ -68,7 +68,7 @@ public class FoodCategoryService : IFoodCategoryService
             
             _logger.LogInformation("Успішно завантажена категорія #{CategoryId}: {CategoryName}", id, category.Name);
             
-            return new Result<FoodCategoryEntity>.Success(category);
+            return category;
         }
         catch (Exception ex)
         {
@@ -92,7 +92,7 @@ public class FoodCategoryService : IFoodCategoryService
             var categories = await _repository.GetActiveAsync();
             
             _logger.LogInformation("Успішно завантажено {Count} активних категорій", categories.Count());
-            
+
             return new Result<IEnumerable<FoodCategoryEntity>>.Success(categories);
         }
         catch (Exception ex)
@@ -157,7 +157,7 @@ public class FoodCategoryService : IFoodCategoryService
             _logger.LogInformation("Категорія успішно створена з ID: {CategoryId}, Name: {CategoryName}", 
                 createdCategory.Id, createdCategory.Name);
             
-            return new Result<FoodCategoryEntity>.Success(createdCategory);
+            return createdCategory;
         }
         catch (Exception ex)
         {
@@ -233,7 +233,7 @@ public class FoodCategoryService : IFoodCategoryService
             
             _logger.LogInformation("Категорія #{CategoryId} успішно оновлена", id);
             
-            return new Result<FoodCategoryEntity>.Success(updatedCategory);
+            return updatedCategory;
         }
         catch (Exception ex)
         {

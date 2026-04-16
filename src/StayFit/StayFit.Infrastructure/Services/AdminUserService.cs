@@ -45,7 +45,7 @@ public sealed class AdminUserService(
             return Result<AdminUserDetailsDto>.Failure("Користувача не знайдено");
         }
 
-        return Result<AdminUserDetailsDto>.Success(user);
+        return user;
     }
 
     public async Task<Result> BlockUserAsync(

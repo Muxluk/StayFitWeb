@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
 using StayFit.Domain.Exceptions;
 using System.Net;
 
@@ -10,7 +9,7 @@ namespace StayFit.Web.Middleware;
 /// </summary>
 public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
 {
-    public async ValueTask<bool> TryHandleAsync(
+    public ValueTask<bool> TryHandleAsync(
         HttpContext httpContext,
         Exception exception,
         CancellationToken cancellationToken)
@@ -23,19 +22,11 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
 
         var (statusCode, title, details) = MapException(exception);
 
-        var problemDetails = new ProblemDetails
-        {
-            Status = statusCode,
-            Title = title,
-            Detail = details,
-            Instance = httpContext.Request.Path,
-        };
-
+        httpContext.Response.Clear();
         httpContext.Response.StatusCode = statusCode;
+        httpContext.Response.Redirect($"/Error/{statusCode}");
 
-        await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
-
-        return true;
+        return ValueTask.FromResult(true);
     }
 
     private static (int StatusCode, string Title, string Details) MapException(Exception exception)

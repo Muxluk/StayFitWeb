@@ -33,7 +33,7 @@ public class FoodRepository : Repository<Food>, IFoodRepository
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
             query = query.Where(f => EF.Functions.ILike(f.Name, $"%{searchTerm}%") ||
-                                     (f.Brand != null && EF.Functions.ILike(f.Brand, $"%{searchTerm}%")));
+                                    (f.Brand != null && EF.Functions.ILike(f.Brand, $"%{searchTerm}%")));
         }
 
 
@@ -53,5 +53,25 @@ public class FoodRepository : Repository<Food>, IFoodRepository
             .ToListAsync();
 
         return (items, totalCount);
+    }
+
+    /// Отримує всі продукти, які ще не були підтверджені адміністратором.
+    public async Task<IEnumerable<Food>> GetPendingProductsAsync()
+    {
+        return await DbSet
+            .Where(f => f.IsApproved == false)
+            .OrderByDescending(f => f.Id)
+            .ToListAsync();
+    }
+
+    /// Оновлює статус модерації продукту.
+    public async Task UpdateProductStatusAsync(int id, bool isApproved)
+    {
+        var food = await DbSet.FindAsync(id);
+        if (food != null)
+        {
+            food.IsApproved = isApproved;
+            await Context.SaveChangesAsync();
+        }
     }
 }

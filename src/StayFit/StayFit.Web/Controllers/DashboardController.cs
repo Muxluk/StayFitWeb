@@ -23,7 +23,8 @@ public class DashboardController : BaseController
         _logger.LogInformation("Користувач відвідав сторінку дашборду");
 
         var userId = GetRequiredCurrentUserId();
-        var result = await _dashboardService.GetTodayDashboardAsync(userId);
+        var userEmail = GetCurrentUserEmailOrEmpty();
+        var result = await _dashboardService.GetTodayDashboardAsync(userId, userEmail);
 
         if (result.IsFailure)
         {

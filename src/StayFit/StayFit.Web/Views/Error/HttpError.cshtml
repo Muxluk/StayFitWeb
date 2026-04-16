@@ -1,0 +1,14 @@
+@model StayFit.Web.Models.HttpErrorViewModel
+@{
+    ViewData["Title"] = $"Помилка {Model.StatusCode}";
+}
+
+<div class="container py-5">
+    <div class="text-center">
+        <h1 class="display-4 text-danger">@Model.StatusCode</h1>
+        <h2 class="mb-3">@Model.Title</h2>
+        <p class="text-muted mb-4">@Model.Message</p>
+
+        <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Повернутися на головну</a>
+    </div>
+</div>

@@ -21,5 +21,7 @@ public class Food
 
     public FoodCategory Category { get; set; } = FoodCategory.General;
 
+    public bool IsApproved { get; set; } = false;
+
     public ICollection<FoodLog> FoodLogs { get; set; } = new List<FoodLog>();
 }

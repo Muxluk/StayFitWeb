@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using StayFit.Application.Interfaces;
+using StayFit.Application.DTOs;
 using StayFit.Application.Services;
 using StayFit.Web.Models;
 
@@ -9,16 +11,46 @@ public class HomeController : BaseController
 {
     private readonly ILogger<HomeController> _logger;
     private readonly LoggingService _loggingService;
+    private readonly IDashboardService _dashboardService;
+    private readonly IProfileSetupService _profileSetupService;
 
-    public HomeController(ILogger<HomeController> logger, LoggingService loggingService)
+    public HomeController(
+        ILogger<HomeController> logger,
+        LoggingService loggingService,
+        IDashboardService dashboardService,
+        IProfileSetupService profileSetupService)
     {
         _logger = logger;
         _loggingService = loggingService;
+        _dashboardService = dashboardService;
+        _profileSetupService = profileSetupService;
     }
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
         _logger.LogInformation("Користувач відвідав сторінку Index");
+        
+        // Перевірити профіль для авторизованих користувачів
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            try
+            {
+                var userId = GetRequiredCurrentUserId();
+                var isProfileComplete = await _profileSetupService.IsProfileCompleteAsync(userId);
+                
+                if (!isProfileComplete)
+                {
+                    _logger.LogInformation("Користувач {UserId} був перенаправлений на редагування профіля", userId);
+                    return RedirectToAction("Edit", "Profile");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Помилка при перевірці профілю на сторінці Home");
+                // Продовжити в разі помилки
+            }
+        }
+
         try
         {
             _logger.LogDebug("Комбінування даних для сторінки Index");
@@ -26,7 +58,25 @@ public class HomeController : BaseController
             // Використання LoggingService
             _loggingService.LogApplicationEvent("PageVisit", "Користувач відвідав головну сторінку");
 
-            return View();
+            DashboardDto? model = null;
+
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                var userId = GetRequiredCurrentUserId();
+                var userEmail = GetCurrentUserEmailOrEmpty();
+                var dashboardResult = await _dashboardService.GetTodayDashboardAsync(userId, userEmail);
+
+                if (dashboardResult.IsFailure)
+                {
+                    AddResultErrorsToModelState(dashboardResult);
+                }
+                else
+                {
+                    model = dashboardResult.Value;
+                }
+            }
+
+            return View(model);
         }
         catch (Exception ex)
         {
