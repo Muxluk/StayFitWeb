@@ -51,6 +51,7 @@ var passwordSettings = passwordSettingsSection.Get<PasswordSettings>() ?? new Pa
 builder.Services.Configure<DashboardSettings>(builder.Configuration.GetSection("Dashboard"));
 
 builder.Services.Configure<SessionSettings>(builder.Configuration.GetSection(SessionSettings.SectionName));
+builder.Services.Configure<DiaryNoteSettings>(builder.Configuration.GetSection("DiaryNotes"));
 
 // ─── Identity ───────────────────────────────────────────────────────────────
 builder.Services
@@ -78,6 +79,8 @@ builder.Services.AddScoped<IFoodService, FoodService>();
 builder.Services.AddScoped<IProductSearchService, ProductSearchService>();
 builder.Services.AddScoped<MealService>();
 builder.Services.AddScoped<IFoodCategoryService, FoodCategoryService>();
+builder.Services.AddScoped<QuickAddService>();
+builder.Services.AddScoped<DiaryNoteService>();
 
 // ─── Build ──────────────────────────────────────────────────────────────────
 var app = builder.Build();

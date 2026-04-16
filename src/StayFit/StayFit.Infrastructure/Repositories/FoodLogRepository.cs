@@ -71,4 +71,10 @@ public class FoodLogRepository : Repository<FoodLog>, IFoodLogRepository
             .OrderBy(fl => fl.LoggedAt)
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<FoodLog>> GetByMealIdAsync(int mealId) =>
+        await DbSet
+            .Include(fl => fl.Food)
+            .Where(fl => fl.MealEntryId == mealId)
+            .ToListAsync();
 }

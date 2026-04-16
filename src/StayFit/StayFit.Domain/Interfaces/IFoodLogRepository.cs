@@ -9,4 +9,5 @@ public interface IFoodLogRepository : IRepository<FoodLog>
     Task<IEnumerable<FoodLog>> GetLatestByUserIdAsync(int userId, int count);
     Task<IEnumerable<FoodLog>> GetByFoodIdAsync(int foodId);
     Task<IEnumerable<FoodLog>> GetByUserIdAndDateRangeAsync(int userId, DateTime from, DateTime to);
+    Task<IEnumerable<FoodLog>> GetByMealIdAsync(int mealId);
 }

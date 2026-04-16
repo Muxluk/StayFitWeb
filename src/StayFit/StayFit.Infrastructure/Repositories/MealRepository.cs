@@ -44,4 +44,12 @@ public class MealRepository : Repository<MealEntry>, IMealRepository
             .OrderBy(m => m.Time)
             .ToListAsync();
     }
+
+    public async Task<MealEntry?> GetByIdWithFoodsAsync(int id)
+    {
+        return await _context.Set<MealEntry>()
+            .Include(m => m.FoodLogs)
+                .ThenInclude(fl => fl.Food)
+            .FirstOrDefaultAsync(m => m.Id == id);
+    }
 }
