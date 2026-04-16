@@ -65,7 +65,7 @@ public class ProfileController : BaseController
         await _userProfileService.UpdateProfileAsync(userId, dto);
 
         _logger.LogInformation("Профіль {UserId} успішно збережено", userId);
-        TempData["Success"] = "Профіль успішно збережено!";
+        TempData["SuccessMessage"] = "Профіль успішно збережено!";
         return RedirectToAction(nameof(View));
     }
 

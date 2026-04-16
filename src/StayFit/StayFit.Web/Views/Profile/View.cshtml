@@ -109,13 +109,6 @@
                             <a href="@Url.Action("Edit", "Profile")" class="btn btn-primary btn-lg">
                                 <i class="bi bi-pencil-square"></i> Редагувати
                             </a>
-                            <form method="post" action="@Url.Action("Delete", "Profile")" style="display:inline;">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-danger btn-lg" 
-                                        onclick="return confirm('Ви впевнені, що хочете видалити профіль? Цю дію неможливо скасувати.');">
-                                    <i class="bi bi-trash"></i> Видалити профіль
-                                </button>
-                            </form>
                         </div>
                     }
                 </div>

@@ -35,6 +35,8 @@ public class AccountSecurityController : BaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ChangePassword(ChangePasswordDto request)
     {
+        TempData["ActiveTab"] = "Security";
+
         if (!ModelState.IsValid)
         {
             // Якщо модель невалідна, перенаправляємо назад з помилками
@@ -81,6 +83,7 @@ public class AccountSecurityController : BaseController
     {
         var userId = GetRequiredCurrentUserId();
         _logger.LogInformation("Запит на вихід з усіх сеансів для користувача {UserId} (тимчасова заглушка)", userId);
+        TempData["ActiveTab"] = "Security";
         
         TempData["Success"] = "Усі сеанси успішно завершено!";
         return RedirectToAction("Edit", "Profile");
@@ -95,6 +98,7 @@ public class AccountSecurityController : BaseController
     {
         var userId = GetRequiredCurrentUserId();
         _logger.LogInformation("Запит на видалення акаунту для користувача {UserId} (тимчасова заглушка)", userId);
+        TempData["ActiveTab"] = "Security";
         
         if (confirmationToken?.ToUpper() != "ВИДАЛИТИ")
         {
