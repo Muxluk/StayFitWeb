@@ -45,6 +45,20 @@ public class DiaryController : BaseController
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpPost]
+    public async Task<IActionResult> QuickAddLogEntry(int logId)
+    {
+        var userEmail = GetCurrentUserEmailOrEmpty();
+        var success = await _foodService.QuickAddFoodLogEntryAsync(logId, userEmail);
+
+        if (success)
+        {
+            return RedirectToAction(nameof(Index), new { date = DateTime.Today });
+        }
+
+        return BadRequest("Unable to quickly add log entry.");
+    }
+
     public async Task<IActionResult> DailyDetails(DateTime? date)
     {
         var selectedDate = date ?? DateTime.Today;
@@ -76,10 +90,10 @@ public class DiaryController : BaseController
     }
 
     [HttpPost]
-    public async Task<IActionResult> UpdateMealNote(int mealId, string? note)
+    public async Task<IActionResult> UpdateFoodLogNote(int logId, string? note)
     {
         var userEmail = GetCurrentUserEmailOrEmpty();
-        var success = await _diaryNoteService.UpdateNoteAsync(mealId, userEmail, note);
+        var success = await _diaryNoteService.UpdateNoteAsync(logId, userEmail, note);
 
         if (success)
         {

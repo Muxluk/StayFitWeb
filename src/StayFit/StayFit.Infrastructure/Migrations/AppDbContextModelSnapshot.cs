@@ -264,6 +264,9 @@ namespace StayFit.Infrastructure.Migrations
                     b.Property<int?>("MealEntryId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Note")
+                        .HasColumnType("text");
+
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
@@ -288,6 +291,9 @@ namespace StayFit.Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Note")
                         .HasColumnType("text");
 
                     b.Property<DateTime>("Time")

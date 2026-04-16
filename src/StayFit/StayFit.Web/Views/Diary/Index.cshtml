@@ -10,6 +10,10 @@
     <input type="date" name="date" value="@date.ToString("yyyy-MM-dd")" onchange="this.form.submit()" />
 </form>
 
+<div class="mb-3">
+    <a asp-action="DailyDetails" asp-route-date="@date.ToString("yyyy-MM-dd")" class="btn btn-primary">Переглянути деталі щоденника</a>
+</div>
+
 <table class="table">
     <thead>
         <tr>
@@ -27,9 +31,24 @@
                 <td>@log.Quantity</td>
                 <td>@(log.Food.CaloriesPer100g * log.Quantity / 100)</td>
                 <td>
-                    <form asp-action="DeleteEntry" asp-route-id="@log.Id" method="post">
-                        <button type="submit" class="btn btn-danger btn-sm">Видалити</button>
-                    </form>
+                    <div class="d-flex gap-2">
+                        <form asp-action="DeleteEntry" asp-route-id="@log.Id" method="post">
+                            <button type="submit" class="btn btn-danger btn-sm">Видалити</button>
+                        </form>
+                        <form asp-action="QuickAddLogEntry" method="post">
+                            <input type="hidden" name="logId" value="@log.Id" />
+                            <button type="submit" class="btn btn-success btn-sm">Додати знову</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4" class="border-top-0 ps-3">
+                    <div class="d-flex flex-column flex-md-row align-items-start gap-2">
+                        <textarea id="note_@log.Id" class="form-control note-textarea" rows="2" maxlength="500" placeholder="Нотатка до цього запису..." data-log-id="@log.Id">@(log.Note ?? "")</textarea>
+                        <button type="button" class="btn btn-outline-secondary btn-sm save-note-btn" data-log-id="@log.Id">Зберегти нотатку</button>
+                    </div>
+                    <small class="text-muted"><span id="charcount_@log.Id">@(log.Note?.Length ?? 0)</span>/500 символів</small>
                 </td>
             </tr>
         }
@@ -41,3 +60,46 @@
 </div>
 
 <a asp-controller="Food" asp-action="Index" class="btn btn-success">Додати їжу</a>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.note-textarea').forEach(textarea => {
+            textarea.addEventListener('input', function () {
+                const logId = this.dataset.logId;
+                const charCount = document.getElementById(`charcount_${logId}`);
+                if (charCount) {
+                    charCount.textContent = this.value.length;
+                }
+            });
+        });
+
+        document.querySelectorAll('.save-note-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                const logId = this.dataset.logId;
+                const textarea = document.getElementById(`note_${logId}`);
+                if (!textarea) {
+                    return;
+                }
+
+                fetch('@Url.Action("UpdateFoodLogNote", "Diary")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `logId=${encodeURIComponent(logId)}&note=${encodeURIComponent(textarea.value)}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Нотатку збережено');
+                    } else {
+                        alert(data.error || 'Помилка при збереженні нотатки');
+                    }
+                })
+                .catch(() => {
+                    alert('Помилка при збереженні нотатки');
+                });
+            });
+        });
+    </script>
+}

@@ -1,104 +1,110 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StayFit.Application.Configuration;
+using StayFit.Domain.Entities;
 using StayFit.Domain.Interfaces;
 
 namespace StayFit.Application.Services;
 
 public class DiaryNoteService
 {
-    private readonly IMealRepository _mealRepository;
+    private readonly IFoodLogRepository _foodLogRepository;
+    private readonly IUserRepository _userRepository;
     private readonly ILogger<DiaryNoteService> _logger;
     private readonly int _maxNoteLength;
 
     public DiaryNoteService(
-        IMealRepository mealRepository,
+        IFoodLogRepository foodLogRepository,
+        IUserRepository userRepository,
         ILogger<DiaryNoteService> logger,
         IOptions<DiaryNoteSettings> diaryNoteSettings)
     {
-        _mealRepository = mealRepository;
+        _foodLogRepository = foodLogRepository;
+        _userRepository = userRepository;
         _logger = logger;
         _maxNoteLength = diaryNoteSettings.Value.MaxNoteLength;
     }
 
     /// <summary>
-    /// Adds or updates a note for a meal entry.
+    /// Adds or updates a note for a food log entry.
     /// </summary>
-    /// <param name="mealId">ID of the meal</param>
+    /// <param name="logId">ID of the food log</param>
     /// <param name="userEmail">Email of the current user</param>
     /// <param name="note">The note text (can be empty to clear)</param>
     /// <returns>True if successful, false otherwise</returns>
-    public async Task<bool> UpdateNoteAsync(int mealId, string userEmail, string? note)
+    public async Task<bool> UpdateNoteAsync(int logId, string userEmail, string? note)
     {
         try
         {
-            _logger.LogInformation("Updating note for meal {MealId} for user {UserEmail}", mealId, userEmail);
+            _logger.LogInformation("Updating note for food log {LogId} for user {UserEmail}", logId, userEmail);
 
-            // Validate input
             if (string.IsNullOrWhiteSpace(note))
             {
-                note = null; // Clear the note
+                note = null;
             }
             else if (note.Length > _maxNoteLength)
             {
                 _logger.LogWarning(
-                    "Note for meal {MealId} exceeds maximum length. Length: {NoteLength}, Max: {MaxLength}",
-                    mealId, note.Length, _maxNoteLength);
+                    "Note for log {LogId} exceeds maximum length. Length: {NoteLength}, Max: {MaxLength}",
+                    logId, note.Length, _maxNoteLength);
                 return false;
             }
 
-            // Get the meal
-            var meal = await _mealRepository.GetByIdAsync(mealId);
-            if (meal == null || meal.UserEmail != userEmail)
+            var foodLog = await _foodLogRepository.GetByIdAsync(logId);
+            if (foodLog == null)
             {
-                _logger.LogWarning("Meal {MealId} not found or doesn't belong to user {UserEmail}", 
-                    mealId, userEmail);
+                _logger.LogWarning("Food log {LogId} not found", logId);
                 return false;
             }
 
-            // Update the note
-            meal.Note = note;
-            await _mealRepository.UpdateAsync(meal);
+            var user = await _userRepository.GetByEmailAsync(userEmail);
+            if (user == null || foodLog.UserId != user.Id)
+            {
+                _logger.LogWarning("Food log {LogId} does not belong to user {UserEmail}", logId, userEmail);
+                return false;
+            }
+
+            foodLog.Note = note;
+            await _foodLogRepository.UpdateAsync(foodLog);
 
             _logger.LogInformation(
-                string.IsNullOrEmpty(note) 
-                    ? "Note cleared for meal {MealId}" 
-                    : "Note updated for meal {MealId} with length {NoteLength}",
-                mealId, note?.Length);
+                string.IsNullOrEmpty(note)
+                    ? "Note cleared for food log {LogId}"
+                    : "Note updated for food log {LogId} with length {NoteLength}",
+                logId, note?.Length);
 
             return true;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating note for meal {MealId} and user {UserEmail}", 
-                mealId, userEmail);
+            _logger.LogError(ex, "Error updating note for food log {LogId} and user {UserEmail}", logId, userEmail);
             return false;
         }
     }
 
-    /// <summary>
-    /// Gets the current note for a meal.
-    /// </summary>
-    /// <param name="mealId">ID of the meal</param>
-    /// <param name="userEmail">Email of the current user</param>
-    /// <returns>The note text, or null if not found or doesn't belong to user</returns>
-    public async Task<string?> GetNoteAsync(int mealId, string userEmail)
+    public async Task<string?> GetNoteAsync(int logId, string userEmail)
     {
         try
         {
-            var meal = await _mealRepository.GetByIdAsync(mealId);
-            if (meal == null || meal.UserEmail != userEmail)
+            var foodLog = await _foodLogRepository.GetByIdAsync(logId);
+            if (foodLog == null)
             {
-                _logger.LogWarning("Meal {MealId} not found or doesn't belong to user {UserEmail}", 
-                    mealId, userEmail);
+                _logger.LogWarning("Food log {LogId} not found", logId);
                 return null;
             }
 
-            return meal.Note;
+            var user = await _userRepository.GetByEmailAsync(userEmail);
+            if (user == null || foodLog.UserId != user.Id)
+            {
+                _logger.LogWarning("Food log {LogId} does not belong to user {UserEmail}", logId, userEmail);
+                return null;
+            }
+
+            return foodLog.Note;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting note for meal {MealId}", mealId);
+            _logger.LogError(ex, "Error getting note for food log {LogId}", logId);
             return null;
         }
     }

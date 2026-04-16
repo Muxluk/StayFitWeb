@@ -11,20 +11,22 @@ namespace StayFit.Tests.Services;
 
 public class DiaryNoteServiceTests
 {
-    private readonly Mock<IMealRepository> _mealRepositoryMock;
+    private readonly Mock<IFoodLogRepository> _foodLogRepositoryMock;
+    private readonly Mock<IUserRepository> _userRepositoryMock;
     private readonly Mock<ILogger<DiaryNoteService>> _loggerMock;
     private readonly IOptions<DiaryNoteSettings> _diaryNoteSettings;
     private readonly DiaryNoteService _diaryNoteService;
 
     public DiaryNoteServiceTests()
     {
-        _mealRepositoryMock = new Mock<IMealRepository>();
+        _foodLogRepositoryMock = new Mock<IFoodLogRepository>();
+        _userRepositoryMock = new Mock<IUserRepository>();
         _loggerMock = new Mock<ILogger<DiaryNoteService>>();
-        
         _diaryNoteSettings = Options.Create(new DiaryNoteSettings { MaxNoteLength = 500 });
 
         _diaryNoteService = new DiaryNoteService(
-            _mealRepositoryMock.Object,
+            _foodLogRepositoryMock.Object,
+            _userRepositoryMock.Object,
             _loggerMock.Object,
             _diaryNoteSettings);
     }
@@ -33,212 +35,235 @@ public class DiaryNoteServiceTests
     public async Task UpdateNoteAsync_SuccessfullyUpdatesNote_WhenValidInput()
     {
         // Arrange
-        const int mealId = 1;
+        const int logId = 1;
         const string userEmail = "test@user.com";
         const string noteText = "This is a test note";
 
-        var meal = new MealEntry
+        var foodLog = new FoodLog
         {
-            Id = mealId,
-            Name = "Breakfast",
-            UserEmail = userEmail,
-            Time = DateTime.UtcNow
+            Id = logId,
+            UserId = 1,
+            FoodId = 10,
+            AmountGrams = 100,
+            LoggedAt = DateTime.UtcNow,
+            UserEmail = userEmail
         };
 
-        _mealRepositoryMock
-            .Setup(r => r.GetByIdAsync(mealId))
-            .ReturnsAsync(meal);
+        _foodLogRepositoryMock
+            .Setup(r => r.GetByIdAsync(logId))
+            .ReturnsAsync(foodLog);
 
-        _mealRepositoryMock
-            .Setup(r => r.UpdateAsync(It.IsAny<MealEntry>()))
+        _userRepositoryMock
+            .Setup(r => r.GetByEmailAsync(userEmail))
+            .ReturnsAsync(new Domain.Entities.User { Id = 1, Email = userEmail });
+
+        _foodLogRepositoryMock
+            .Setup(r => r.UpdateAsync(It.IsAny<FoodLog>()))
             .Returns(Task.CompletedTask);
 
         // Act
-        var result = await _diaryNoteService.UpdateNoteAsync(mealId, userEmail, noteText);
+        var result = await _diaryNoteService.UpdateNoteAsync(logId, userEmail, noteText);
 
         // Assert
         Assert.True(result);
-        Assert.Equal(noteText, meal.Note);
-        _mealRepositoryMock.Verify(r => r.UpdateAsync(It.IsAny<MealEntry>()), Times.Once);
+        Assert.Equal(noteText, foodLog.Note);
+        _foodLogRepositoryMock.Verify(r => r.UpdateAsync(It.IsAny<FoodLog>()), Times.Once);
     }
 
     [Fact]
     public async Task UpdateNoteAsync_ClearsNote_WhenNoteIsEmpty()
     {
         // Arrange
-        const int mealId = 1;
+        const int logId = 1;
         const string userEmail = "test@user.com";
 
-        var meal = new MealEntry
+        var foodLog = new FoodLog
         {
-            Id = mealId,
-            Name = "Breakfast",
+            Id = logId,
+            UserId = 1,
+            FoodId = 10,
+            AmountGrams = 100,
+            LoggedAt = DateTime.UtcNow,
             UserEmail = userEmail,
-            Time = DateTime.UtcNow,
             Note = "Old note"
         };
 
-        _mealRepositoryMock
-            .Setup(r => r.GetByIdAsync(mealId))
-            .ReturnsAsync(meal);
+        _foodLogRepositoryMock
+            .Setup(r => r.GetByIdAsync(logId))
+            .ReturnsAsync(foodLog);
 
-        _mealRepositoryMock
-            .Setup(r => r.UpdateAsync(It.IsAny<MealEntry>()))
+        _userRepositoryMock
+            .Setup(r => r.GetByEmailAsync(userEmail))
+            .ReturnsAsync(new Domain.Entities.User { Id = 1, Email = userEmail });
+
+        _foodLogRepositoryMock
+            .Setup(r => r.UpdateAsync(It.IsAny<FoodLog>()))
             .Returns(Task.CompletedTask);
 
         // Act
-        var result = await _diaryNoteService.UpdateNoteAsync(mealId, userEmail, "");
+        var result = await _diaryNoteService.UpdateNoteAsync(logId, userEmail, "");
 
         // Assert
         Assert.True(result);
-        Assert.Null(meal.Note);
-        _mealRepositoryMock.Verify(r => r.UpdateAsync(It.IsAny<MealEntry>()), Times.Once);
+        Assert.Null(foodLog.Note);
+        _foodLogRepositoryMock.Verify(r => r.UpdateAsync(It.IsAny<FoodLog>()), Times.Once);
     }
 
     [Fact]
     public async Task UpdateNoteAsync_ReturnsFalse_WhenNoteExceedsMaxLength()
     {
         // Arrange
-        const int mealId = 1;
+        const int logId = 1;
         const string userEmail = "test@user.com";
-        var longNote = new string('x', 501); // Exceeds max of 500
+        var longNote = new string('x', 501);
 
-        var meal = new MealEntry
+        var foodLog = new FoodLog
         {
-            Id = mealId,
-            Name = "Breakfast",
-            UserEmail = userEmail,
-            Time = DateTime.UtcNow
+            Id = logId,
+            UserId = 1,
+            FoodId = 10,
+            AmountGrams = 100,
+            LoggedAt = DateTime.UtcNow,
+            UserEmail = userEmail
         };
 
-        _mealRepositoryMock
-            .Setup(r => r.GetByIdAsync(mealId))
-            .ReturnsAsync(meal);
+        _foodLogRepositoryMock
+            .Setup(r => r.GetByIdAsync(logId))
+            .ReturnsAsync(foodLog);
 
         // Act
-        var result = await _diaryNoteService.UpdateNoteAsync(mealId, userEmail, longNote);
+        var result = await _diaryNoteService.UpdateNoteAsync(logId, userEmail, longNote);
 
         // Assert
         Assert.False(result);
-        _mealRepositoryMock.Verify(r => r.UpdateAsync(It.IsAny<MealEntry>()), Times.Never);
+        _foodLogRepositoryMock.Verify(r => r.UpdateAsync(It.IsAny<FoodLog>()), Times.Never);
     }
 
     [Fact]
-    public async Task UpdateNoteAsync_ReturnsFalse_WhenMealNotFound()
+    public async Task UpdateNoteAsync_ReturnsFalse_WhenFoodLogNotFound()
     {
         // Arrange
-        const int mealId = 999;
+        const int logId = 999;
         const string userEmail = "test@user.com";
 
-        _mealRepositoryMock
-            .Setup(r => r.GetByIdAsync(mealId))
-            .ReturnsAsync((MealEntry?)null);
+        _foodLogRepositoryMock
+            .Setup(r => r.GetByIdAsync(logId))
+            .ReturnsAsync((FoodLog?)null);
 
         // Act
-        var result = await _diaryNoteService.UpdateNoteAsync(mealId, userEmail, "Some note");
+        var result = await _diaryNoteService.UpdateNoteAsync(logId, userEmail, "Some note");
 
         // Assert
         Assert.False(result);
-        _mealRepositoryMock.Verify(r => r.UpdateAsync(It.IsAny<MealEntry>()), Times.Never);
+        _foodLogRepositoryMock.Verify(r => r.UpdateAsync(It.IsAny<FoodLog>()), Times.Never);
     }
 
     [Fact]
-    public async Task UpdateNoteAsync_ReturnsFalse_WhenMealBelongsToAnotherUser()
+    public async Task UpdateNoteAsync_ReturnsFalse_WhenFoodLogBelongsToAnotherUser()
     {
         // Arrange
-        const int mealId = 1;
+        const int logId = 1;
         const string userEmail = "test@user.com";
         const string anotherUserEmail = "another@user.com";
 
-        var meal = new MealEntry
+        var foodLog = new FoodLog
         {
-            Id = mealId,
-            Name = "Breakfast",
-            UserEmail = anotherUserEmail,
-            Time = DateTime.UtcNow
+            Id = logId,
+            UserId = 2,
+            FoodId = 10,
+            AmountGrams = 100,
+            LoggedAt = DateTime.UtcNow,
+            UserEmail = anotherUserEmail
         };
 
-        _mealRepositoryMock
-            .Setup(r => r.GetByIdAsync(mealId))
-            .ReturnsAsync(meal);
+        _foodLogRepositoryMock
+            .Setup(r => r.GetByIdAsync(logId))
+            .ReturnsAsync(foodLog);
 
         // Act
-        var result = await _diaryNoteService.UpdateNoteAsync(mealId, userEmail, "Some note");
+        var result = await _diaryNoteService.UpdateNoteAsync(logId, userEmail, "Some note");
 
         // Assert
         Assert.False(result);
-        _mealRepositoryMock.Verify(r => r.UpdateAsync(It.IsAny<MealEntry>()), Times.Never);
+        _foodLogRepositoryMock.Verify(r => r.UpdateAsync(It.IsAny<FoodLog>()), Times.Never);
     }
 
     [Fact]
     public async Task GetNoteAsync_ReturnsNote_WhenValid()
     {
         // Arrange
-        const int mealId = 1;
+        const int logId = 1;
         const string userEmail = "test@user.com";
         const string noteText = "Test note";
 
-        var meal = new MealEntry
+        var foodLog = new FoodLog
         {
-            Id = mealId,
-            Name = "Breakfast",
+            Id = logId,
+            UserId = 1,
+            FoodId = 10,
+            AmountGrams = 100,
+            LoggedAt = DateTime.UtcNow,
             UserEmail = userEmail,
-            Time = DateTime.UtcNow,
             Note = noteText
         };
 
-        _mealRepositoryMock
-            .Setup(r => r.GetByIdAsync(mealId))
-            .ReturnsAsync(meal);
+        _foodLogRepositoryMock
+            .Setup(r => r.GetByIdAsync(logId))
+            .ReturnsAsync(foodLog);
+
+        _userRepositoryMock
+            .Setup(r => r.GetByEmailAsync(userEmail))
+            .ReturnsAsync(new Domain.Entities.User { Id = 1, Email = userEmail });
 
         // Act
-        var result = await _diaryNoteService.GetNoteAsync(mealId, userEmail);
+        var result = await _diaryNoteService.GetNoteAsync(logId, userEmail);
 
         // Assert
         Assert.Equal(noteText, result);
     }
 
     [Fact]
-    public async Task GetNoteAsync_ReturnsNull_WhenMealNotFound()
+    public async Task GetNoteAsync_ReturnsNull_WhenFoodLogNotFound()
     {
         // Arrange
-        const int mealId = 999;
+        const int logId = 999;
         const string userEmail = "test@user.com";
 
-        _mealRepositoryMock
-            .Setup(r => r.GetByIdAsync(mealId))
-            .ReturnsAsync((MealEntry?)null);
+        _foodLogRepositoryMock
+            .Setup(r => r.GetByIdAsync(logId))
+            .ReturnsAsync((FoodLog?)null);
 
         // Act
-        var result = await _diaryNoteService.GetNoteAsync(mealId, userEmail);
+        var result = await _diaryNoteService.GetNoteAsync(logId, userEmail);
 
         // Assert
         Assert.Null(result);
     }
 
     [Fact]
-    public async Task GetNoteAsync_ReturnsNull_WhenMealBelongsToAnotherUser()
+    public async Task GetNoteAsync_ReturnsNull_WhenFoodLogBelongsToAnotherUser()
     {
         // Arrange
-        const int mealId = 1;
+        const int logId = 1;
         const string userEmail = "test@user.com";
-        const string anotherUserEmail = "another@user.com";
 
-        var meal = new MealEntry
+        var foodLog = new FoodLog
         {
-            Id = mealId,
-            Name = "Breakfast",
-            UserEmail = anotherUserEmail,
-            Time = DateTime.UtcNow,
+            Id = logId,
+            UserId = 2,
+            FoodId = 10,
+            AmountGrams = 100,
+            LoggedAt = DateTime.UtcNow,
+            UserEmail = "another@user.com",
             Note = "Note"
         };
 
-        _mealRepositoryMock
-            .Setup(r => r.GetByIdAsync(mealId))
-            .ReturnsAsync(meal);
+        _foodLogRepositoryMock
+            .Setup(r => r.GetByIdAsync(logId))
+            .ReturnsAsync(foodLog);
 
         // Act
-        var result = await _diaryNoteService.GetNoteAsync(mealId, userEmail);
+        var result = await _diaryNoteService.GetNoteAsync(logId, userEmail);
 
         // Assert
         Assert.Null(result);
@@ -250,65 +275,49 @@ public class DiaryNoteServiceTests
     [InlineData("   ")]
     public void IsValidNote_ReturnsTrue_ForEmptyOrNullNotes(string? note)
     {
-        // Act & Assert
         Assert.True(_diaryNoteService.IsValidNote(note));
     }
 
     [Fact]
     public void IsValidNote_ReturnsTrue_ForValidNote()
     {
-        // Arrange
         var note = "This is a valid note";
-
-        // Act & Assert
         Assert.True(_diaryNoteService.IsValidNote(note));
     }
 
     [Fact]
     public void IsValidNote_ReturnsFalse_WhenNoteExceedsMaxLength()
     {
-        // Arrange
-        var note = new string('x', 501); // Exceeds 500
-
-        // Act & Assert
+        var note = new string('x', 501);
         Assert.False(_diaryNoteService.IsValidNote(note));
     }
 
     [Fact]
     public void IsValidNote_ReturnsTrue_WhenNoteEqualsMaxLength()
     {
-        // Arrange
-        var note = new string('x', 500); // Exactly 500
-
-        // Act & Assert
+        var note = new string('x', 500);
         Assert.True(_diaryNoteService.IsValidNote(note));
     }
 
     [Fact]
     public void GetMaxNoteLength_ReturnsConfiguredLength()
     {
-        // Act
         var maxLength = _diaryNoteService.GetMaxNoteLength();
-
-        // Assert
         Assert.Equal(500, maxLength);
     }
 
     [Fact]
     public async Task UpdateNoteAsync_ReturnsFalse_WhenRepositoryThrowsException()
     {
-        // Arrange
-        const int mealId = 1;
+        const int logId = 1;
         const string userEmail = "test@user.com";
 
-        _mealRepositoryMock
+        _foodLogRepositoryMock
             .Setup(r => r.GetByIdAsync(It.IsAny<int>()))
             .ThrowsAsync(new Exception("Database error"));
 
-        // Act
-        var result = await _diaryNoteService.UpdateNoteAsync(mealId, userEmail, "Some note");
+        var result = await _diaryNoteService.UpdateNoteAsync(logId, userEmail, "Some note");
 
-        // Assert
         Assert.False(result);
         _loggerMock.Verify(
             x => x.Log(

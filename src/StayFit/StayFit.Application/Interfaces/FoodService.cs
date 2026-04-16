@@ -168,6 +168,41 @@ public class FoodService : IFoodService
         await _foodLogRepository!.AddAsync(log);
     }
 
+    public async Task<bool> QuickAddFoodLogEntryAsync(int logId, string userEmail)
+    {
+        EnsureFoodLogDependencies();
+
+        if (string.IsNullOrWhiteSpace(userEmail))
+        {
+            throw new ArgumentNullException(nameof(userEmail));
+        }
+
+        var user = await _userRepository!.GetByEmailAsync(userEmail);
+        if (user == null)
+        {
+            user = new User
+            {
+                Email = userEmail,
+                Name = userEmail,
+                CreatedAt = DateTime.UtcNow,
+            };
+
+            await _userRepository!.AddAsync(user);
+            _logger.LogInformation("Новий користувач створено: {Email}, ID: {UserId}", userEmail, user.Id);
+        }
+
+        var existingLog = await _foodLogRepository!.GetByIdAsync(logId);
+        if (existingLog == null || existingLog.UserId != user.Id)
+        {
+            _logger.LogWarning("Запис логу {LogId} не знайдено або він не належить користувачу {Email}", logId, userEmail);
+            return false;
+        }
+
+        await AddFoodToLogAsync(existingLog.FoodId, existingLog.Quantity, userEmail);
+        _logger.LogInformation("Швидке додавання виконано для log {LogId} користувача {Email}", logId, userEmail);
+        return true;
+    }
+
     public async Task RemoveFromLogAsync(int logId)
     {
         EnsureFoodLogDependencies();

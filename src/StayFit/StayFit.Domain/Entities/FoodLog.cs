@@ -28,6 +28,8 @@ public class FoodLog
     [NotMapped]
     public string? UserEmail { get; set; }
 
+    public string? Note { get; set; }
+
     public User User { get; set; } = null!;
     public Food Food { get; set; } = null!;
 }
