@@ -14,6 +14,7 @@ StayFit.Application     <- Сервіси, бізнес-логіка, DTOs
 StayFit.Infrastructure  <- EF Core, PostgreSQL, реалізації репозиторіїв
 StayFit.Web             <- ASP.NET Core MVC, DI-контейнер, точка входу
 ```
+
 ### Залежності між шарами
 
 ```
@@ -23,12 +24,12 @@ Web ->  Application → Domain
 
 ### Ключові компоненти
 
-| Шар | Що містить |
-|---|---|
-| **Domain** | `User`, `Food`, `FoodLog` (сутності); `IUserRepository`, `IFoodRepository`, `IFoodLogRepository` (інтерфейси) |
-| **Application** | `LoggingService` — сервіс з структурованим логуванням |
-| **Infrastructure** | `AppDbContext`, `Repository<T>` (базовий), `UserRepository`, `FoodRepository`, `FoodLogRepository` |
-| **Web** | `Program.cs` — реєстрація всіх сервісів у DI; Serilog; MVC-контролери |
+| Шар                | Що містить                                                                                                    |
+| ------------------ | ------------------------------------------------------------------------------------------------------------- |
+| **Domain**         | `User`, `Food`, `FoodLog` (сутності); `IUserRepository`, `IFoodRepository`, `IFoodLogRepository` (інтерфейси) |
+| **Application**    | `LoggingService` — сервіс з структурованим логуванням                                                         |
+| **Infrastructure** | `AppDbContext`, `Repository<T>` (базовий), `UserRepository`, `FoodRepository`, `FoodLogRepository`            |
+| **Web**            | `Program.cs` — реєстрація всіх сервісів у DI; Serilog; MVC-контролери                                         |
 
 ---
 
@@ -46,7 +47,7 @@ Web ->  Application → Domain
 
 - .NET 9 SDK
 - PostgreSQL (версія 14+)
-- *(Опційно) Seq для централізованого перегляду логів
+- \*(Опційно) Seq для централізованого перегляду логів
 
 ---
 
@@ -59,16 +60,26 @@ git clone <repo-url>
 cd StayFit
 ```
 
-### 2. Налаштування бази даних
+### 2. Налаштування бази даних (через secrets, без коміту пароля)
 
-Відредагуйте рядок підключення у `StayFit.Web/appsettings.json`:
+Важливо: рядок підключення не зберігаємо в `appsettings.json`.
 
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5432;Database=stayfit;Username=postgres;Password=..."
-  }
-}
+Перейдіть у папку веб-проєкту:
+
+```bash
+cd src/StayFit/StayFit.Web
+```
+
+Запишіть connection string у локальні user-secrets:
+
+```bash
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=ep-ancient-tooth-an0wah2y-pooler.c-6.us-east-1.aws.neon.tech;Database=neondb;Username=neondb_owner;Password=<YOUR_PASSWORD>;Ssl Mode=Require;Channel Binding=Require;"
+```
+
+Перевірка:
+
+```bash
+dotnet user-secrets list
 ```
 
 ### 3. Застосування міграцій
@@ -78,13 +89,37 @@ cd StayFit.Web
 dotnet ef database update --project ../StayFit.Infrastructure
 ```
 
-### 4. Запуск
+### 4. Запуск у потрібному середовищі
 
-```bash
-dotnet run --project StayFit.Web
+PowerShell:
+
+```powershell
+$env:ASPNETCORE_ENVIRONMENT="Development"
+dotnet run --project src/StayFit/StayFit.Web
 ```
 
-Застосунок буде доступний за адресою: `https://localhost:5001` або `http://localhost:5000`
+Git Bash (MINGW64):
+
+```bash
+export ASPNETCORE_ENVIRONMENT=Development
+dotnet run --project src/StayFit/StayFit.Web
+```
+
+Для Staging/Production просто замініть значення змінної:
+
+- `Development`
+- `Staging`
+- `Production`
+
+Щоб не залежати від `launchSettings.json`, можна запускати так:
+
+```bash
+ASPNETCORE_ENVIRONMENT=Staging dotnet run --project src/StayFit/StayFit.Web --no-launch-profile --urls "http://localhost:5250"
+```
+
+Після запуску відкривайте адресу з логів `Now listening on: ...`.
+
+Примітка: `App:BaseUrl` в `appsettings.*.json` це конфіг для посилань/інтеграцій, а не адреса, на якій сам сервер починає слухати порт.
 
 ---
 
@@ -116,11 +151,11 @@ services.AddScoped<IFoodLogRepository, FoodLogRepository>();
 
 Використовується **Serilog** з трьома sink-ами:
 
-| Sink | Опис |
-|---|---|
+| Sink        | Опис                                                        |
+| ----------- | ----------------------------------------------------------- |
 | **Console** | Виводить у термінал у форматі `[HH:mm:ss LVL] повідомлення` |
-| **File** | Записує у `logs/stayfit-YYYYMMDD.txt` (rolling by day) |
-| **Seq** | Надсилає структуровані логи на `http://localhost:5341` |
+| **File**    | Записує у `logs/stayfit-YYYYMMDD.txt` (rolling by day)      |
+| **Seq**     | Надсилає структуровані логи на `http://localhost:5341`      |
 
 Приклад використання `LoggingService` у контролері:
 
