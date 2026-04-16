@@ -31,6 +31,7 @@ public static class DependencyInjection
         services.AddScoped<INutritionGoalRepository, NutritionGoalRepository>();
         services.AddScoped<IAdminUserRepository, AdminUserRepository>();
         services.AddScoped<IFoodCategoryRepository, FoodCategoryRepository>();
+        services.AddScoped<ISessionRepository, SessionRepository>();
 
         // Services
         services.AddScoped<IRegistrationService, RegistrationService>();
@@ -46,6 +47,7 @@ public static class DependencyInjection
         services.AddScoped<IProductModerationService, ProductModerationService>();
         services.AddScoped<IPasswordChangeService, PasswordChangeService>();
         services.AddScoped<IProfileSetupService, ProfileSetupService>();
+        services.AddScoped<ISessionService, SessionService>();
         return services;
     }
 }

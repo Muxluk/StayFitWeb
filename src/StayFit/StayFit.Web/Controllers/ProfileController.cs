@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using StayFit.Application.DTOs;
 using StayFit.Application.Interfaces;
+using StayFit.Domain.Entities;
 
 namespace StayFit.Web.Controllers;
 
@@ -14,11 +15,16 @@ namespace StayFit.Web.Controllers;
 public class ProfileController : BaseController
 {
     private readonly IUserProfileService _userProfileService;
+    private readonly ISessionService _sessionService;
     private readonly ILogger<ProfileController> _logger;
 
-    public ProfileController(IUserProfileService userProfileService, ILogger<ProfileController> logger)
+    public ProfileController(
+        IUserProfileService userProfileService,
+        ISessionService sessionService,
+        ILogger<ProfileController> logger)
     {
         _userProfileService = userProfileService;
+        _sessionService = sessionService;
         _logger = logger;
     }
 
@@ -42,6 +48,14 @@ public class ProfileController : BaseController
             Weight = profile?.Weight,
             Height = profile?.Height,
         };
+
+        // Завантажити активні сесії для вкладки Безпека
+        var sessionsResult = await _sessionService.GetActiveSessionsAsync(userId);
+        var currentToken = Request.Cookies["SessionToken"] ?? string.Empty;
+        ViewBag.ActiveSessions = sessionsResult.IsSuccess
+            ? ((Domain.Results.Result<IList<UserSession>>.Success)sessionsResult).Data
+            : new List<UserSession>();
+        ViewBag.CurrentSessionToken = currentToken;
 
         return View(dto);
     }
@@ -113,5 +127,4 @@ public class ProfileController : BaseController
         TempData["Success"] = "Профіль видалено!";
         return RedirectToAction("Index", "Home");
     }
-
 }

@@ -20,6 +20,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
     public DbSet<MealEntry> MealEntries { get; set; }
     public DbSet<NutritionGoal> NutritionGoals => Set<NutritionGoal>();
     public DbSet<FoodCategoryEntity> FoodCategories => Set<FoodCategoryEntity>();
+    public DbSet<UserSession> UserSessions => Set<UserSession>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -66,6 +67,21 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
             entity.HasKey(up => up.Id);
             entity.Property(up => up.FullName).IsRequired().HasMaxLength(200);
             entity.HasIndex(up => up.UserId).IsUnique();
+        });
+
+        modelBuilder.Entity<UserSession>(entity =>
+        {
+            entity.HasKey(us => us.Id);
+            entity.Property(us => us.SessionToken).IsRequired().HasMaxLength(64);
+            entity.HasIndex(us => us.SessionToken).IsUnique();
+            entity.HasIndex(us => us.UserId);
+            entity.Property(us => us.IpAddress).HasMaxLength(64);
+            entity.Property(us => us.UserAgent).HasMaxLength(512);
+            // Немає FK на AspNetUsers — зв'язок через DomainUsers
+            entity.HasOne(us => us.User)
+                .WithMany()
+                .HasForeignKey(us => us.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
