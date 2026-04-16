@@ -5,7 +5,6 @@ using StayFit.Application.Interfaces;
 using StayFit.Application.Options;
 using StayFit.Application.Services;
 using StayFit.Infrastructure;
-using StayFit.Application.Options;
 using StayFit.Application.Configuration;
 using StayFit.Web.Filters;
 using StayFit.Infrastructure.Data;
