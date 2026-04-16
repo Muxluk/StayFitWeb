@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using Serilog;
+using StayFit.Application.Configuration;
 using StayFit.Application.Interfaces;
 using StayFit.Application.Options;
 using StayFit.Application.Services;
@@ -79,6 +81,9 @@ builder.Services.AddScoped<MealService>();
 builder.Services.AddScoped<IProfileSetupService, ProfileSetupService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IFoodCategoryService, FoodCategoryService>();
+
+// ─── Configuration ──────────────────────────────────────────────────────────
+builder.Services.Configure<PaginationSettings>(builder.Configuration.GetSection(PaginationSettings.SectionName));
 
 // ─── Build ──────────────────────────────────────────────────────────────────
 var app = builder.Build();

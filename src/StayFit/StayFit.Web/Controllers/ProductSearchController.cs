@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using StayFit.Application.Configuration;
 using StayFit.Application.Interfaces;
 using StayFit.Domain.Enums;
 
@@ -9,10 +11,14 @@ namespace StayFit.Web.Controllers;
 public class ProductSearchController : BaseController
 {
     private readonly IProductSearchService _productSearchService;
+    private readonly IOptions<PaginationSettings> _paginationSettings;
 
-    public ProductSearchController(IProductSearchService productSearchService)
+    public ProductSearchController(
+        IProductSearchService productSearchService,
+        IOptions<PaginationSettings> paginationSettings)
     {
         _productSearchService = productSearchService;
+        _paginationSettings = paginationSettings;
     }
 
     [AllowAnonymous]
@@ -20,8 +26,10 @@ public class ProductSearchController : BaseController
     {
         var userId = GetCurrentUserIdOrDefault();
 
-        // Показуємо 6 продуктів на сторінку (2 ряди по 3 картки)
-        var result = await _productSearchService.SearchAsync(searchTerm, category, page, 6, userId);
+        // Використовуємо розмір сторінки з конфіга
+        var pageSize = _paginationSettings.Value.DefaultPageSize;
+
+        var result = await _productSearchService.SearchAsync(searchTerm, category, page, pageSize, userId);
 
         if (result.IsFailure)
         {
@@ -36,5 +44,4 @@ public class ProductSearchController : BaseController
 
         return View(result.Value);
     }
-
 }
