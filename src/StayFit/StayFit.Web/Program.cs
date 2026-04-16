@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using Serilog;
+using StayFit.Application.Configuration;
 using StayFit.Application.Interfaces;
 using StayFit.Application.Services;
 using StayFit.Infrastructure;
@@ -62,6 +64,9 @@ builder.Services.AddScoped<AccountSecurityService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IAccountSecurityRepository, AccountSecurityRepository>();
 builder.Services.AddScoped<IFoodCategoryService, FoodCategoryService>();
+
+// ─── Configuration ──────────────────────────────────────────────────────────
+builder.Services.Configure<PaginationSettings>(builder.Configuration.GetSection(PaginationSettings.SectionName));
 
 // ─── Build ──────────────────────────────────────────────────────────────────
 var app = builder.Build();

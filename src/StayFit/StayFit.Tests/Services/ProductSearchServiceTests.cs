@@ -137,4 +137,119 @@ public class ProductSearchServiceTests
         Assert.Equal(0, result.Value!.TotalCount);
         Assert.Equal(0, result.Value!.TotalPages);
     }
+
+    [Fact]
+    public async Task SearchAsync_ShouldReturnFailure_WhenPageIsNegative()
+    {
+        // Arrange
+        int negativePage = -5;
+
+        // Act
+        var result = await _productSearchService.SearchAsync("Test", null, negativePage, 10, 1);
+
+        // Assert
+        Assert.True(result.IsFailure);
+        Assert.Contains("Номер сторінки повинен бути більше нуля.", result.Errors);
+    }
+
+    [Fact]
+    public async Task SearchAsync_ShouldHandleNullSearchTermCorrectly()
+    {
+        // Arrange
+        var foods = new List<Food>
+        {
+            new Food { Id = 1, Name = "Apple", Category = FoodCategory.Fruits },
+            new Food { Id = 2, Name = "Banana", Category = FoodCategory.Fruits }
+        };
+
+        _mockFoodRepository
+            .Setup(repo => repo.SearchAsync(null, FoodCategory.Fruits, 1, 10, 1))
+            .ReturnsAsync((foods, 2));
+
+        // Act
+        var result = await _productSearchService.SearchAsync(null, FoodCategory.Fruits, 1, 10, 1);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Value);
+        Assert.Equal(2, result.Value!.Items.Count());
+    }
+
+    [Fact]
+    public async Task SearchAsync_ShouldReturnCorrectPageNumber()
+    {
+        // Arrange
+        var foods = new List<Food>();
+        _mockFoodRepository
+            .Setup(repo => repo.SearchAsync("Test", null, 5, 10, 1))
+            .ReturnsAsync((foods, 150)); // 15 pages total
+
+        // Act
+        var result = await _productSearchService.SearchAsync("Test", null, 5, 10, 1);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Value);
+        Assert.Equal(5, result.Value!.PageNumber);
+        Assert.Equal(10, result.Value!.PageSize);
+        Assert.Equal(15, result.Value!.TotalPages);
+    }
+
+    [Fact]
+    public async Task SearchAsync_ShouldHandleLargePageNumber()
+    {
+        // Arrange
+        var foods = new List<Food>();
+        _mockFoodRepository
+            .Setup(repo => repo.SearchAsync(null, null, 1000, 10, 1))
+            .ReturnsAsync((foods, 0));
+
+        // Act
+        var result = await _productSearchService.SearchAsync(null, null, 1000, 10, 1);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Value);
+        Assert.Equal(1000, result.Value!.PageNumber);
+        Assert.Equal(0, result.Value!.TotalCount);
+    }
+
+    [Fact]
+    public async Task SearchAsync_ShouldReturnFailure_WhenPageSizeEqualsZero()
+    {
+        // Arrange
+        int zeroPageSize = 0;
+
+        // Act
+        var result = await _productSearchService.SearchAsync("Test", null, 1, zeroPageSize, 1);
+
+        // Assert
+        Assert.True(result.IsFailure);
+        Assert.Contains("Розмір сторінки має бути від 1 до 100.", result.Errors);
+    }
+
+    [Fact]
+    public async Task SearchAsync_ShouldFilterByCategory()
+    {
+        // Arrange
+        var meatProducts = new List<Food>
+        {
+            new Food { Id = 1, Name = "Chicken", Category = FoodCategory.Meat },
+            new Food { Id = 2, Name = "Beef", Category = FoodCategory.Meat }
+        };
+
+        _mockFoodRepository
+            .Setup(repo => repo.SearchAsync(null, FoodCategory.Meat, 1, 10, 1))
+            .ReturnsAsync((meatProducts, 2));
+
+        // Act
+        var result = await _productSearchService.SearchAsync(null, FoodCategory.Meat, 1, 10, 1);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Value);
+        Assert.Equal(2, result.Value!.Items.Count());
+        Assert.All(result.Value!.Items, item => Assert.Equal(FoodCategory.Meat, item.Category));
+    }
 }
+
