@@ -5,6 +5,9 @@ using StayFit.Application.Interfaces;
 using StayFit.Application.Options;
 using StayFit.Application.Services;
 using StayFit.Infrastructure;
+using StayFit.Application.Options;
+using StayFit.Application.Configuration;
+using StayFit.Web.Filters;
 using StayFit.Infrastructure.Data;
 using StayFit.Infrastructure.Identity;
 using StayFit.Infrastructure.Repositories;
@@ -47,6 +50,8 @@ var passwordSettingsSection = builder.Configuration.GetSection("PasswordSettings
 builder.Services.Configure<PasswordSettings>(passwordSettingsSection);
 var passwordSettings = passwordSettingsSection.Get<PasswordSettings>() ?? new PasswordSettings();
 builder.Services.Configure<DashboardSettings>(builder.Configuration.GetSection("Dashboard"));
+
+builder.Services.Configure<SessionSettings>(builder.Configuration.GetSection(SessionSettings.SectionName));
 
 // ─── Identity ───────────────────────────────────────────────────────────────
 builder.Services

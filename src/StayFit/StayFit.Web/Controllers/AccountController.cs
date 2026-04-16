@@ -12,6 +12,7 @@ public class AccountController(
     IRegistrationService registrationService,
     IAuthService authService,
     IPasswordResetService passwordResetService,
+    ISessionService sessionService,
     UserManager<ApplicationUser> userManager,
     SignInManager<ApplicationUser> signInManager)
     : BaseController
@@ -54,6 +55,17 @@ public class AccountController(
         {
             var newUser = await userManager.FindByNameAsync(loginResult.Value!);
             await signInManager.SignInAsync(newUser!, isPersistent: false);
+
+            // Створити сеанс
+            var regIp = HttpContext.Connection.RemoteIpAddress?.ToString();
+            var regUa = HttpContext.Request.Headers.UserAgent.ToString();
+            var regToken = await sessionService.CreateSessionAsync(newUser!.Id, regIp, regUa);
+            Response.Cookies.Append("SessionToken", regToken, new CookieOptions
+            {
+                HttpOnly = true,
+                SameSite = SameSiteMode.Lax,
+                Expires = DateTimeOffset.UtcNow.AddDays(1)
+            });
         }
 
         // Перенаправити на редагування профіля
@@ -92,6 +104,17 @@ public class AccountController(
         var user = await userManager.FindByNameAsync(result.Value!);
         await signInManager.SignInAsync(user!, isPersistent: false);
 
+        // Створити сеанс
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+        var ua = HttpContext.Request.Headers.UserAgent.ToString();
+        var token = await sessionService.CreateSessionAsync(user!.Id, ip, ua);
+        Response.Cookies.Append("SessionToken", token, new CookieOptions
+        {
+            HttpOnly = true,
+            SameSite = SameSiteMode.Lax,
+            Expires = DateTimeOffset.UtcNow.AddDays(1)
+        });
+
         if (!string.IsNullOrWhiteSpace(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
             return Redirect(model.ReturnUrl);
 
@@ -105,6 +128,14 @@ public class AccountController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
+        // Деактивувати сеанс
+        var sessionToken = Request.Cookies["SessionToken"];
+        if (!string.IsNullOrEmpty(sessionToken))
+        {
+            await sessionService.DeactivateSessionAsync(sessionToken);
+            Response.Cookies.Delete("SessionToken");
+        }
+
         await signInManager.SignOutAsync();
         return RedirectToAction("Index", "Home");
     }
