@@ -129,6 +129,52 @@
                         </form>
                     </div>
                 </div>
+
+                <div class="card shadow-sm mt-3">
+                    <div class="card-header bg-warning-subtle">
+                        <h5 class="mb-0">Дії над акаунтом</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a asp-action="Edit" asp-controller="AdminUser" asp-route-userId="@Model.User.UserId" 
+                               class="btn btn-outline-primary">
+                                <i class="bi bi-pencil"></i> Редагувати
+                            </a>
+
+                            @if (Model.User.IsLocked)
+                            {
+                                <form method="post" asp-action="UnblockUser" asp-controller="AdminUser" 
+                                      asp-route-userId="@Model.User.UserId" style="margin-bottom: 0;">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-success w-100"
+                                            onclick="return confirm('Розблокувати цього користувача?');">
+                                        <i class="bi bi-unlock"></i> Розблокувати
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form method="post" asp-action="BlockUser" asp-controller="AdminUser"
+                                      asp-route-userId="@Model.User.UserId" style="margin-bottom: 0;">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-warning w-100"
+                                            onclick="return confirm('Заблокувати цього користувача?');">
+                                        <i class="bi bi-lock"></i> Заблокувати
+                                    </button>
+                                </form>
+                            }
+
+                            <form method="post" asp-action="DeleteUser" asp-controller="AdminUser"
+                                  asp-route-userId="@Model.User.UserId" style="margin-bottom: 0;">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-danger w-100"
+                                        onclick="return confirm('УВАГА! Видалити цього користувача? Цю дію не можна скасувати!');">
+                                    <i class="bi bi-trash"></i> Видалити
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     }

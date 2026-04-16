@@ -12,7 +12,6 @@ public class AccountController(
     IRegistrationService registrationService,
     IAuthService authService,
     IPasswordResetService passwordResetService,
-    IProfileSetupService profileSetupService,
     UserManager<ApplicationUser> userManager,
     SignInManager<ApplicationUser> signInManager)
     : BaseController
@@ -92,15 +91,6 @@ public class AccountController(
         // Встановлюємо auth cookie через SignInManager (Web-шар)
         var user = await userManager.FindByNameAsync(result.Value!);
         await signInManager.SignInAsync(user!, isPersistent: false);
-
-        // Перевірити, чи профіль заповнений
-        var isProfileComplete = await profileSetupService.IsProfileCompleteAsync(user!.Id);
-        
-        if (!isProfileComplete)
-        {
-            // Якщо профіль не заповнений, перенаправити на редагування профіля
-            return RedirectToAction("Edit", "Profile");
-        }
 
         if (!string.IsNullOrWhiteSpace(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
             return Redirect(model.ReturnUrl);

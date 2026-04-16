@@ -30,4 +30,8 @@ public interface IAdminUserRepository
         int userId,
         AdminUpdateUserRequestDto request,
         CancellationToken cancellationToken = default);
+
+    Task<(bool Succeeded, IReadOnlyList<string> Errors)> DeleteUserAsync(
+        int userId,
+        CancellationToken cancellationToken = default);
 }

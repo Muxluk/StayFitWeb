@@ -12,44 +12,20 @@ public class HomeController : BaseController
     private readonly ILogger<HomeController> _logger;
     private readonly LoggingService _loggingService;
     private readonly IDashboardService _dashboardService;
-    private readonly IProfileSetupService _profileSetupService;
 
     public HomeController(
         ILogger<HomeController> logger,
         LoggingService loggingService,
-        IDashboardService dashboardService,
-        IProfileSetupService profileSetupService)
+        IDashboardService dashboardService)
     {
         _logger = logger;
         _loggingService = loggingService;
         _dashboardService = dashboardService;
-        _profileSetupService = profileSetupService;
     }
 
     public async Task<IActionResult> Index()
     {
         _logger.LogInformation("Користувач відвідав сторінку Index");
-        
-        // Перевірити профіль для авторизованих користувачів
-        if (User.Identity?.IsAuthenticated == true)
-        {
-            try
-            {
-                var userId = GetRequiredCurrentUserId();
-                var isProfileComplete = await _profileSetupService.IsProfileCompleteAsync(userId);
-                
-                if (!isProfileComplete)
-                {
-                    _logger.LogInformation("Користувач {UserId} був перенаправлений на редагування профіля", userId);
-                    return RedirectToAction("Edit", "Profile");
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Помилка при перевірці профілю на сторінці Home");
-                // Продовжити в разі помилки
-            }
-        }
 
         try
         {

@@ -144,4 +144,24 @@ public sealed class AdminUserService(
         logger.LogInformation("Admin account update succeeded for userId={UserId}", userId);
         return Result.Success();
     }
+
+    public async Task<Result> DeleteUserAsync(
+        int userId,
+        CancellationToken cancellationToken = default)
+    {
+        logger.LogInformation("Admin requested delete for userId={UserId}", userId);
+
+        var (succeeded, errors) = await adminUserRepository.DeleteUserAsync(userId, cancellationToken);
+        if (!succeeded)
+        {
+            logger.LogWarning(
+                "Admin delete failed for userId={UserId}. Errors: {Errors}",
+                userId,
+                string.Join("; ", errors));
+            return Result.Failure(errors);
+        }
+
+        logger.LogInformation("Admin deleted user userId={UserId}", userId);
+        return Result.Success();
+    }
 }

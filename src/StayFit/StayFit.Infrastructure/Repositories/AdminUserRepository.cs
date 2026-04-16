@@ -212,4 +212,33 @@ public class AdminUserRepository(
         await dbContext.SaveChangesAsync(cancellationToken);
         return (true, Array.Empty<string>());
     }
+
+    public async Task<(bool Succeeded, IReadOnlyList<string> Errors)> DeleteUserAsync(
+        int userId,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        if (user is null)
+        {
+            return (false, ["Користувача не знайдено"]);
+        }
+
+        var result = await userManager.DeleteAsync(user);
+        if (!result.Succeeded)
+        {
+            return (false, result.Errors.Select(e => e.Description).ToArray());
+        }
+
+        // Видалити профіль користувача, якщо існує
+        var profile = await dbContext.UserProfiles
+            .FirstOrDefaultAsync(p => p.UserId == userId, cancellationToken);
+        
+        if (profile is not null)
+        {
+            dbContext.UserProfiles.Remove(profile);
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+
+        return (true, Array.Empty<string>());
+    }
 }

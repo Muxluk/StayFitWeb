@@ -42,7 +42,7 @@ public static class DependencyInjection
         services.AddScoped<INutritionGoalService, NutritionGoalService>();
         services.AddScoped<IExportService, ExportService>();
         services.AddScoped<IAdminUserService, AdminUserService>();
-        services.AddScoped<IProgressService, ProgressService>();
+        services.AddScoped<IAdminAccountEditService, AdminAccountEditService>();        services.AddScoped<IDashboardService, DashboardService>();        services.AddScoped<IProgressService, ProgressService>();
         services.AddScoped<IProductModerationService, ProductModerationService>();
         return services;
     }
