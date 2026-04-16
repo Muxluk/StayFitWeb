@@ -48,6 +48,7 @@ builder.Services.AddInfrastructure(builder.Configuration);
 var passwordSettingsSection = builder.Configuration.GetSection("PasswordSettings");
 builder.Services.Configure<PasswordSettings>(passwordSettingsSection);
 var passwordSettings = passwordSettingsSection.Get<PasswordSettings>() ?? new PasswordSettings();
+builder.Services.Configure<ProfileSetupOptions>(builder.Configuration.GetSection("ProfileSetup"));
 builder.Services.Configure<DashboardSettings>(builder.Configuration.GetSection("Dashboard"));
 
 builder.Services.Configure<SessionSettings>(builder.Configuration.GetSection(SessionSettings.SectionName));
