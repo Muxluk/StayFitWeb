@@ -1,6 +1,8 @@
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 using Moq;
 using StayFit.Application.Services;
+using StayFit.Application.Options;
 using StayFit.Domain.Entities;
 using StayFit.Domain.Interfaces;
 
@@ -19,6 +21,9 @@ public sealed class DashboardServiceTests
         var foodLogRepositoryMock = new Mock<IFoodLogRepository>();
         foodLogRepositoryMock
             .Setup(r => r.GetByUserIdAndDateAsync(10, It.IsAny<DateTime>()))
+            .ReturnsAsync(Array.Empty<FoodLog>());
+        foodLogRepositoryMock
+            .Setup(r => r.GetLatestByUserIdAsync(10, It.IsAny<int>()))
             .ReturnsAsync(Array.Empty<FoodLog>());
 
         var nutritionGoalRepositoryMock = new Mock<INutritionGoalRepository>();
@@ -96,6 +101,9 @@ public sealed class DashboardServiceTests
         foodLogRepositoryMock
             .Setup(r => r.GetByUserIdAndDateAsync(user.Id, today))
             .ReturnsAsync(foodLogs);
+        foodLogRepositoryMock
+            .Setup(r => r.GetLatestByUserIdAsync(user.Id, It.IsAny<int>()))
+            .ReturnsAsync(foodLogs);
 
         var nutritionGoalRepositoryMock = new Mock<INutritionGoalRepository>();
         nutritionGoalRepositoryMock
@@ -118,6 +126,7 @@ public sealed class DashboardServiceTests
         Assert.Equal(120f, result.Value.TargetProtein);
         Assert.Equal(70f, result.Value.TargetFat);
         Assert.Equal(250f, result.Value.TargetCarbs);
+        Assert.Equal(2, result.Value.RecentDiaryEntries.Count);
     }
 
     [Fact]
@@ -152,22 +161,133 @@ public sealed class DashboardServiceTests
         Assert.Equal(0f, result.Value.ActualProtein);
         Assert.Equal(0f, result.Value.ActualFat);
         Assert.Equal(0f, result.Value.ActualCarbs);
+        Assert.Empty(result.Value.RecentDiaryEntries);
 
         foodLogRepositoryMock.Verify(
             r => r.GetByUserIdAndDateAsync(It.IsAny<int>(), It.IsAny<DateTime>()),
             Times.Never);
+
+        foodLogRepositoryMock.Verify(
+            r => r.GetLatestByUserIdAsync(It.IsAny<int>(), It.IsAny<int>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task GetTodayDashboardAsync_WhenRecentCountConfigured_UsesConfiguredValueAndMapsEntries()
+    {
+        var user = new User { Id = 12, Email = "user@example.com", Name = "User" };
+        var now = DateTime.UtcNow;
+
+        var latestLogs = new List<FoodLog>
+        {
+            new()
+            {
+                UserId = user.Id,
+                AmountGrams = 120,
+                LoggedAt = now,
+                Food = new Food
+                {
+                    Name = "Вівсянка",
+                    CaloriesPer100g = 300,
+                    ProteinPer100g = 12,
+                    FatPer100g = 5,
+                    CarbsPer100g = 55
+                }
+            }
+        };
+
+        var userRepositoryMock = new Mock<IUserRepository>();
+        userRepositoryMock
+            .Setup(r => r.GetByEmailAsync("user@example.com"))
+            .ReturnsAsync(user);
+
+        var foodLogRepositoryMock = new Mock<IFoodLogRepository>();
+        foodLogRepositoryMock
+            .Setup(r => r.GetByUserIdAndDateAsync(user.Id, It.IsAny<DateTime>()))
+            .ReturnsAsync(Array.Empty<FoodLog>());
+        foodLogRepositoryMock
+            .Setup(r => r.GetLatestByUserIdAsync(user.Id, 3))
+            .ReturnsAsync(latestLogs);
+
+        var nutritionGoalRepositoryMock = new Mock<INutritionGoalRepository>();
+        nutritionGoalRepositoryMock
+            .Setup(r => r.GetByUserIdAsync("12"))
+            .ReturnsAsync(new NutritionGoal
+            {
+                UserId = "12",
+                CaloriesGoal = 2000,
+                ProteinGoal = 110,
+                FatGoal = 65,
+                CarbsGoal = 240
+            });
+
+        var sut = CreateSut(foodLogRepositoryMock, nutritionGoalRepositoryMock, userRepositoryMock, 3);
+
+        var result = await sut.GetTodayDashboardAsync(12, "user@example.com");
+
+        Assert.True(result.IsSuccess);
+        Assert.Single(result.Value!.RecentDiaryEntries);
+        Assert.Equal("Вівсянка", result.Value.RecentDiaryEntries[0].FoodName);
+        Assert.Equal(360f, result.Value.RecentDiaryEntries[0].Calories);
+
+        foodLogRepositoryMock.Verify(r => r.GetLatestByUserIdAsync(user.Id, 3), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetTodayDashboardAsync_WhenRecentCountInvalid_FallsBackToDefaultValue()
+    {
+        var user = new User { Id = 20, Email = "user@example.com", Name = "User" };
+
+        var userRepositoryMock = new Mock<IUserRepository>();
+        userRepositoryMock
+            .Setup(r => r.GetByEmailAsync("user@example.com"))
+            .ReturnsAsync(user);
+
+        var foodLogRepositoryMock = new Mock<IFoodLogRepository>();
+        foodLogRepositoryMock
+            .Setup(r => r.GetByUserIdAndDateAsync(user.Id, It.IsAny<DateTime>()))
+            .ReturnsAsync(Array.Empty<FoodLog>());
+        foodLogRepositoryMock
+            .Setup(r => r.GetLatestByUserIdAsync(user.Id, 5))
+            .ReturnsAsync(Array.Empty<FoodLog>());
+
+        var nutritionGoalRepositoryMock = new Mock<INutritionGoalRepository>();
+        nutritionGoalRepositoryMock
+            .Setup(r => r.GetByUserIdAsync("20"))
+            .ReturnsAsync(new NutritionGoal
+            {
+                UserId = "20",
+                CaloriesGoal = 1800,
+                ProteinGoal = 100,
+                FatGoal = 60,
+                CarbsGoal = 200
+            });
+
+        var sut = CreateSut(foodLogRepositoryMock, nutritionGoalRepositoryMock, userRepositoryMock, 0);
+
+        var result = await sut.GetTodayDashboardAsync(20, "user@example.com");
+
+        Assert.True(result.IsSuccess);
+        foodLogRepositoryMock.Verify(r => r.GetLatestByUserIdAsync(user.Id, 5), Times.Once);
     }
 
     private static DashboardService CreateSut(
         Mock<IFoodLogRepository> foodLogRepositoryMock,
         Mock<INutritionGoalRepository> nutritionGoalRepositoryMock,
-        Mock<IUserRepository> userRepositoryMock)
+        Mock<IUserRepository> userRepositoryMock,
+        int recentDiaryEntriesCount = 5)
     {
         var loggerMock = new Mock<ILogger<DashboardService>>();
+        var options = Options.Create(new DashboardSettings
+        {
+            RecentDiaryEntriesCount = recentDiaryEntriesCount
+        });
+
         return new DashboardService(
             foodLogRepositoryMock.Object,
             nutritionGoalRepositoryMock.Object,
             userRepositoryMock.Object,
+            options,
             loggerMock.Object);
     }
 }

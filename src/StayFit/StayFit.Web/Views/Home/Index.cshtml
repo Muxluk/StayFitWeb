@@ -105,6 +105,51 @@
                     </div>
                 </div>
             </div>
+
+            <div class="col-12 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">🕒 Останні записи щоденника</h5>
+
+                        @if (Model.RecentDiaryEntries.Count == 0)
+                        {
+                            <p class="text-muted mb-0">Записів ще немає. Додайте перший запис у щоденник.</p>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Час</th>
+                                            <th>Продукт</th>
+                                            <th>Кількість</th>
+                                            <th>Ккал</th>
+                                            <th>Б</th>
+                                            <th>Ж</th>
+                                            <th>В</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var entry in Model.RecentDiaryEntries)
+                                        {
+                                            <tr>
+                                                <td>@entry.LoggedAt.ToLocalTime().ToString("dd.MM HH:mm")</td>
+                                                <td>@entry.FoodName</td>
+                                                <td>@entry.AmountGrams.ToString("F0") г</td>
+                                                <td>@entry.Calories.ToString("F1")</td>
+                                                <td>@entry.Protein.ToString("F1")</td>
+                                                <td>@entry.Fat.ToString("F1")</td>
+                                                <td>@entry.Carbs.ToString("F1")</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
         </div>
     }
 </div>

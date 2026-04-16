@@ -11,6 +11,7 @@ using StayFit.Infrastructure.Repositories;
 using StayFit.Web.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddUserSecrets<Program>(optional: true, reloadOnChange: true);
 
 // ─── Serilog ────────────────────────────────────────────────────────────────
 builder.Host.UseSerilog((context, configuration) =>
@@ -45,6 +46,7 @@ builder.Services.AddInfrastructure(builder.Configuration);
 var passwordSettingsSection = builder.Configuration.GetSection("PasswordSettings");
 builder.Services.Configure<PasswordSettings>(passwordSettingsSection);
 var passwordSettings = passwordSettingsSection.Get<PasswordSettings>() ?? new PasswordSettings();
+builder.Services.Configure<DashboardSettings>(builder.Configuration.GetSection("Dashboard"));
 
 // ─── Identity ───────────────────────────────────────────────────────────────
 builder.Services

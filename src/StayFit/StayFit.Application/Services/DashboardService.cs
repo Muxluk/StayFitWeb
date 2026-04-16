@@ -1,7 +1,9 @@
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 using StayFit.Application.Common;
 using StayFit.Application.DTOs;
 using StayFit.Application.Interfaces;
+using StayFit.Application.Options;
 using StayFit.Domain.Entities;
 using StayFit.Domain.Interfaces;
 
@@ -12,17 +14,20 @@ public class DashboardService : IDashboardService
     private readonly IFoodLogRepository _foodLogRepository;
     private readonly INutritionGoalRepository _nutritionGoalRepository;
     private readonly IUserRepository _userRepository;
+    private readonly DashboardSettings _dashboardSettings;
     private readonly ILogger<DashboardService> _logger;
 
     public DashboardService(
         IFoodLogRepository foodLogRepository,
         INutritionGoalRepository nutritionGoalRepository,
         IUserRepository userRepository,
+        IOptions<DashboardSettings> dashboardSettings,
         ILogger<DashboardService> logger)
     {
         _foodLogRepository = foodLogRepository;
         _nutritionGoalRepository = nutritionGoalRepository;
         _userRepository = userRepository;
+        _dashboardSettings = dashboardSettings.Value;
         _logger = logger;
     }
 
@@ -39,6 +44,14 @@ public class DashboardService : IDashboardService
         var foodLogs = domainUser is null
             ? Enumerable.Empty<FoodLog>()
             : await _foodLogRepository.GetByUserIdAndDateAsync(domainUser.Id, today);
+
+        var recentEntriesLimit = _dashboardSettings.RecentDiaryEntriesCount > 0
+            ? _dashboardSettings.RecentDiaryEntriesCount
+            : 5;
+
+        var recentFoodLogs = domainUser is null
+            ? Enumerable.Empty<FoodLog>()
+            : await _foodLogRepository.GetLatestByUserIdAsync(domainUser.Id, recentEntriesLimit);
 
         // Обчислення фактичних калорій та БЖВ
         float actualCalories = 0;
@@ -75,7 +88,25 @@ public class DashboardService : IDashboardService
             ActualFat = actualFat,
             TargetFat = goal.FatGoal,
             ActualCarbs = actualCarbs,
-            TargetCarbs = goal.CarbsGoal
+            TargetCarbs = goal.CarbsGoal,
+            RecentDiaryEntries = recentFoodLogs
+                .Select(log =>
+                {
+                    var portion = log.AmountGrams / 100f;
+                    var food = log.Food;
+
+                    return new RecentDiaryEntryDto
+                    {
+                        LoggedAt = log.LoggedAt,
+                        FoodName = food?.Name ?? "Невідомий продукт",
+                        AmountGrams = log.AmountGrams,
+                        Calories = (food?.CaloriesPer100g ?? 0f) * portion,
+                        Protein = (food?.ProteinPer100g ?? 0f) * portion,
+                        Fat = (food?.FatPer100g ?? 0f) * portion,
+                        Carbs = (food?.CarbsPer100g ?? 0f) * portion
+                    };
+                })
+                .ToList()
         };
 
         _logger.LogInformation(

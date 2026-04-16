@@ -1,3 +1,18 @@
+@using Microsoft.Extensions.Options
+@using StayFit.Application.Options
+@inject IWebHostEnvironment HostEnvironment
+@inject IOptions<DashboardSettings> DashboardOptions
+@{
+    var environmentName = HostEnvironment.EnvironmentName;
+    var environmentBadgeClass = environmentName switch
+    {
+        "Development" => "bg-success",
+        "Staging" => "bg-warning text-dark",
+        "Production" => "bg-danger",
+        _ => "bg-secondary"
+    };
+}
+
 <!DOCTYPE html>
 <html lang="uk">
 <head>
@@ -6,7 +21,6 @@
     <title>@ViewData["Title"] - StayFit.Web</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/StayFit.Web.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
@@ -49,6 +63,17 @@
                         }
                     </ul>
                     <ul class="navbar-nav">
+                        @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item d-flex align-items-center me-2">
+                                <a asp-controller="Debug" asp-action="Config" class="text-decoration-none" title="Відкрити debug config">
+                                    <span class="badge @environmentBadgeClass">ENV: @environmentName</span>
+                                </a>
+                            </li>
+                        }
+                        <li class="nav-item d-flex align-items-center me-2">
+                            <span class="badge bg-light text-dark border">Dashboard N: @DashboardOptions.Value.RecentDiaryEntriesCount</span>
+                        </li>
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item">

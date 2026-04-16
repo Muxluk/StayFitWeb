@@ -40,6 +40,21 @@ public class FoodLogRepository : Repository<FoodLog>, IFoodLogRepository
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<FoodLog>> GetLatestByUserIdAsync(int userId, int count)
+    {
+        if (count <= 0)
+        {
+            return Array.Empty<FoodLog>();
+        }
+
+        return await DbSet
+            .Include(fl => fl.Food)
+            .Where(fl => fl.UserId == userId)
+            .OrderByDescending(fl => fl.LoggedAt)
+            .Take(count)
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<FoodLog>> GetByFoodIdAsync(int foodId) =>
         await DbSet
             .Where(fl => fl.FoodId == foodId)

@@ -16,4 +16,6 @@ public class DashboardDto
     
     public float ActualCarbs { get; set; }
     public float TargetCarbs { get; set; }
+
+    public IReadOnlyList<RecentDiaryEntryDto> RecentDiaryEntries { get; set; } = Array.Empty<RecentDiaryEntryDto>();
 }
