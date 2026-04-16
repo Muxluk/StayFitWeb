@@ -44,6 +44,8 @@ public static class DependencyInjection
         services.AddScoped<IAdminUserService, AdminUserService>();
         services.AddScoped<IProgressService, ProgressService>();
         services.AddScoped<IProductModerationService, ProductModerationService>();
+        services.AddScoped<IPasswordChangeService, PasswordChangeService>();
+        services.AddScoped<IProfileSetupService, ProfileSetupService>();
         return services;
     }
 }

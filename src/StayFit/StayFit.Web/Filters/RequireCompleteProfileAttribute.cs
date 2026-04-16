@@ -36,7 +36,7 @@ public class RequireCompleteProfileAttribute : TypeFilterAttribute
             var routeValues = context.RouteData.Values;
             var controller = routeValues["controller"]?.ToString() ?? "";
             
-            if (controller == "Profile" || controller == "Account" || controller == "Error")
+            if (controller == "Profile" || controller == "Account" || controller == "Error" || controller == "AccountSecurity")
             {
                 await next();
                 return;

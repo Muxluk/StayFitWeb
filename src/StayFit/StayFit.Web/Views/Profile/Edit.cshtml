@@ -252,7 +252,7 @@
                             <h5 class="mb-0">Змінення пароля</h5>
                         </div>
                         <div class="card-body">
-                            <form method="post" action="@Url.Action("ChangePassword", "AccountSecurity")">
+                            <form method="post" action="/account-security/change-password">
                                 @Html.AntiForgeryToken()
 
                                 <div class="mb-3">
@@ -298,7 +298,7 @@
                                 </tbody>
                             </table>
 
-                            <form method="post" action="@Url.Action("LogoutAll", "AccountSecurity")" style="display:inline;">
+                            <form method="post" action="/account-security/logout-all" style="display:inline;">
                                 @Html.AntiForgeryToken()
                                 <button type="submit" class="btn btn-warning btn-sm">Вийти зі всіх сеансів</button>
                             </form>
@@ -331,7 +331,7 @@
                 <h5 class="modal-title">Підтвердження видалення акаунту</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form method="post" action="@Url.Action("DeleteAccount", "AccountSecurity")">
+            <form method="post" action="/account-security/delete-account">
                 @Html.AntiForgeryToken()
 
                 <div class="modal-body">
@@ -371,7 +371,7 @@
         }
 
         // Валідація пароля при зміні
-        const changePasswordForm = document.querySelector('form[action*="ChangePassword"]');
+        const changePasswordForm = document.querySelector('form[action="/account-security/change-password"]');
         if (changePasswordForm) {
             changePasswordForm.addEventListener('submit', function (e) {
                 const newPassword = document.getElementById('newPassword').value;
@@ -386,7 +386,7 @@
         }
 
         // Валідація токена видалення
-        const deleteForm = document.querySelector('form[action*="DeleteAccount"]');
+        const deleteForm = document.querySelector('form[action="/account-security/delete-account"]');
         if (deleteForm) {
             deleteForm.addEventListener('submit', function (e) {
                 const token = document.getElementById('confirmationToken').value.toUpperCase();

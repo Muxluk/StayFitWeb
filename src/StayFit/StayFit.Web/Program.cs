@@ -45,12 +45,17 @@ builder.Services.AddProblemDetails();
 // ─── Infrastructure (БД + репозиторії) ─────────────────────────────────────
 builder.Services.AddInfrastructure(builder.Configuration);
 
+// ─── Configuration Sections ─────────────────────────────────────────────────
+var passwordSettingsSection = builder.Configuration.GetSection("PasswordSettings");
+builder.Services.Configure<PasswordSettings>(passwordSettingsSection);
+var passwordSettings = passwordSettingsSection.Get<PasswordSettings>() ?? new PasswordSettings();
+
 // ─── Identity ───────────────────────────────────────────────────────────────
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
     {
         options.User.RequireUniqueEmail = true;
-        options.Password.RequiredLength = 8;
+        options.Password.RequiredLength = passwordSettings.MinLength;
         options.Password.RequireNonAlphanumeric = false;
         options.Password.RequireUppercase = false;
         options.Password.RequireLowercase = false;
