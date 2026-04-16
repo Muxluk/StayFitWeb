@@ -2,8 +2,11 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using StayFit.Application.DTOs;
 using StayFit.Application.Interfaces;
+using StayFit.Domain.Entities;
+using StayFit.Domain.Interfaces;
 using StayFit.Infrastructure.Identity;
 
 namespace StayFit.Web.Controllers;
@@ -13,6 +16,7 @@ public class AccountController(
     IAuthService authService,
     IPasswordResetService passwordResetService,
     ISessionService sessionService,
+    IUserRepository userRepository,
     UserManager<ApplicationUser> userManager,
     SignInManager<ApplicationUser> signInManager)
     : BaseController
@@ -59,7 +63,8 @@ public class AccountController(
             // Створити сеанс
             var regIp = HttpContext.Connection.RemoteIpAddress?.ToString();
             var regUa = HttpContext.Request.Headers.UserAgent.ToString();
-            var regToken = await sessionService.CreateSessionAsync(newUser!.Id, regIp, regUa);
+            var domainUserId = await GetOrCreateDomainUserIdAsync(newUser!.Id, model.Email, model.UserName);
+            var regToken = await sessionService.CreateSessionAsync(domainUserId, regIp, regUa);
             Response.Cookies.Append("SessionToken", regToken, new CookieOptions
             {
                 HttpOnly = true,
@@ -107,7 +112,8 @@ public class AccountController(
         // Створити сеанс
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
         var ua = HttpContext.Request.Headers.UserAgent.ToString();
-        var token = await sessionService.CreateSessionAsync(user!.Id, ip, ua);
+        var domainUserId = await GetOrCreateDomainUserIdAsync(user!.Id, user.Email!, user.UserName ?? user.Email!);
+        var token = await sessionService.CreateSessionAsync(domainUserId, ip, ua);
         Response.Cookies.Append("SessionToken", token, new CookieOptions
         {
             HttpOnly = true,
@@ -138,6 +144,47 @@ public class AccountController(
 
         await signInManager.SignOutAsync();
         return RedirectToAction("Index", "Home");
+    }
+
+    private async Task<int> GetOrCreateDomainUserIdAsync(int identityUserId, string email, string fallbackName)
+    {
+        var existingByEmail = await userRepository.GetByEmailAsync(email);
+        if (existingByEmail != null)
+        {
+            return existingByEmail.Id;
+        }
+
+        var existingById = await userRepository.GetByIdAsync(identityUserId);
+        if (existingById != null)
+        {
+            // Якщо DomainUser вже існує з тим самим ID Identity, перевикористовуємо його.
+            return existingById.Id;
+        }
+
+        var domainUser = new User
+        {
+            Id = identityUserId,
+            Name = string.IsNullOrWhiteSpace(fallbackName) ? email : fallbackName,
+            Email = email,
+            CreatedAt = DateTime.UtcNow,
+        };
+
+        try
+        {
+            await userRepository.AddAsync(domainUser);
+            return domainUser.Id;
+        }
+        catch (DbUpdateException)
+        {
+            // Захист від race condition: якщо інший запит створив DomainUser раніше, просто дочитуємо.
+            var createdByEmail = await userRepository.GetByEmailAsync(email);
+            if (createdByEmail != null)
+            {
+                return createdByEmail.Id;
+            }
+
+            throw;
+        }
     }
 
     // ─── Забули пароль ──────────────────────────────────────────────────────
