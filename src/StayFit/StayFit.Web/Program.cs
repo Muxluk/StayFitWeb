@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Serilog;
 using StayFit.Application.Interfaces;
+using StayFit.Application.Options;
 using StayFit.Application.Services;
 using StayFit.Infrastructure;
 using StayFit.Infrastructure.Data;
