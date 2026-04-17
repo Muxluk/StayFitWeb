@@ -330,7 +330,7 @@
                                                     <td>
                                                         @if (!isCurrent)
                                                         {
-                                                            <form method="post" action="/account-security/terminate-session" style="display:inline;">
+                                                            <form method="post" action="/sessions/terminate" style="display:inline;">
                                                                 @Html.AntiForgeryToken()
                                                                 <input type="hidden" name="sessionId" value="@session.Id" />
                                                                 <button type="submit" class="btn btn-outline-danger btn-sm"
@@ -349,7 +349,7 @@
 
                             @if (activeSessions.Count(s => s.SessionToken != currentSessionToken) > 0)
                             {
-                                <form method="post" action="/account-security/logout-all" style="display:inline;">
+                                <form method="post" action="/sessions/terminate-all" style="display:inline;">
                                     @Html.AntiForgeryToken()
                                     <button type="submit" class="btn btn-warning btn-sm mt-2"
                                             onclick="return confirm('Завершити всі інші сеанси?')">

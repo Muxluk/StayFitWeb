@@ -35,7 +35,10 @@ builder.Host.UseSerilog((context, configuration) =>
         .Enrich.WithProperty("Application", "StayFit"));
 
 // ─── MVC ────────────────────────────────────────────────────────────────────
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add<SessionValidationFilter>();
+});
 
 // ─── Global Exception Handler ───────────────────────────────────────────────
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();

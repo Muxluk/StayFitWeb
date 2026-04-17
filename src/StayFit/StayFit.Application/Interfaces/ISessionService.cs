@@ -11,6 +11,9 @@ public interface ISessionService
     /// <summary>Отримати список активних сеансів поточного користувача</summary>
     Task<Result<IList<UserSession>>> GetActiveSessionsAsync(int userId);
 
+    /// <summary>Перевірити валідність сеансу</summary>
+    Task<bool> IsSessionValidAsync(string token);
+
     /// <summary>Завершити конкретний сеанс</summary>
     Task<Result<bool>> TerminateSessionAsync(int userId, int sessionId);
 

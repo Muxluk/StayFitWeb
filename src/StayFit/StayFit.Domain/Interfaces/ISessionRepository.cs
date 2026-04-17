@@ -16,6 +16,9 @@ public interface ISessionRepository
     /// <summary>Знайти сеанс за токеном</summary>
     Task<UserSession?> GetByTokenAsync(string token);
 
+    /// <summary>Перевірити чи токен є дійсним</summary>
+    Task<bool> IsValidAsync(string token);
+
     /// <summary>Деактивувати конкретний сеанс</summary>
     Task<bool> DeactivateAsync(int sessionId);
 
