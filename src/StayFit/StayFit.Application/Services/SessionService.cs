@@ -41,6 +41,13 @@ public class SessionService : ISessionService
     }
 
     /// <inheritdoc/>
+    public async Task<bool> IsSessionValidAsync(string token)
+    {
+        if (string.IsNullOrWhiteSpace(token)) return false;
+        return await _sessionRepository.IsValidAsync(token);
+    }
+
+    /// <inheritdoc/>
     public async Task<Result<bool>> TerminateSessionAsync(int userId, int sessionId)
     {
         _logger.LogInformation("Завершення сеансу {SessionId} для користувача {UserId}", sessionId, userId);

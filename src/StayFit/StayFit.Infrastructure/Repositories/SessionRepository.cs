@@ -42,6 +42,13 @@ public class SessionRepository : ISessionRepository
     }
 
     /// <inheritdoc/>
+    public async Task<bool> IsValidAsync(string token)
+    {
+        return await _context.UserSessions
+            .AnyAsync(s => s.SessionToken == token && s.IsActive && s.ExpiresAt > DateTime.UtcNow);
+    }
+
+    /// <inheritdoc/>
     public async Task<bool> DeactivateAsync(int sessionId)
     {
         var session = await _context.UserSessions.FindAsync(sessionId);
