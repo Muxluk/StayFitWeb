@@ -12,7 +12,7 @@ public sealed class AdminUserSearchViewModel
     [EmailAddress(ErrorMessage = "Некоректний email")]
     public string? Email { get; set; }
 
-    public IReadOnlyList<AdminUserListItemDto> Users { get; set; } = Array.Empty<AdminUserListItemDto>();
+    public PagedResult<AdminUserListItemDto> Users { get; set; } = new();
 }
 
 public sealed class AdminResetPasswordViewModel

@@ -4,9 +4,11 @@ namespace StayFit.Application.Interfaces;
 
 public interface IAdminUserRepository
 {
-    Task<IReadOnlyList<AdminUserListItemDto>> SearchUsersAsync(
+    Task<PagedResult<AdminUserListItemDto>> SearchUsersAsync(
         int? userId,
         string? email,
+        int pageNumber,
+        int pageSize,
         CancellationToken cancellationToken = default);
 
     Task<AdminUserDetailsDto?> GetUserDetailsAsync(

@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using StayFit.Application.DTOs;
 using StayFit.Application.Interfaces;
 using StayFit.Web.Models;
+using Microsoft.Extensions.Options;
+using StayFit.Application.Configuration;
 
 namespace StayFit.Web.Controllers;
 
@@ -11,14 +13,17 @@ namespace StayFit.Web.Controllers;
 public class AdminUserController : BaseController
 {
     private readonly IAdminUserService _adminUserService;
-
-    public AdminUserController(IAdminUserService adminUserService)
+    private readonly PaginationSettings _paginationSettings;
+    public AdminUserController(
+        IAdminUserService adminUserService, 
+        IOptions<PaginationSettings> paginationSettings)
     {
         _adminUserService = adminUserService;
+        _paginationSettings = paginationSettings.Value;
     }
 
     [HttpGet("")]
-    public async Task<IActionResult> Index([FromQuery] int? userId, [FromQuery] string? email)
+    public async Task<IActionResult> Index([FromQuery] int? userId, [FromQuery] string? email, [FromQuery] int page = 1)
     {
         var model = new AdminUserSearchViewModel
         {
@@ -26,15 +31,12 @@ public class AdminUserController : BaseController
             Email = email,
         };
 
-        if (userId is null && string.IsNullOrWhiteSpace(email))
-        {
-            return View(model);
-        }
-
         var result = await _adminUserService.SearchUsersAsync(new AdminUserSearchRequestDto
         {
             UserId = userId,
             Email = email,
+            PageNumber = page > 0 ? page : 1,
+            PageSize = _paginationSettings.DefaultPageSize
         });
 
         if (result.IsFailure)
@@ -43,7 +45,7 @@ public class AdminUserController : BaseController
             return View(model);
         }
 
-        model.Users = result.Value ?? Array.Empty<AdminUserListItemDto>();
+        model.Users = result.Value ?? new PagedResult<AdminUserListItemDto>();
         return View(model);
     }
 

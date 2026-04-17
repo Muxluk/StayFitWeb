@@ -13,22 +13,25 @@ public sealed class AdminUserService(
     ILogger<AdminUserService> logger)
     : IAdminUserService
 {
-    public async Task<Result<IReadOnlyList<AdminUserListItemDto>>> SearchUsersAsync(
+    public async Task<Result<PagedResult<AdminUserListItemDto>>> SearchUsersAsync(
         AdminUserSearchRequestDto request,
         CancellationToken cancellationToken = default)
     {
         logger.LogInformation(
-            "Admin user search requested. UserId={UserId}, Email={Email}",
-            request.UserId,
-            request.Email);
-
-        var users = await adminUserRepository.SearchUsersAsync(
+            "Admin user search requested. UserId={UserId}, Email={Email}, Page={Page}",
             request.UserId,
             request.Email,
+            request.PageNumber);
+
+        var pagedUsers = await adminUserRepository.SearchUsersAsync(
+            request.UserId,
+            request.Email,
+            request.PageNumber,
+            request.PageSize,
             cancellationToken);
 
-        logger.LogInformation("Admin user search completed. Found {Count} users", users.Count);
-        return Result<IReadOnlyList<AdminUserListItemDto>>.Success(users);
+        logger.LogInformation("Admin user search completed. Found {TotalCount} users total", pagedUsers.TotalCount);
+        return Result<PagedResult<AdminUserListItemDto>>.Success(pagedUsers);
     }
 
     public async Task<Result<AdminUserDetailsDto>> GetUserDetailsAsync(

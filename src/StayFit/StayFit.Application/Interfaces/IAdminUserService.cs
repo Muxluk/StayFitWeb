@@ -5,7 +5,7 @@ namespace StayFit.Application.Interfaces;
 
 public interface IAdminUserService
 {
-    Task<Result<IReadOnlyList<AdminUserListItemDto>>> SearchUsersAsync(
+    Task<Result<PagedResult<AdminUserListItemDto>>> SearchUsersAsync(
         AdminUserSearchRequestDto request,
         CancellationToken cancellationToken = default);
 

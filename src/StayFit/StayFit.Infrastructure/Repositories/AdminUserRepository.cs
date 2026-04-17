@@ -12,9 +12,11 @@ public class AdminUserRepository(
     UserManager<ApplicationUser> userManager,
     AppDbContext dbContext) : IAdminUserRepository
 {
-    public async Task<IReadOnlyList<AdminUserListItemDto>> SearchUsersAsync(
+    public async Task<PagedResult<AdminUserListItemDto>> SearchUsersAsync(
         int? userId,
         string? email,
+        int pageNumber,
+        int pageSize,
         CancellationToken cancellationToken = default)
     {
         var query = userManager.Users.AsNoTracking();
@@ -39,9 +41,12 @@ public class AdminUserRepository(
             query = query.Where(u => u.Email != null && u.Email.ToLower().Contains(normalizedEmail));
         }
 
-        return await query
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
             .OrderBy(u => u.Id)
-            .Take(100)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .Select(u => new AdminUserListItemDto
             {
                 UserId = u.Id,
@@ -51,6 +56,14 @@ public class AdminUserRepository(
                 LockoutEnd = u.LockoutEnd,
             })
             .ToListAsync(cancellationToken);
+
+        return new PagedResult<AdminUserListItemDto>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
     }
 
     public async Task<AdminUserDetailsDto?> GetUserDetailsAsync(

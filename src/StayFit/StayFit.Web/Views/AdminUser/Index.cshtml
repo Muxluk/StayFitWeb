@@ -61,16 +61,16 @@
                             <th></th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @if (Model.Users.Count == 0)
+                        <tbody>
+                        @if (!Model.Users.Items.Any())
                         {
                             <tr>
-                                <td colspan="6" class="text-center text-muted py-4">Немає результатів. Введіть ID або Email для пошуку.</td>
+                                <td colspan="6" class="text-center text-muted py-4">Немає результатів.</td>
                             </tr>
                         }
                         else
                         {
-                            @foreach (var user in Model.Users)
+                            @foreach (var user in Model.Users.Items)
                             {
                                 <tr>
                                     <td>@user.UserId</td>
@@ -95,11 +95,33 @@
                                 </tr>
                             }
                         }
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
         </div>
     </div>
+
+    @if (Model.Users.TotalPages > 1)
+    {
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(Model.Users.PageNumber == 1 ? "disabled" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-page="@(Model.Users.PageNumber - 1)" asp-route-userId="@Model.UserId" asp-route-email="@Model.Email">Попередня</a>
+                </li>
+                
+                @for (int i = 1; i <= Model.Users.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.Users.PageNumber ? "active" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-page="@i" asp-route-userId="@Model.UserId" asp-route-email="@Model.Email">@i</a>
+                    </li>
+                }
+
+                <li class="page-item @(Model.Users.PageNumber == Model.Users.TotalPages ? "disabled" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-page="@(Model.Users.PageNumber + 1)" asp-route-userId="@Model.UserId" asp-route-email="@Model.Email">Наступна</a>
+                </li>
+            </ul>
+        </nav>
+    }
 </div>
 
 @section Scripts {

@@ -4,6 +4,8 @@ public sealed class AdminUserSearchRequestDto
 {
     public int? UserId { get; init; }
     public string? Email { get; init; }
+    public int PageNumber { get; init; } = 1;
+    public int PageSize { get; init; } = 10;
 }
 
 public sealed class AdminUserListItemDto

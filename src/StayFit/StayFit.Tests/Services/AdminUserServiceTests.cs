@@ -18,9 +18,17 @@ public sealed class AdminUserServiceTests
             new() { UserId = 2, UserName = "u2", Email = "u2@example.com" },
         };
 
+        var pagedResult = new PagedResult<AdminUserListItemDto>
+        {
+            Items = users,
+            TotalCount = 2,
+            PageNumber = 1,
+            PageSize = 10
+        };
+
         repoMock
-            .Setup(r => r.SearchUsersAsync(1, "u1@example.com", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(users);
+            .Setup(r => r.SearchUsersAsync(1, "u1@example.com", It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(pagedResult);
 
         var sut = CreateSut(repoMock);
 
@@ -28,11 +36,13 @@ public sealed class AdminUserServiceTests
         {
             UserId = 1,
             Email = "u1@example.com",
+            PageNumber = 1,
+            PageSize = 10
         });
 
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
-        Assert.Equal(2, result.Value!.Count);
+        Assert.Equal(2, result.Value!.Items.Count()); 
     }
 
     [Fact]

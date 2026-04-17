@@ -122,8 +122,9 @@ public sealed class AdminAccountEditService(ILogger<AdminAccountEditService> log
 
         logger.LogInformation("Checking email uniqueness: Email={Email}, ExcludeUserId={ExcludeUserId}", email, excludeUserId);
 
-        var users = await repository.SearchUsersAsync(userId: null, email: email);
-        var emailExists = users.Any(u => u.UserId != excludeUserId);
+        var pagedUsers = await repository.SearchUsersAsync(userId: null, email: email, pageNumber: 1, pageSize: 10);
+        
+        var emailExists = pagedUsers.Items.Any(u => u.UserId != excludeUserId);
 
         if (emailExists)
         {

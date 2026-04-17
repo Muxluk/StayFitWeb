@@ -356,8 +356,8 @@ public sealed class AdminAccountEditServiceTests
         var repoMock = new Mock<IAdminUserRepository>();
 
         repoMock
-            .Setup(r => r.SearchUsersAsync(null, "newemail@example.com", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<AdminUserListItemDto>());
+            .Setup(r => r.SearchUsersAsync(null, "newemail@example.com", 1, 10, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PagedResult<AdminUserListItemDto> { Items = new List<AdminUserListItemDto>() });
 
         var sut = new AdminAccountEditService(loggerMock.Object);
 
@@ -378,8 +378,8 @@ public sealed class AdminAccountEditServiceTests
         };
 
         repoMock
-            .Setup(r => r.SearchUsersAsync(null, "same@example.com", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(users);
+            .Setup(r => r.SearchUsersAsync(null, "same@example.com", 1, 10, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PagedResult<AdminUserListItemDto> { Items = users });
 
         var sut = new AdminAccountEditService(loggerMock.Object);
 
@@ -400,8 +400,8 @@ public sealed class AdminAccountEditServiceTests
         };
 
         repoMock
-            .Setup(r => r.SearchUsersAsync(null, "taken@example.com", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(users);
+            .Setup(r => r.SearchUsersAsync(null, "taken@example.com", 1, 10, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PagedResult<AdminUserListItemDto> { Items = users });
 
         var sut = new AdminAccountEditService(loggerMock.Object);
 
