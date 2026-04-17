@@ -48,6 +48,8 @@ public static class DependencyInjection
         services.AddScoped<IPasswordChangeService, PasswordChangeService>();
         services.AddScoped<IProfileSetupService, ProfileSetupService>();
         services.AddScoped<ISessionService, SessionService>();
+        services.AddScoped<IAccountDeletionRepository, AccountDeletionRepository>();
+        services.AddScoped<IAccountDeletionService, AccountDeletionService>();
         return services;
     }
 }
