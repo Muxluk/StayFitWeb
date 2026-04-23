@@ -76,6 +76,32 @@
                         </li>
                         @if (User.Identity?.IsAuthenticated == true)
                         {
+                            <li class="nav-item d-flex align-items-center me-2">
+                                <div class="dropdown">
+                                    <button class="btn btn-link nav-link text-dark position-relative" type="button" id="notificationBell" data-bs-toggle="dropdown" aria-expanded="false" title="Сповіщення">
+                                        🔔
+                                        <span id="notificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">
+                                            <span id="notificationCount">0</span>
+                                        </span>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationBell" id="notificationDropdown">
+                                        <li class="dropdown-header">Сповіщення</li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li id="notificationList" class="p-3" style="min-width: 300px; max-height: 400px; overflow-y: auto;">
+                                            <div class="text-center text-muted">Немає сповіщень</div>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li class="text-center p-2 d-flex gap-2">
+                                            <button type="button" class="btn btn-sm btn-outline-primary flex-grow-1" id="markAllReadBtn" style="display: none;">
+                                                ✓ Прочитати все
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger flex-grow-1" id="clearAllBtn" style="display: none;">
+                                                🗑 Очистити все
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Profile" asp-action="Edit" title="Мій профіль">👤 @User.Identity.Name</a>
                             </li>

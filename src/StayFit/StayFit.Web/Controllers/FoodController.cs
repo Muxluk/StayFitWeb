@@ -108,14 +108,18 @@ public class FoodController : BaseController
     [HttpPost]
     public async Task<IActionResult> AddToLog(int foodId, double quantity)
     {
+        _logger.LogInformation("🍽️ AddToLog (FoodController) викликана. FoodId={FoodId}, Quantity={Quantity}g", foodId, quantity);
+
         var userEmail = User.Identity?.Name;
         if (string.IsNullOrEmpty(userEmail))
+        {
+            _logger.LogWarning("❌ UserEmail порожній");
             return Challenge();
+        }
 
         await _foodService.AddFoodToLogAsync(foodId, quantity, userEmail);
 
-        _logger.LogInformation("Запис в лог їжі створено: FoodId={FoodId}, Quantity={Quantity}, Email={Email}",
-            foodId, quantity, userEmail);
+        _logger.LogInformation("✅ AddToLog завершено FoodId={FoodId}, Email={Email}", foodId, userEmail);
 
         return RedirectToAction("Index", "Diary");
     }

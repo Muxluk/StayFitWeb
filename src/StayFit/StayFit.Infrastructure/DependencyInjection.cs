@@ -32,6 +32,7 @@ public static class DependencyInjection
         services.AddScoped<IAdminUserRepository, AdminUserRepository>();
         services.AddScoped<IFoodCategoryRepository, FoodCategoryRepository>();
         services.AddScoped<ISessionRepository, SessionRepository>();
+        services.AddScoped<INotificationRepository, NotificationRepository>();
 
         // Services
         services.AddScoped<IRegistrationService, RegistrationService>();
@@ -43,13 +44,16 @@ public static class DependencyInjection
         services.AddScoped<INutritionGoalService, NutritionGoalService>();
         services.AddScoped<IExportService, ExportService>();
         services.AddScoped<IAdminUserService, AdminUserService>();
-        services.AddScoped<IAdminAccountEditService, AdminAccountEditService>();        services.AddScoped<IDashboardService, DashboardService>();        services.AddScoped<IProgressService, ProgressService>();
+        services.AddScoped<IAdminAccountEditService, AdminAccountEditService>();        
+        services.AddScoped<IDashboardService, DashboardService>();        
+        services.AddScoped<IProgressService, ProgressService>();
         services.AddScoped<IProductModerationService, ProductModerationService>();
         services.AddScoped<IPasswordChangeService, PasswordChangeService>();
         services.AddScoped<IProfileSetupService, ProfileSetupService>();
         services.AddScoped<ISessionService, SessionService>();
         services.AddScoped<IAccountDeletionRepository, AccountDeletionRepository>();
         services.AddScoped<IAccountDeletionService, AccountDeletionService>();
+        services.AddScoped<INotificationService, NotificationService>();
         return services;
     }
 }

@@ -1,5 +1,8 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using StayFit.Application.Configuration;
 using StayFit.Application.Interfaces;
+using StayFit.Application.Options;
 using StayFit.Domain.Entities;
 using StayFit.Domain.Interfaces;
 
@@ -10,17 +13,26 @@ public class FoodService : IFoodService
     private readonly IFoodRepository _foodRepository;
     private readonly IFoodLogRepository? _foodLogRepository;
     private readonly IUserRepository? _userRepository;
+    private readonly INotificationService? _notificationService;
+    private readonly INutritionGoalRepository? _nutritionGoalRepository;
+    private readonly NotificationSettings _notificationSettings;
     private readonly ILogger<FoodService> _logger;
 
     public FoodService(
         IFoodRepository foodRepository,
         ILogger<FoodService> logger,
         IFoodLogRepository? foodLogRepository = null,
-        IUserRepository? userRepository = null)
+        IUserRepository? userRepository = null,
+        INotificationService? notificationService = null,
+        INutritionGoalRepository? nutritionGoalRepository = null,
+        IOptions<NotificationSettings>? notificationSettings = null)
     {
         _foodRepository = foodRepository;
         _foodLogRepository = foodLogRepository;
         _userRepository = userRepository;
+        _notificationService = notificationService;
+        _nutritionGoalRepository = nutritionGoalRepository;
+        _notificationSettings = notificationSettings?.Value ?? new NotificationSettings { CalorieThresholdPercent = 100 };
         _logger = logger;
     }
 
@@ -166,6 +178,37 @@ public class FoodService : IFoodService
 
         _logger.LogInformation("Додавання запису в лог їжі. UserId: {UserId}, FoodId: {FoodId}", log.UserId, log.FoodId);
         await _foodLogRepository!.AddAsync(log);
+        _logger.LogInformation("✅ Запис в БД успішно додано. LogId буде присвоєно БД");
+
+        // Отримати назву продукту для сповіщення
+        _logger.LogInformation("🔍 Отримання інформації про продукт FoodId={FoodId}", foodId);
+        var food = await _foodRepository.GetByIdAsync(foodId);
+        var foodName = food?.Name ?? "Продукт";
+        _logger.LogInformation("📝 Назва продукту: {FoodName}", foodName);
+
+        // Створити сповіщення про додавання продукту
+        _logger.LogInformation("📢 Спроба створити сповіщення FoodAdded. UserId={UserId}, FoodName={FoodName}, Quantity={Quantity}g", user.Id, foodName, quantity);
+        if (_notificationService == null)
+        {
+            _logger.LogError("❌ ПОМИЛКА: _notificationService == null!");
+        }
+        else
+        {
+            var notificationResult = await _notificationService.CreateFoodAddedNotificationAsync(user.Id, foodName, quantity);
+            if (notificationResult.IsSuccess)
+            {
+                _logger.LogInformation("✅ Сповіщення FoodAdded успішно створено");
+            }
+            else
+            {
+                _logger.LogError("❌ Помилка при створенні сповіщення: {Errors}", string.Join(", ", notificationResult.Errors));
+            }
+        }
+
+        // Перевірка перевищення норми калорій та генерація сповіщення
+        _logger.LogInformation("🔍 Перевірка перевищення норми калорій");
+        await CheckAndNotifyCalorieThresholdAsync(user.Id);
+        _logger.LogInformation("✅ Перевірка калорій завершена");
     }
 
     public async Task<bool> QuickAddFoodLogEntryAsync(int logId, string userEmail)
@@ -219,4 +262,82 @@ public class FoodService : IFoodService
                 "Food log operations require IFoodLogRepository and IUserRepository dependencies.");
         }
     }
+
+    private async Task CheckAndNotifyCalorieThresholdAsync(int userId)
+    {
+        try
+        {
+            _logger.LogInformation("🔍 Початок перевірки перевищення калорій для користувача {UserId}", userId);
+
+            // Перевірка, чи активована автоматична генерація сповіщень
+            if (_nutritionGoalRepository == null || _notificationService == null || _foodLogRepository == null || _userRepository == null)
+            {
+                _logger.LogWarning("⚠️ Сповіщення про калорії НЕ активовані - залежності відсутні");
+                return;
+            }
+
+            // Отримати користувача для отримання email
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                _logger.LogWarning("❌ Користувач {UserId} не знайдено", userId);
+                return;
+            }
+
+            _logger.LogInformation("👤 Користувач знайдено: {Email}", user.Email);
+
+            // Отримати норму калорій користувача
+            var goal = await _nutritionGoalRepository.GetByUserIdAsync(user.Email);
+            if (goal == null)
+            {
+                _logger.LogWarning("⚠️ Норма калорій НЕ встановлена для користувача {UserId}. Сповіщення не пересилаються!", userId);
+                return;
+            }
+
+            _logger.LogInformation("📊 Норма калорій: {CaloriesGoal} ккал", goal.CaloriesGoal);
+
+            // Отримати сумарні калорії за допис
+            var todayLogs = await _foodLogRepository!.GetByUserIdAndDateAsync(userId, DateTime.Today);
+            var totalCalories = todayLogs.Sum(log => (log.Food?.CaloriesPer100g ?? 0) * log.AmountGrams / 100);
+
+            // Обчислити поріг (за замовчуванням 100% = норма)
+            var threshold = (decimal)goal.CaloriesGoal * (_notificationSettings.CalorieThresholdPercent / 100m);
+
+            _logger.LogInformation(
+                "📈 Перевірка калорій: {TotalCalories:F0} ккал / {Threshold:F0} ккал (поріг {Percent}%)",
+                totalCalories, threshold, _notificationSettings.CalorieThresholdPercent);
+
+            // Якщо перевищено норму - генерувати сповіщення
+            if (totalCalories > (double)threshold)
+            {
+                var overage = (decimal)totalCalories - threshold;
+                _logger.LogInformation("🚀 Перевищення виявлено на {Overage:F0} ккал. Генеруємо сповіщення...", overage);
+                
+                var result = await _notificationService.CreateCalorieThresholdNotificationAsync(userId, overage);
+
+                if (result.IsSuccess)
+                {
+                    _logger.LogInformation(
+                        "✅ Сповіщення про перевищення калорій успішно створено для користувача {UserId} (+{Overage:F0} ккал)",
+                        userId, overage);
+                }
+                else
+                {
+                    _logger.LogWarning(
+                        "❌ Помилка при генерації сповіщення для користувача {UserId}: {Error}",
+                        userId, string.Join(", ", result.Errors));
+                }
+            }
+            else
+            {
+                _logger.LogInformation("✓ Норма калорій не перевищена. Сповіщення не потрібне.");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "❌ Помилка при перевірці перевищення калорій для користувача {UserId}", userId);
+            // Не вихлюпуємо помилку - це не критично для основної операції
+        }
+    }
 }
+

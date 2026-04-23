@@ -4,6 +4,7 @@ using Serilog;
 using StayFit.Application.Interfaces;
 using StayFit.Application.Options;
 using StayFit.Application.Services;
+using StayFit.Domain.Interfaces;
 using StayFit.Infrastructure;
 using StayFit.Application.Configuration;
 using StayFit.Web.Filters;
@@ -59,6 +60,7 @@ builder.Services.Configure<ProfilePhotoOptions>(builder.Configuration.GetSection
 
 builder.Services.Configure<SessionSettings>(builder.Configuration.GetSection(SessionSettings.SectionName));
 builder.Services.Configure<DiaryNoteSettings>(builder.Configuration.GetSection("DiaryNotes"));
+builder.Services.Configure<NotificationSettings>(builder.Configuration.GetSection(NotificationSettings.SectionName));
 
 // ─── Identity ───────────────────────────────────────────────────────────────
 builder.Services
@@ -82,11 +84,29 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 // ─── Application Services ───────────────────────────────────────────────────
 builder.Services.AddScoped<LoggingService>();
-builder.Services.AddScoped<IFoodService, FoodService>();
+builder.Services.AddScoped<IFoodService>(provider =>
+    new FoodService(
+        provider.GetRequiredService<IFoodRepository>(),
+        provider.GetRequiredService<ILogger<FoodService>>(),
+        provider.GetRequiredService<IFoodLogRepository>(),
+        provider.GetRequiredService<IUserRepository>(),
+        provider.GetRequiredService<INotificationService>(),
+        provider.GetRequiredService<INutritionGoalRepository>(),
+        provider.GetRequiredService<IOptions<NotificationSettings>>()
+    ));
 builder.Services.AddScoped<IProductSearchService, ProductSearchService>();
 builder.Services.AddScoped<MealService>();
 builder.Services.AddScoped<IFoodCategoryService, FoodCategoryService>();
-builder.Services.AddScoped<QuickAddService>();
+builder.Services.AddScoped<QuickAddService>(provider =>
+    new QuickAddService(
+        provider.GetRequiredService<IMealRepository>(),
+        provider.GetRequiredService<IFoodLogRepository>(),
+        provider.GetRequiredService<IUserRepository>(),
+        provider.GetRequiredService<INutritionGoalRepository>(),
+        provider.GetRequiredService<INotificationService>(),
+        provider.GetRequiredService<IOptions<NotificationSettings>>(),
+        provider.GetRequiredService<ILogger<QuickAddService>>()
+    ));
 builder.Services.AddScoped<DiaryNoteService>();
 builder.Services.AddScoped<IProfilePhotoService, ProfilePhotoService>();
 

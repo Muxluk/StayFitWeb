@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StayFit.Application.DTOs;
 using StayFit.Application.Interfaces;
+using StayFit.Domain.Interfaces;
 
 namespace StayFit.Web.Controllers;
 
@@ -11,13 +12,19 @@ public class NutritionGoalController : BaseController
 {
     private readonly INutritionGoalService _nutritionGoalService;
     private readonly IFoodService _foodService;
+    private readonly IUserRepository _userRepository;
+    private readonly INotificationService _notificationService;
 
     public NutritionGoalController(
         INutritionGoalService nutritionGoalService, 
-        IFoodService foodService)
+        IFoodService foodService,
+        IUserRepository userRepository,
+        INotificationService notificationService)
     {
         _nutritionGoalService = nutritionGoalService;
         _foodService = foodService;
+        _userRepository = userRepository;
+        _notificationService = notificationService;
     }
 
     [HttpGet]
@@ -53,6 +60,17 @@ public class NutritionGoalController : BaseController
 
         if (result.IsSuccess)
         {
+            // Створити сповіщення про встановлення цілі
+            var userEmail = GetCurrentUserEmailOrEmpty();
+            if (!string.IsNullOrEmpty(userEmail))
+            {
+                var user = await _userRepository.GetByEmailAsync(userEmail);
+                if (user != null)
+                {
+                    await _notificationService.CreateNutritionGoalSetNotificationAsync(user.Id, (int)dto.CaloriesGoal);
+                }
+            }
+
             TempData["SuccessMessage"] = "Цілі збережено!";
             return RedirectToAction(nameof(Index));
         }

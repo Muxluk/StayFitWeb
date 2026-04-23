@@ -21,6 +21,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
     public DbSet<NutritionGoal> NutritionGoals => Set<NutritionGoal>();
     public DbSet<FoodCategoryEntity> FoodCategories => Set<FoodCategoryEntity>();
     public DbSet<UserSession> UserSessions => Set<UserSession>();
+    public DbSet<Notification> Notifications => Set<Notification>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -82,6 +83,16 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
                 .WithMany()
                 .HasForeignKey(us => us.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.HasKey(n => n.Id);
+            entity.Property(n => n.Title).IsRequired().HasMaxLength(200);
+            entity.Property(n => n.Message).IsRequired().HasMaxLength(500);
+            entity.Property(n => n.Type).IsRequired().HasMaxLength(50);
+            entity.HasIndex(n => n.UserId);
+            entity.HasIndex(n => new { n.UserId, n.IsRead });
         });
     }
 }
