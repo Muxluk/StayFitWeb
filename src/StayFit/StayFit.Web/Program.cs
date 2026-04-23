@@ -61,6 +61,8 @@ builder.Services.Configure<ProfilePhotoOptions>(builder.Configuration.GetSection
 builder.Services.Configure<SessionSettings>(builder.Configuration.GetSection(SessionSettings.SectionName));
 builder.Services.Configure<DiaryNoteSettings>(builder.Configuration.GetSection("DiaryNotes"));
 builder.Services.Configure<NotificationSettings>(builder.Configuration.GetSection(NotificationSettings.SectionName));
+builder.Services.Configure<UsdaFoodDataOptions>(builder.Configuration.GetSection("UsdaFoodData"));
+builder.Services.AddHttpClient();
 
 // ─── Identity ───────────────────────────────────────────────────────────────
 builder.Services

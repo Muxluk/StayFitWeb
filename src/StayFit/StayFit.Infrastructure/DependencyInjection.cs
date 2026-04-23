@@ -54,6 +54,8 @@ public static class DependencyInjection
         services.AddScoped<IAccountDeletionRepository, AccountDeletionRepository>();
         services.AddScoped<IAccountDeletionService, AccountDeletionService>();
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IFoodImportRepository, FoodImportRepository>();
+        services.AddScoped<IFoodImportService, FoodImportService>();
         return services;
     }
 }
