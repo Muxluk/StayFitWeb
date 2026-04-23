@@ -38,6 +38,11 @@ public class UserProfile
     public decimal? Height { get; set; }
 
     /// <summary>
+    /// Відносний шлях до фото профілю у web root
+    /// </summary>
+    public string? ProfilePhotoPath { get; set; }
+
+    /// <summary>
     /// Дата створення профілю
     /// </summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

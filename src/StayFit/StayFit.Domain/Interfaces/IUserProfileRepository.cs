@@ -16,4 +16,9 @@ public interface IUserProfileRepository : IRepository<UserProfile>
     /// Перевірити, чи існує профіль для користувача
     /// </summary>
     Task<bool> ExistsForUserAsync(int userId);
+
+    /// <summary>
+    /// Оновити шлях до фото профілю користувача
+    /// </summary>
+    Task<bool> UpdateProfilePhotoPathAsync(int userId, string profilePhotoPath);
 }

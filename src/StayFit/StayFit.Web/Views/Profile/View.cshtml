@@ -30,6 +30,18 @@
                     {
                         var profile = Model!;
                         <div class="row">
+                            <div class="col-12 mb-4">
+                                <h6 class="text-muted small">Фото профілю</h6>
+                                @if (!string.IsNullOrWhiteSpace(profile.ProfilePhotoPath))
+                                {
+                                    <img src="@profile.ProfilePhotoPath" alt="Фото профілю" class="img-thumbnail shadow-sm" style="max-height: 260px; object-fit: cover;" />
+                                }
+                                else
+                                {
+                                    <div class="text-muted">Фото ще не завантажено.</div>
+                                }
+                            </div>
+
                             <div class="col-md-6 mb-3">
                                 <h6 class="text-muted small">Ім'я</h6>
                                 <p class="fs-5 fw-bold">@profile.FullName</p>

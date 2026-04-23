@@ -1,13 +1,19 @@
 using Microsoft.Extensions.Options;
 using StayFit.Application.Options;
+using Microsoft.Extensions.Caching.Memory;
+using StayFit.Domain.Interfaces;
 
 namespace StayFit.Web.Services;
 
 public sealed class ProfilePhotoService(
     IOptions<ProfilePhotoOptions> profilePhotoOptions,
     IWebHostEnvironment environment,
-    ILogger<ProfilePhotoService> logger) : IProfilePhotoService
+    ILogger<ProfilePhotoService> logger,
+    IUserProfileRepository userProfileRepository,
+    IMemoryCache memoryCache) : IProfilePhotoService
 {
+    private const string ProfileCacheKeyPrefix = "profile-photo:";
+
     private readonly ProfilePhotoOptions _profilePhotoOptions = profilePhotoOptions.Value;
 
     public async Task<ProfilePhotoUploadResult> UploadAsync(
@@ -61,6 +67,17 @@ public sealed class ProfilePhotoService(
         }
 
         var relativePath = $"/uploads/profile-photos/{userId}/{fileName}";
+
+        var profileUpdated = await userProfileRepository.UpdateProfilePhotoPathAsync(userId, relativePath);
+        if (!profileUpdated)
+        {
+            logger.LogWarning(
+                "Профіль користувача {UserId} не знайдено при збереженні шляху фото",
+                userId);
+            return ProfilePhotoUploadResult.Failure("Профіль користувача не знайдено.");
+        }
+
+        memoryCache.Remove($"{ProfileCacheKeyPrefix}{userId}");
 
         logger.LogInformation(
             "Користувач {UserId} завантажив фото профілю. RelativePath={RelativePath}",

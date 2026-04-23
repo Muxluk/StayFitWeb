@@ -24,4 +24,19 @@ public class UserProfileRepository : Repository<UserProfile>, IUserProfileReposi
     {
         return await DbSet.AnyAsync(p => p.UserId == userId);
     }
+
+    public async Task<bool> UpdateProfilePhotoPathAsync(int userId, string profilePhotoPath)
+    {
+        var profile = await DbSet.FirstOrDefaultAsync(p => p.UserId == userId);
+        if (profile == null)
+        {
+            return false;
+        }
+
+        profile.ProfilePhotoPath = profilePhotoPath;
+        profile.UpdatedAt = DateTime.UtcNow;
+
+        await Context.SaveChangesAsync();
+        return true;
+    }
 }

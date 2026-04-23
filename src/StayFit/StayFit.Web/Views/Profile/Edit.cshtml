@@ -5,6 +5,7 @@
     ViewData["Title"] = "Редагування профілю";
     var activeTab = TempData["ActiveTab"]?.ToString();
     var isSecurityTabActive = string.Equals(activeTab, "Security", StringComparison.OrdinalIgnoreCase);
+    var profilePhotoPath = ViewBag.ProfilePhotoPath as string;
 }
 
 <style>
@@ -91,6 +92,20 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             }
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    ✅ @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    ❌ @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
 
             <!-- TABS для переключення між Профілем та Безпекою -->
             <ul class="nav nav-tabs mb-4 border-0" role="tablist">
@@ -114,6 +129,36 @@
                             <h3 class="mb-0">👤 Мій профіль</h3>
                         </div>
                         <div class="card-body">
+                            <div class="row mb-4">
+                                <div class="col-lg-6">
+                                    <div class="border rounded p-3 h-100 bg-light-subtle">
+                                        <h5 class="mb-3">Фото профілю</h5>
+
+                                        @if (!string.IsNullOrWhiteSpace(profilePhotoPath))
+                                        {
+                                            <img src="@profilePhotoPath" alt="Фото профілю" class="img-fluid rounded shadow-sm mb-3" style="max-height: 220px; object-fit: cover;" />
+                                        }
+                                        else
+                                        {
+                                            <div class="d-flex align-items-center justify-content-center rounded border bg-white mb-3" style="height: 220px;">
+                                                <span class="text-muted">Фото ще не завантажено</span>
+                                            </div>
+                                        }
+
+                                        <form method="post" action="@Url.Action("UploadPhoto", "Profile")" enctype="multipart/form-data">
+                                            @Html.AntiForgeryToken()
+                                            <div class="mb-3">
+                                                <input class="form-control" type="file" name="photo" accept=".jpg,.png,image/jpeg,image/png" required />
+                                                <small class="text-muted">Дозволено: JPG, PNG</small>
+                                            </div>
+                                            <button type="submit" class="btn btn-outline-success">
+                                                <i class="bi bi-upload"></i> Завантажити фото
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
                             @if (!ViewData.ModelState.IsValid)
                             {
                                 <div class="alert alert-danger alert-dismissible fade show" role="alert">

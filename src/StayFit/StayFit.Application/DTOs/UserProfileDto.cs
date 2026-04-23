@@ -12,6 +12,7 @@ public class UserProfileDto
     public string? Gender { get; set; }
     public decimal? Weight { get; set; }
     public decimal? Height { get; set; }
+    public string? ProfilePhotoPath { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }

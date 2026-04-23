@@ -167,6 +167,7 @@ public class UserProfileService : IUserProfileService
             Gender = profile.Gender,
             Weight = profile.Weight,
             Height = profile.Height,
+            ProfilePhotoPath = profile.ProfilePhotoPath,
             CreatedAt = profile.CreatedAt,
             UpdatedAt = profile.UpdatedAt,
         };

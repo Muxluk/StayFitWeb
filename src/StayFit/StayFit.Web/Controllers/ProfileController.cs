@@ -43,6 +43,7 @@ public class ProfileController : BaseController
         _logger.LogInformation("Користувач {UserId} відкрив сторінку редагування", userId);
 
         var profile = await _userProfileService.GetProfileAsync(userId);
+        ViewBag.ProfilePhotoPath = profile?.ProfilePhotoPath;
 
         var dto = new UpdateUserProfileDto
         {

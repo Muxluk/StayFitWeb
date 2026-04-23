@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\StayFit.Application\StayFit.Application.csproj" />
     <ProjectReference Include="..\StayFit.Infrastructure\StayFit.Infrastructure.csproj" />
+    <ProjectReference Include="..\StayFit.Web\StayFit.Web.csproj" />
   </ItemGroup>
 
 </Project>
