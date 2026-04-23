@@ -10,6 +10,7 @@ using StayFit.Web.Filters;
 using StayFit.Infrastructure.Data;
 using StayFit.Infrastructure.Identity;
 using StayFit.Infrastructure.Repositories;
+using StayFit.Web.Services;
 using StayFit.Web.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -87,6 +88,7 @@ builder.Services.AddScoped<MealService>();
 builder.Services.AddScoped<IFoodCategoryService, FoodCategoryService>();
 builder.Services.AddScoped<QuickAddService>();
 builder.Services.AddScoped<DiaryNoteService>();
+builder.Services.AddScoped<IProfilePhotoService, ProfilePhotoService>();
 
 // ─── Build ──────────────────────────────────────────────────────────────────
 var app = builder.Build();

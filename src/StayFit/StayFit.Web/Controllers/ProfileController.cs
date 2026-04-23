@@ -1,11 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using StayFit.Application.DTOs;
 using StayFit.Application.Interfaces;
-using StayFit.Application.Options;
 using StayFit.Domain.Entities;
+using StayFit.Web.Services;
 
 namespace StayFit.Web.Controllers;
 
@@ -19,21 +18,18 @@ public class ProfileController : BaseController
     private readonly IUserProfileService _userProfileService;
     private readonly ISessionService _sessionService;
     private readonly ILogger<ProfileController> _logger;
-    private readonly ProfilePhotoOptions _profilePhotoOptions;
-    private readonly IWebHostEnvironment _environment;
+    private readonly IProfilePhotoService _profilePhotoService;
 
     public ProfileController(
         IUserProfileService userProfileService,
         ISessionService sessionService,
         ILogger<ProfileController> logger,
-        IOptions<ProfilePhotoOptions> profilePhotoOptions,
-        IWebHostEnvironment environment)
+        IProfilePhotoService profilePhotoService)
     {
         _userProfileService = userProfileService;
         _sessionService = sessionService;
         _logger = logger;
-        _profilePhotoOptions = profilePhotoOptions.Value;
-        _environment = environment;
+        _profilePhotoService = profilePhotoService;
     }
 
     /// <summary>
@@ -100,46 +96,13 @@ public class ProfileController : BaseController
     public async Task<IActionResult> UploadPhoto(IFormFile? photo)
     {
         var userId = GetRequiredCurrentUserId();
+        var result = await _profilePhotoService.UploadAsync(userId, photo, HttpContext.RequestAborted);
 
-        if (photo is null || photo.Length == 0)
+        if (!result.IsSuccess)
         {
-            TempData["ErrorMessage"] = "Оберіть файл для завантаження.";
+            TempData["ErrorMessage"] = result.ErrorMessage;
             return RedirectToAction(nameof(Edit));
         }
-
-        var extension = Path.GetExtension(photo.FileName).ToLowerInvariant();
-        var allowedExtensions = (_profilePhotoOptions.AllowedExtensions ?? Array.Empty<string>())
-            .Select(e => e.StartsWith('.') ? e.ToLowerInvariant() : $".{e.ToLowerInvariant()}")
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        if (!allowedExtensions.Contains(extension))
-        {
-            TempData["ErrorMessage"] = $"Недозволений формат файлу. Дозволено: {string.Join(", ", allowedExtensions)}";
-            return RedirectToAction(nameof(Edit));
-        }
-
-        var maxFileSizeBytes = _profilePhotoOptions.MaxFileSizeMb * 1024 * 1024;
-        if (photo.Length > maxFileSizeBytes)
-        {
-            TempData["ErrorMessage"] = $"Файл занадто великий. Максимальний розмір: {_profilePhotoOptions.MaxFileSizeMb} MB.";
-            return RedirectToAction(nameof(Edit));
-        }
-
-        var uploadsRoot = Path.Combine(_environment.WebRootPath, "uploads", "profile-photos", userId.ToString());
-        Directory.CreateDirectory(uploadsRoot);
-
-        var fileName = $"{Guid.NewGuid():N}{extension}";
-        var fullPath = Path.Combine(uploadsRoot, fileName);
-
-        await using (var stream = System.IO.File.Create(fullPath))
-        {
-            await photo.CopyToAsync(stream);
-        }
-
-        _logger.LogInformation(
-            "Користувач {UserId} завантажив фото профілю {FileName}",
-            userId,
-            fileName);
 
         TempData["SuccessMessage"] = "Фото профілю завантажено."
             + " Збереження шляху в профіль буде виконано на наступному кроці (репозиторій/сервіс).";
