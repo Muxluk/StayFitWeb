@@ -405,6 +405,21 @@
                         </div>
                     </div>
 
+                    <div class="card shadow mb-4">
+                        <div class="card-header" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white;">
+                            <h5 class="mb-0">📋 Історія безпеки акаунту</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="securityLogs">
+                                <div class="text-center text-muted py-3">
+                                    <div class="spinner-border spinner-border-sm" role="status">
+                                        <span class="visually-hidden">Завантаження...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="card shadow border-danger">
                         <div class="card-header danger-header text-white">
                             <h5 class="mb-0">Видалення акаунту</h5>
@@ -502,5 +517,77 @@
                 }
             });
         }
+
+        // Завантаження журналу безпеки
+        async function loadSecurityLogs() {
+            try {
+                const response = await fetch('/security-log/logs?page=1');
+                if (!response.ok) throw new Error('Помилка при завантаженні журналу');
+                
+                const data = await response.json();
+                renderSecurityLogs(data);
+            } catch (error) {
+                console.error('Помилка завантаження логів:', error);
+                document.getElementById('securityLogs').innerHTML = 
+                    '<div class="alert alert-warning">Не вдалося завантажити історію безпеки</div>';
+            }
+        }
+
+        function renderSecurityLogs(pagedResult) {
+            const container = document.getElementById('securityLogs');
+            const items = pagedResult.items || [];
+            
+            if (!items.length) {
+                container.innerHTML = '<p class="text-muted">Немає записів у журналі безпеки.</p>';
+                return;
+            }
+
+            let html = '<div class="table-responsive">';
+            html += '<table class="table table-sm table-hover align-middle">';
+            html += '<thead><tr>';
+            html += '<th>Дата/Час</th><th>Тип івенту</th><th>Опис</th><th>Пристрій</th><th>IP адреса</th><th>Статус</th>';
+            html += '</tr></thead><tbody>';
+
+            items.forEach(log => {
+                const date = new Date(log.createdAt);
+                const formattedDate = date.toLocaleDateString('uk-UA') + ' ' + date.toLocaleTimeString('uk-UA');
+                const statusBadge = log.status === 'Success' 
+                    ? '<span class="badge bg-success">Успіх</span>'
+                    : '<span class="badge bg-danger">Помилка</span>';
+                
+                let eventBadge = '';
+                switch(log.eventType) {
+                    case 'Login': eventBadge = '<span class="badge bg-info">Вхід</span>'; break;
+                    case 'Logout': eventBadge = '<span class="badge bg-secondary">Вихід</span>'; break;
+                    case 'PasswordChange': eventBadge = '<span class="badge bg-warning">Зміна пароля</span>'; break;
+                    case 'SessionTerminated': eventBadge = '<span class="badge bg-danger">Сеанс завершено</span>'; break;
+                    default: eventBadge = '<span class="badge bg-dark">' + log.eventType + '</span>';
+                }
+                
+                html += '<tr>';
+                html += '<td>' + formattedDate + '</td>';
+                html += '<td>' + eventBadge + '</td>';
+                html += '<td>' + log.description + '</td>';
+                html += '<td>' + (log.deviceSummary || 'Unknown') + '</td>';
+                html += '<td>' + (log.ipAddress || '—') + '</td>';
+                html += '<td>' + statusBadge + '</td>';
+                html += '</tr>';
+            });
+
+            html += '</tbody></table></div>';
+            
+            // Додаємо пагінацію інформацію
+            if (pagedResult.totalPages > 1) {
+                html += '<p class="text-muted small mt-3">Сторінка ' + pagedResult.pageNumber + ' з ' + pagedResult.totalPages + 
+                        ' (' + pagedResult.totalCount + ' записів)</p>';
+            }
+            
+            container.innerHTML = html;
+        }
+
+        // Завантажуємо журнал при завантаженні сторінки
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSecurityLogs();
+        });
     </script>
 }

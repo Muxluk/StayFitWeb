@@ -33,6 +33,7 @@ public static class DependencyInjection
         services.AddScoped<IFoodCategoryRepository, FoodCategoryRepository>();
         services.AddScoped<ISessionRepository, SessionRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
+        services.AddScoped<ISecurityLogRepository, SecurityLogRepository>();
 
         // Services
         services.AddScoped<IRegistrationService, RegistrationService>();
@@ -56,6 +57,7 @@ public static class DependencyInjection
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IFoodImportRepository, FoodImportRepository>();
         services.AddScoped<IFoodImportService, FoodImportService>();
+        services.AddScoped<ISecurityLogService, SecurityLogService>();
         return services;
     }
 }

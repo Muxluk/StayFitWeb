@@ -22,6 +22,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
     public DbSet<FoodCategoryEntity> FoodCategories => Set<FoodCategoryEntity>();
     public DbSet<UserSession> UserSessions => Set<UserSession>();
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<SecurityLogEntry> SecurityLogs => Set<SecurityLogEntry>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -93,6 +94,24 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
             entity.Property(n => n.Type).IsRequired().HasMaxLength(50);
             entity.HasIndex(n => n.UserId);
             entity.HasIndex(n => new { n.UserId, n.IsRead });
+        });
+
+        modelBuilder.Entity<SecurityLogEntry>(entity =>
+        {
+            entity.HasKey(sl => sl.Id);
+            entity.Property(sl => sl.UserId).IsRequired();
+            entity.Property(sl => sl.EventType).IsRequired().HasMaxLength(50);
+            entity.Property(sl => sl.Description).IsRequired().HasMaxLength(200);
+            entity.Property(sl => sl.IpAddress).HasMaxLength(64);
+            entity.Property(sl => sl.UserAgent).HasMaxLength(512);
+            entity.Property(sl => sl.Status).IsRequired().HasMaxLength(20);
+            entity.Property(sl => sl.AdditionalInfo).HasMaxLength(500);
+            entity.HasIndex(sl => sl.UserId);
+            entity.HasIndex(sl => new { sl.UserId, sl.CreatedAt }).IsDescending(false, true);
+            entity.HasOne(sl => sl.User)
+                .WithMany()
+                .HasForeignKey(sl => sl.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
