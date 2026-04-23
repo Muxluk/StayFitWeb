@@ -18,17 +18,20 @@ public class AccountSecurityController : BaseController
 {
     private readonly IPasswordChangeService _passwordChangeService;
     private readonly ISessionService _sessionService;
+    private readonly IAccountDeletionService _accountDeletionService;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly ILogger<AccountSecurityController> _logger;
 
     public AccountSecurityController(
         IPasswordChangeService passwordChangeService,
         ISessionService sessionService,
+        IAccountDeletionService accountDeletionService,
         SignInManager<ApplicationUser> signInManager,
         ILogger<AccountSecurityController> logger)
     {
         _passwordChangeService = passwordChangeService;
         _sessionService = sessionService;
+        _accountDeletionService = accountDeletionService;
         _signInManager = signInManager;
         _logger = logger;
     }
@@ -129,22 +132,36 @@ public class AccountSecurityController : BaseController
     }
 
     /// <summary>
-    /// Видалення акаунту (заглушка для UI)
+    /// Видалення акаунту
     /// </summary>
     [HttpPost("delete-account")]
     [ValidateAntiForgeryToken]
-    public IActionResult DeleteAccount(string confirmationToken)
+    public async Task<IActionResult> DeleteAccount(DeleteAccountDto request)
     {
         var userId = GetRequiredCurrentUserId();
-        _logger.LogInformation("Запит на видалення акаунту для користувача {UserId} (тимчасова заглушка)", userId);
         TempData["ActiveTab"] = "Security";
-        if (confirmationToken?.ToUpper() != "ВИДАЛИТИ")
+
+        if (!ModelState.IsValid)
         {
-            TempData["Error"] = "Невірний токен підтвердження. Акаунт не видалено.";
+            TempData["Error"] = "Введіть пароль для підтвердження видалення.";
             return RedirectToAction("Edit", "Profile", null, "security");
         }
 
-        TempData["Success"] = "Функція видалення акаунту в розробці.";
-        return RedirectToAction("Edit", "Profile", null, "security");
+        var result = await _accountDeletionService.DeleteAccountAsync(userId, request.Password);
+
+        if (result.IsFailure)
+        {
+            TempData["Error"] = result.Errors.FirstOrDefault() ?? "Не вдалося видалити акаунт.";
+            _logger.LogWarning("Помилка видалення акаунту для користувача {UserId}", userId);
+            return RedirectToAction("Edit", "Profile", null, "security");
+        }
+
+        // Успішно видалено — розлогінюємо користувача
+        await _signInManager.SignOutAsync();
+        _logger.LogInformation("Акаунт користувача {UserId} успішно видалено", userId);
+        TempData["Success"] = "Ваш акаунт та всі пов'язані дані було назавжди видалено.";
+        
+        // Редірект на головну або сторінку входу
+        return RedirectToAction("Index", "Home");
     }
 }

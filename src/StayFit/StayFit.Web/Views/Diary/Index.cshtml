@@ -10,10 +10,6 @@
     <input type="date" name="date" value="@date.ToString("yyyy-MM-dd")" onchange="this.form.submit()" />
 </form>
 
-<div class="mb-3">
-    <a asp-action="DailyDetails" asp-route-date="@date.ToString("yyyy-MM-dd")" class="btn btn-primary">Переглянути деталі щоденника</a>
-</div>
-
 <table class="table">
     <thead>
         <tr>
