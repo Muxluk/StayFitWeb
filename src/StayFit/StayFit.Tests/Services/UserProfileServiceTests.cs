@@ -1,6 +1,9 @@
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using StayFit.Application.DTOs;
+using StayFit.Application.Options;
 using StayFit.Application.Services;
 using StayFit.Domain.Entities;
 using StayFit.Domain.Exceptions;
@@ -13,13 +16,57 @@ public class UserProfileServiceTests
 {
     private readonly Mock<IUserProfileRepository> _mockRepository;
     private readonly Mock<ILogger<UserProfileService>> _mockLogger;
+    private readonly IMemoryCache _memoryCache;
+    private readonly IOptions<ProfilePhotoOptions> _profilePhotoOptions;
     private readonly UserProfileService _service;
 
     public UserProfileServiceTests()
     {
         _mockRepository = new Mock<IUserProfileRepository>();
         _mockLogger = new Mock<ILogger<UserProfileService>>();
-        _service = new UserProfileService(_mockRepository.Object, _mockLogger.Object);
+        _memoryCache = new MemoryCache(new MemoryCacheOptions());
+        _profilePhotoOptions = Options.Create(new ProfilePhotoOptions
+        {
+            CacheLifetimeMinutes = 30,
+            AllowedExtensions = [".jpg", ".png"],
+            MaxFileSizeMb = 5,
+        });
+
+        _service = new UserProfileService(
+            _mockRepository.Object,
+            _mockLogger.Object,
+            _memoryCache,
+            _profilePhotoOptions);
+    }
+
+    [Fact]
+    public async Task GetProfileAsync_SecondCall_UsesCacheWithoutRepositoryHit()
+    {
+        // Arrange
+        int userId = 55;
+        var profile = new UserProfile
+        {
+            Id = 2,
+            UserId = userId,
+            FullName = "Cached User",
+            DateOfBirth = new DateOnly(1991, 4, 1),
+            Gender = "Інше",
+            Weight = 70m,
+            Height = 172m,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+        };
+
+        _mockRepository.Setup(r => r.GetByUserIdAsync(userId)).ReturnsAsync(profile);
+
+        // Act
+        var first = await _service.GetProfileAsync(userId);
+        var second = await _service.GetProfileAsync(userId);
+
+        // Assert
+        Assert.NotNull(first);
+        Assert.NotNull(second);
+        _mockRepository.Verify(r => r.GetByUserIdAsync(userId), Times.Once);
     }
 
     [Fact]

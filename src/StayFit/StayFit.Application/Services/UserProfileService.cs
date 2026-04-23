@@ -1,6 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using StayFit.Application.DTOs;
 using StayFit.Application.Interfaces;
+using StayFit.Application.Options;
 using StayFit.Domain.Entities;
 using StayFit.Domain.Exceptions;
 using StayFit.Domain.Interfaces;
@@ -12,18 +15,35 @@ namespace StayFit.Application.Services;
 /// </summary>
 public class UserProfileService : IUserProfileService
 {
+    private const string ProfilePhotoCacheKeyPrefix = "profile-photo:";
+
     private readonly IUserProfileRepository _repository;
     private readonly ILogger<UserProfileService> _logger;
+    private readonly IMemoryCache _memoryCache;
+    private readonly ProfilePhotoOptions _profilePhotoOptions;
 
-    public UserProfileService(IUserProfileRepository repository, ILogger<UserProfileService> logger)
+    public UserProfileService(
+        IUserProfileRepository repository,
+        ILogger<UserProfileService> logger,
+        IMemoryCache memoryCache,
+        IOptions<ProfilePhotoOptions> profilePhotoOptions)
     {
         _repository = repository;
         _logger = logger;
+        _memoryCache = memoryCache;
+        _profilePhotoOptions = profilePhotoOptions.Value;
     }
 
     public async Task<UserProfileDto?> GetProfileAsync(int userId)
     {
         _logger.LogInformation("Отримання профілю користувача з ID {UserId}", userId);
+
+        var cacheKey = GetProfilePhotoCacheKey(userId);
+        if (_memoryCache.TryGetValue(cacheKey, out UserProfileDto? cachedProfile))
+        {
+            _logger.LogInformation("Профіль користувача {UserId} отримано з кешу", userId);
+            return cachedProfile;
+        }
 
         var profile = await _repository.GetByUserIdAsync(userId);
 
@@ -34,6 +54,20 @@ public class UserProfileService : IUserProfileService
         }
 
         var dto = MapToDto(profile);
+        var cacheLifetimeMinutes = _profilePhotoOptions.CacheLifetimeMinutes > 0
+            ? _profilePhotoOptions.CacheLifetimeMinutes
+            : 30;
+
+        _memoryCache.Set(
+            cacheKey,
+            dto,
+            TimeSpan.FromMinutes(cacheLifetimeMinutes));
+
+        _logger.LogInformation(
+            "Профіль користувача {UserId} збережено у кеш на {CacheLifetimeMinutes} хвилин",
+            userId,
+            cacheLifetimeMinutes);
+
         _logger.LogInformation("Профіль користувача {UserId} успішно отримано", userId);
         return dto;
     }
@@ -58,6 +92,7 @@ public class UserProfileService : IUserProfileService
         profile.UpdatedAt = DateTime.UtcNow;
 
         await _repository.UpdateAsync(profile);
+        InvalidateProfilePhotoCache(userId);
         _logger.LogInformation("Профіль користувача {UserId} успішно оновлено", userId);
 
         return true;
@@ -88,6 +123,7 @@ public class UserProfileService : IUserProfileService
         };
 
         await _repository.AddAsync(profile);
+        InvalidateProfilePhotoCache(dto.UserId);
         _logger.LogInformation("Профіль для користувача {UserId} успішно створено", dto.UserId);
 
         return MapToDto(profile);
@@ -106,9 +142,19 @@ public class UserProfileService : IUserProfileService
         }
 
         await _repository.DeleteAsync(profile.Id);
+        InvalidateProfilePhotoCache(userId);
         _logger.LogInformation("Профіль користувача {UserId} успішно видалено", userId);
 
         return true;
+    }
+
+    private static string GetProfilePhotoCacheKey(int userId) =>
+        $"{ProfilePhotoCacheKeyPrefix}{userId}";
+
+    private void InvalidateProfilePhotoCache(int userId)
+    {
+        var cacheKey = GetProfilePhotoCacheKey(userId);
+        _memoryCache.Remove(cacheKey);
     }
 
     private static UserProfileDto MapToDto(UserProfile profile) =>

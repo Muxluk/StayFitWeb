@@ -43,6 +43,7 @@ builder.Services.AddControllersWithViews(options =>
 // ─── Global Exception Handler ───────────────────────────────────────────────
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
+builder.Services.AddMemoryCache();
 
 // ─── Infrastructure (БД + репозиторії) ─────────────────────────────────────
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -53,6 +54,7 @@ builder.Services.Configure<PasswordSettings>(passwordSettingsSection);
 var passwordSettings = passwordSettingsSection.Get<PasswordSettings>() ?? new PasswordSettings();
 builder.Services.Configure<ProfileSetupOptions>(builder.Configuration.GetSection("ProfileSetup"));
 builder.Services.Configure<DashboardSettings>(builder.Configuration.GetSection("Dashboard"));
+builder.Services.Configure<ProfilePhotoOptions>(builder.Configuration.GetSection(ProfilePhotoOptions.SectionName));
 
 builder.Services.Configure<SessionSettings>(builder.Configuration.GetSection(SessionSettings.SectionName));
 builder.Services.Configure<DiaryNoteSettings>(builder.Configuration.GetSection("DiaryNotes"));
@@ -106,6 +108,8 @@ app.UseRouting();
 app.UseStatusCodePagesWithReExecute("/Error/{0}");
 
 app.UseAuthentication();
+app.UseMiddleware<RequestLoggingMiddleware>();
+app.UseMiddleware<RequestExecutionTimeLoggingMiddleware>();
 app.UseAuthorization();
 
 app.MapControllerRoute(
