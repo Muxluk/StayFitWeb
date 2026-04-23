@@ -105,8 +105,7 @@ public class ProfileController : BaseController
             return RedirectToAction(nameof(Edit));
         }
 
-        TempData["SuccessMessage"] = "Фото профілю завантажено."
-            + " Збереження шляху в профіль буде виконано на наступному кроці (репозиторій/сервіс).";
+        TempData["SuccessMessage"] = "Фото профілю завантажено.";
 
         return RedirectToAction(nameof(Edit));
     }
