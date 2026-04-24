@@ -64,6 +64,7 @@ builder.Services.Configure<DiaryNoteSettings>(builder.Configuration.GetSection("
 builder.Services.Configure<NotificationSettings>(builder.Configuration.GetSection(NotificationSettings.SectionName));
 builder.Services.Configure<UsdaFoodDataOptions>(builder.Configuration.GetSection("UsdaFoodData"));
 builder.Services.Configure<SecurityLogSettings>(builder.Configuration.GetSection(SecurityLogSettings.SectionName));
+builder.Services.Configure<StayFit.Application.Configuration.SystemStatisticsSettings>(builder.Configuration.GetSection("SystemStatisticsCache"));
 builder.Services.AddHttpClient();
 
 // ─── Identity ───────────────────────────────────────────────────────────────
