@@ -58,6 +58,8 @@ public static class DependencyInjection
         services.AddScoped<IFoodImportRepository, FoodImportRepository>();
         services.AddScoped<IFoodImportService, FoodImportService>();
         services.AddScoped<ISecurityLogService, SecurityLogService>();
+        services.AddScoped<ISystemStatisticsRepository, SystemStatisticsRepository>();
+        services.AddScoped<ISystemStatisticsService, SystemStatisticsService>();
         return services;
     }
 }

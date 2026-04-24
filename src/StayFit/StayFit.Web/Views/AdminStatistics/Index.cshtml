@@ -1,0 +1,65 @@
+@model StayFit.Application.DTOs.SystemStatisticsDto
+@{
+    ViewData["Title"] = "Статистика системи";
+    Layout = "_Layout";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-graph-up text-primary"></i> Статистика системи</h2>
+        <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Назад до панелі
+        </a>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <div class="row g-4 mt-2">
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm border-0 bg-primary text-white h-100">
+                <div class="card-body d-flex flex-column align-items-center justify-content-center py-4">
+                    <i class="bi bi-people display-4 mb-2"></i>
+                    <h5 class="card-title">Користувачі</h5>
+                    <h2 class="fw-bold mb-0">@Model.TotalUsers</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm border-0 bg-success text-white h-100">
+                <div class="card-body d-flex flex-column align-items-center justify-content-center py-4">
+                    <i class="bi bi-apple display-4 mb-2"></i>
+                    <h5 class="card-title">Продукти (База)</h5>
+                    <h2 class="fw-bold mb-0">@Model.TotalProducts</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm border-0 bg-info text-white h-100">
+                <div class="card-body d-flex flex-column align-items-center justify-content-center py-4">
+                    <i class="bi bi-journal-text display-4 mb-2"></i>
+                    <h5 class="card-title">Записи щоденника</h5>
+                    <h2 class="fw-bold mb-0">@Model.TotalDiaryEntries</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm border-0 bg-warning text-dark h-100">
+                <div class="card-body d-flex flex-column align-items-center justify-content-center py-4">
+                    <i class="bi bi-shield-lock display-4 mb-2"></i>
+                    <h5 class="card-title">Активні сеанси</h5>
+                    <h2 class="fw-bold mb-0">@Model.ActiveSessions</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mt-4 text-muted text-end small">
+        <i class="bi bi-info-circle"></i> Дані оновлюються періодично (закешовані).
+    </div>
+</div>
