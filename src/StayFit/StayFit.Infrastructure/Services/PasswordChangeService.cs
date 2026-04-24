@@ -27,7 +27,13 @@ public class PasswordChangeService : IPasswordChangeService
         _securityLogService = securityLogService;
     }
 
-    public async Task<Result<bool>> ChangePasswordAsync(int userId, string currentPassword, string newPassword, string confirmPassword)
+    public async Task<Result<bool>> ChangePasswordAsync(
+        int userId,
+        string currentPassword,
+        string newPassword,
+        string confirmPassword,
+        string? ipAddress = null,
+        string? userAgent = null)
     {
         _logger.LogInformation("Початок процесу зміни пароля для користувача з ID: {UserId}", userId);
 
@@ -77,7 +83,7 @@ public class PasswordChangeService : IPasswordChangeService
             // Логування в журнал безпеки
             if (_securityLogService != null)
             {
-                await _securityLogService.LogPasswordChangeAsync(userId, isSuccessful: true);
+                await _securityLogService.LogPasswordChangeAsync(userId, ipAddress, userAgent, isSuccessful: true);
             }
             
             return new Result<bool>.Success(true);
@@ -89,7 +95,7 @@ public class PasswordChangeService : IPasswordChangeService
         // Логування помилки в журнал безпеки
         if (_securityLogService != null)
         {
-            await _securityLogService.LogPasswordChangeAsync(userId, isSuccessful: false, failureReason: errors);
+            await _securityLogService.LogPasswordChangeAsync(userId, ipAddress, userAgent, isSuccessful: false, failureReason: errors);
         }
 
         return new Result<bool>.Failure(string.Join(", ", result.Errors.Select(e => e.Description)), "PASSWORD_CHANGE_FAILED");

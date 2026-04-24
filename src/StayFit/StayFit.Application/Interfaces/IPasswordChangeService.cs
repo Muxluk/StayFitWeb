@@ -15,5 +15,11 @@ public interface IPasswordChangeService
     /// <param name="newPassword">Новий пароль</param>
     /// <param name="confirmPassword">Підтвердження нового пароля</param>
     /// <returns>Результат операції з можливими помилками</returns>
-    Task<Result<bool>> ChangePasswordAsync(int userId, string currentPassword, string newPassword, string confirmPassword);
+    Task<Result<bool>> ChangePasswordAsync(
+        int userId,
+        string currentPassword,
+        string newPassword,
+        string confirmPassword,
+        string? ipAddress = null,
+        string? userAgent = null);
 }

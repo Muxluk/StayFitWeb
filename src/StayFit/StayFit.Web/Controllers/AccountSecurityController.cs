@@ -52,12 +52,16 @@ public class AccountSecurityController : BaseController
         }
 
         var userId = GetRequiredCurrentUserId();
+        var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+        var userAgent = HttpContext.Request.Headers.UserAgent.ToString();
 
         var result = await _passwordChangeService.ChangePasswordAsync(
             userId,
             request.CurrentPassword,
             request.NewPassword,
-            request.ConfirmPassword);
+            request.ConfirmPassword,
+            ipAddress,
+            userAgent);
 
         if (result.IsFailure)
         {
