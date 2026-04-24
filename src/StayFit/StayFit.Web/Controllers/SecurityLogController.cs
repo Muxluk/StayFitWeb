@@ -35,17 +35,14 @@ public class SecurityLogController : BaseController
         try
         {
             var result = await _securityLogService.GetUserSecurityLogsAsync(userId, page);
-
-            if (result.IsSuccess)
-            {
-                var successResult = result as Result<Application.DTOs.PagedResult<Application.DTOs.SecurityLogDto>>.Success;
-                return Ok(successResult?.Data);
-            }
-
-            var failureResult = result as Result<Application.DTOs.PagedResult<Application.DTOs.SecurityLogDto>>.Failure;
-            _logger.LogWarning("Помилка при отриманні журналу безпеки для користувача {UserId}: {Error}",
-                userId, failureResult?.ErrorMessage);
-            return BadRequest(new { message = failureResult?.ErrorMessage ?? "Помилка при отриманні журналу" });
+            return result.Match<IActionResult>(
+                success => Ok(success.Data),
+                failure =>
+                {
+                    _logger.LogWarning("Помилка при отриманні журналу безпеки для користувача {UserId}: {Error}",
+                        userId, failure.ErrorMessage);
+                    return BadRequest(new { message = failure.ErrorMessage });
+                });
         }
         catch (Exception ex)
         {
@@ -65,17 +62,14 @@ public class SecurityLogController : BaseController
         try
         {
             var result = await _securityLogService.GetRecentLogsAsync(userId, count);
-
-            if (result.IsSuccess)
-            {
-                var successResult = result as Result<System.Collections.Generic.IEnumerable<Application.DTOs.SecurityLogDto>>.Success;
-                return Ok(successResult?.Data);
-            }
-
-            var failureResult = result as Result<System.Collections.Generic.IEnumerable<Application.DTOs.SecurityLogDto>>.Failure;
-            _logger.LogWarning("Помилка при отриманні останніх записів журналу для користувача {UserId}: {Error}",
-                userId, failureResult?.ErrorMessage);
-            return BadRequest(new { message = failureResult?.ErrorMessage ?? "Помилка при отриманні записів" });
+            return result.Match<IActionResult>(
+                success => Ok(success.Data),
+                failure =>
+                {
+                    _logger.LogWarning("Помилка при отриманні останніх записів журналу для користувача {UserId}: {Error}",
+                        userId, failure.ErrorMessage);
+                    return BadRequest(new { message = failure.ErrorMessage });
+                });
         }
         catch (Exception ex)
         {

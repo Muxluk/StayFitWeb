@@ -522,20 +522,40 @@
         async function loadSecurityLogs() {
             try {
                 const response = await fetch('/security-log/logs?page=1');
-                if (!response.ok) throw new Error('Помилка при завантаженні журналу');
+                if (!response.ok) {
+                    let errorMessage = 'Помилка при завантаженні журналу';
+                    try {
+                        const errorPayload = await response.json();
+                        if (errorPayload?.message) {
+                            errorMessage = errorPayload.message;
+                        }
+                    } catch (_) {
+                        // Якщо бек повернув не-JSON, залишаємо дефолтний текст помилки.
+                    }
+
+                    throw new Error(errorMessage);
+                }
                 
                 const data = await response.json();
                 renderSecurityLogs(data);
             } catch (error) {
                 console.error('Помилка завантаження логів:', error);
                 document.getElementById('securityLogs').innerHTML = 
-                    '<div class="alert alert-warning">Не вдалося завантажити історію безпеки</div>';
+                    '<div class="alert alert-warning">Не вдалося завантажити історію безпеки: ' + (error?.message || 'невідома помилка') + '</div>';
             }
         }
 
         function renderSecurityLogs(pagedResult) {
             const container = document.getElementById('securityLogs');
-            const items = pagedResult.items || [];
+            if (!pagedResult || typeof pagedResult !== 'object') {
+                container.innerHTML = '<div class="alert alert-warning">Сервер повернув некоректні дані журналу безпеки.</div>';
+                return;
+            }
+
+            const items = pagedResult.items || pagedResult.Items || [];
+            const pageNumber = pagedResult.pageNumber || pagedResult.PageNumber || 1;
+            const totalPages = pagedResult.totalPages || pagedResult.TotalPages || 1;
+            const totalCount = pagedResult.totalCount || pagedResult.TotalCount || 0;
             
             if (!items.length) {
                 container.innerHTML = '<p class="text-muted">Немає записів у журналі безпеки.</p>';
@@ -577,9 +597,9 @@
             html += '</tbody></table></div>';
             
             // Додаємо пагінацію інформацію
-            if (pagedResult.totalPages > 1) {
-                html += '<p class="text-muted small mt-3">Сторінка ' + pagedResult.pageNumber + ' з ' + pagedResult.totalPages + 
-                        ' (' + pagedResult.totalCount + ' записів)</p>';
+            if (totalPages > 1) {
+                html += '<p class="text-muted small mt-3">Сторінка ' + pageNumber + ' з ' + totalPages + 
+                        ' (' + totalCount + ' записів)</p>';
             }
             
             container.innerHTML = html;

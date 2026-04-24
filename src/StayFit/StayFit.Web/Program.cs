@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Serilog;
 using StayFit.Application.Interfaces;
@@ -115,6 +116,13 @@ builder.Services.AddScoped<IProfilePhotoService, ProfilePhotoService>();
 
 // ─── Build ──────────────────────────────────────────────────────────────────
 var app = builder.Build();
+
+// ─── Auto migrations ─────────────────────────────────────────────────────────
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await dbContext.Database.MigrateAsync();
+}
 
 await IdentityRoleSeeder.SeedRolesAsync(app.Services);
 await IdentityRoleSeeder.SeedAdminUserAsync(app.Services, app.Configuration);
