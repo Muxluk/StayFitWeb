@@ -1,4 +1,5 @@
 using StayFit.Domain.Entities;
+using StayFit.Domain.Enums;
 
 namespace StayFit.Domain.Interfaces;
 
@@ -26,4 +27,10 @@ public interface ISupportRepository
     /// Отримати відповіді до конкретного звернення користувача.
     /// </summary>
     Task<IEnumerable<SupportTicketReply>> GetRepliesByTicketIdAsync(int ticketId, int userId);
+    
+    Task<IEnumerable<SupportTicket>> GetAllTicketsAsync(SupportStatus? statusFilter, int skip, int take);
+    Task<int> GetTicketsCountAsync(SupportStatus? statusFilter);
+    Task<SupportTicket?> GetTicketWithRepliesByIdAsync(int ticketId);
+    Task UpdateTicketAsync(SupportTicket ticket);
+    Task AddReplyAsync(SupportTicketReply reply);
 }

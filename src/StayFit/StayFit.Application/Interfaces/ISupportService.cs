@@ -1,6 +1,6 @@
 using StayFit.Application.Common;
 using StayFit.Application.DTOs;
-
+using StayFit.Domain.Enums;
 namespace StayFit.Application.Interfaces;
 
 /// <summary>
@@ -22,4 +22,9 @@ public interface ISupportService
     /// Отримати деталі конкретного звернення з усіма відповідями.
     /// </summary>
     Task<Result<SupportTicketDto>> GetTicketRepliesAsync(int userId, int ticketId);
+
+    Task<PagedResult<SupportTicketAdminDto>> GetAdminTicketsAsync(SupportStatus? statusFilter, int pageNumber, int pageSize);
+    Task<SupportTicketAdminDto?> GetAdminTicketByIdAsync(int id);
+    Task<bool> ChangeTicketStatusAsync(int id, SupportStatus newStatus);
+    Task<bool> ReplyToTicketAsync(SupportReplyDto replyDto);
 }

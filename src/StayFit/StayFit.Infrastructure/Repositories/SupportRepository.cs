@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using StayFit.Domain.Entities;
 using StayFit.Domain.Interfaces;
 using StayFit.Infrastructure.Data;
+using StayFit.Domain.Enums;
 
 namespace StayFit.Infrastructure.Repositories;
 
@@ -64,5 +65,54 @@ public class SupportRepository : ISupportRepository
             .Where(r => r.TicketId == ticketId)
             .OrderBy(r => r.CreatedAt)
             .ToListAsync();
+    }
+
+    public async Task<IEnumerable<SupportTicket>> GetAllTicketsAsync(SupportStatus? statusFilter, int skip, int take)
+    {
+        var query = _context.Set<SupportTicket>().Include(t => t.User).AsQueryable();
+
+        if (statusFilter.HasValue)
+        {
+            var statusString = statusFilter.Value.ToString();
+            query = query.Where(t => t.Status == statusString);
+        }
+
+        return await query.OrderByDescending(t => t.CreatedAt)
+                          .Skip(skip)
+                          .Take(take)
+                          .ToListAsync();
+    }
+
+    public async Task<int> GetTicketsCountAsync(SupportStatus? statusFilter)
+    {
+        var query = _context.Set<SupportTicket>().AsQueryable();
+        
+        if (statusFilter.HasValue)
+        {
+            var statusString = statusFilter.Value.ToString();
+            query = query.Where(t => t.Status == statusString);
+        }
+
+        return await query.CountAsync();
+    }
+
+    public async Task<SupportTicket?> GetTicketWithRepliesByIdAsync(int ticketId)
+    {
+        return await _context.Set<SupportTicket>()
+            .Include(t => t.User)
+            .Include(t => t.Replies) // Припускаємо, що зв'язок називається Replies
+            .FirstOrDefaultAsync(t => t.Id == ticketId);
+    }
+
+    public async Task UpdateTicketAsync(SupportTicket ticket)
+    {
+        _context.Set<SupportTicket>().Update(ticket);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task AddReplyAsync(SupportTicketReply reply)
+    {
+        await _context.Set<SupportTicketReply>().AddAsync(reply);
+        await _context.SaveChangesAsync();
     }
 }
