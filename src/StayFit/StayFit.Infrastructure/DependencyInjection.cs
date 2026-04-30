@@ -62,6 +62,10 @@ public static class DependencyInjection
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IFoodImportRepository, FoodImportRepository>();
         services.AddScoped<IFoodImportService, FoodImportService>();
+        services.AddHttpClient<IUsdaFoodDataClient, UsdaFoodDataClient>();
+
+        services.AddScoped<IBarcodeScanRepository, BarcodeScanRepository>();
+        services.AddScoped<IBarcodeScanService, BarcodeScanService>();
         services.AddScoped<ISecurityLogService, SecurityLogService>();
         services.AddScoped<ISupportService, SupportService>();
         services.AddScoped<ISystemStatisticsRepository, SystemStatisticsRepository>();

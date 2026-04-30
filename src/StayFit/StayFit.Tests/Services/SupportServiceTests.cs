@@ -259,6 +259,10 @@ public sealed class SupportServiceTests
         };
 
         _supportRepositoryMock
+            .Setup(r => r.GetTicketByIdAsync(ticketId, userId))
+            .ReturnsAsync(new SupportTicket { Id = ticketId, Subject = "Subject", Message = "Message", Status = "New" });
+
+        _supportRepositoryMock
             .Setup(r => r.GetRepliesByTicketIdAsync(ticketId, userId))
             .ReturnsAsync(replies);
 
@@ -270,7 +274,7 @@ public sealed class SupportServiceTests
         // Assert
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
-        var dtoList = result.Value.ToList();
+        var dtoList = result.Value.Replies!.ToList();
         Assert.Equal(2, dtoList.Count);
         Assert.Equal("Please try again", dtoList[0].Message);
         Assert.True(dtoList[0].IsAdminReply);
@@ -284,6 +288,10 @@ public sealed class SupportServiceTests
     {
         // Arrange
         _supportRepositoryMock
+            .Setup(r => r.GetTicketByIdAsync(15, 10))
+            .ReturnsAsync(new SupportTicket { Id = 15, Subject = "Subject", Message = "Message", Status = "New" });
+
+        _supportRepositoryMock
             .Setup(r => r.GetRepliesByTicketIdAsync(15, 10))
             .ReturnsAsync(new List<SupportTicketReply>());
 
@@ -295,13 +303,17 @@ public sealed class SupportServiceTests
         // Assert
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
-        Assert.Empty(result.Value);
+        Assert.Empty(result.Value.Replies!);
     }
 
     [Fact]
     public async Task GetTicketRepliesAsync_WhenRepositoryThrows_ReturnsFailure()
     {
         // Arrange
+        _supportRepositoryMock
+            .Setup(r => r.GetTicketByIdAsync(15, 10))
+            .ReturnsAsync(new SupportTicket { Id = 15, Subject = "Subject", Message = "Message", Status = "New" });
+
         _supportRepositoryMock
             .Setup(r => r.GetRepliesByTicketIdAsync(15, 10))
             .ThrowsAsync(new Exception("Database error"));
@@ -313,6 +325,6 @@ public sealed class SupportServiceTests
 
         // Assert
         Assert.True(result.IsFailure);
-        Assert.Contains("Помилка при отриманні відповідей", result.Errors);
+        Assert.Contains("Помилка при отриманні деталей звернення", result.Errors);
     }
 }
