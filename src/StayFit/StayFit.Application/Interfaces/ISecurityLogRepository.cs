@@ -18,7 +18,8 @@ public interface ISecurityLogRepository
     Task<(IEnumerable<SecurityLogEntry> entries, int totalCount)> GetUserLogsAsync(
         int userId, 
         int pageNumber, 
-        int pageSize);
+        int pageSize,
+        string? eventType = null);
     
     /// <summary>
     /// Отримати останні записи журналу

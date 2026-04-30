@@ -145,18 +145,22 @@ public class SecurityLogService : ISecurityLogService
         }
     }
 
-    public async Task<Result<PagedResult<SecurityLogDto>>> GetUserSecurityLogsAsync(int userId, int pageNumber)
+    public async Task<Result<PagedResult<SecurityLogDto>>> GetUserSecurityLogsAsync(int userId, int pageNumber, string? eventType = null)
     {
         try
         {
             if (pageNumber < 1)
                 pageNumber = 1;
 
+            var normalizedEventType = string.IsNullOrWhiteSpace(eventType)
+                ? null
+                : eventType.Trim();
+
             var pageSize = _settings.DefaultPageSize;
             if (pageSize < 1 || pageSize > _settings.MaxPageSize)
                 pageSize = _settings.DefaultPageSize;
 
-            var (entries, totalCount) = await _repository.GetUserLogsAsync(userId, pageNumber, pageSize);
+            var (entries, totalCount) = await _repository.GetUserLogsAsync(userId, pageNumber, pageSize, normalizedEventType);
 
             var dtos = entries.Select(MapToDto).ToList();
 
@@ -168,7 +172,11 @@ public class SecurityLogService : ISecurityLogService
                 PageSize = pageSize
             };
 
-            _logger.LogInformation("Отримано {Count} записів журналу безпеки для користувача {UserId}", dtos.Count, userId);
+            _logger.LogInformation(
+                "Отримано {Count} записів журналу безпеки для користувача {UserId}. Фільтр події: {EventTypeFilter}",
+                dtos.Count,
+                userId,
+                normalizedEventType ?? "all");
             return result;
         }
         catch (Exception ex)

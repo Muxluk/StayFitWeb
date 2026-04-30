@@ -27,11 +27,18 @@ public class SecurityLogRepository : ISecurityLogRepository
     public async Task<(IEnumerable<SecurityLogEntry> entries, int totalCount)> GetUserLogsAsync(
         int userId, 
         int pageNumber, 
-        int pageSize)
+        int pageSize,
+        string? eventType = null)
     {
         var query = _context.SecurityLogs
-            .Where(log => log.UserId == userId)
-            .OrderByDescending(log => log.CreatedAt);
+            .Where(log => log.UserId == userId);
+
+        if (!string.IsNullOrWhiteSpace(eventType))
+        {
+            query = query.Where(log => log.EventType == eventType);
+        }
+
+        query = query.OrderByDescending(log => log.CreatedAt);
 
         var totalCount = await query.CountAsync();
         

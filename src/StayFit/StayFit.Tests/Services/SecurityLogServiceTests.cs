@@ -228,7 +228,7 @@ public class SecurityLogServiceTests
         };
 
         _repositoryMock
-            .Setup(r => r.GetUserLogsAsync(userId, pageNumber, _settings.DefaultPageSize))
+            .Setup(r => r.GetUserLogsAsync(userId, pageNumber, _settings.DefaultPageSize, null))
             .ReturnsAsync((entries, 2));
 
         // Act
@@ -241,7 +241,7 @@ public class SecurityLogServiceTests
         Assert.Equal(2, successResult.Data.Items.Count());
         Assert.Equal(2, successResult.Data.TotalCount);
         Assert.Equal(pageNumber, successResult.Data.PageNumber);
-        _repositoryMock.Verify(r => r.GetUserLogsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>()), Times.Once);
+        _repositoryMock.Verify(r => r.GetUserLogsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()), Times.Once);
     }
 
     [Fact]
@@ -253,7 +253,7 @@ public class SecurityLogServiceTests
         
         var entries = new List<SecurityLogEntry>();
         _repositoryMock
-            .Setup(r => r.GetUserLogsAsync(userId, 1, _settings.DefaultPageSize))
+            .Setup(r => r.GetUserLogsAsync(userId, 1, _settings.DefaultPageSize, null))
             .ReturnsAsync((entries, 0));
 
         // Act
@@ -261,7 +261,7 @@ public class SecurityLogServiceTests
 
         // Assert
         Assert.True(result.IsSuccess);
-        _repositoryMock.Verify(r => r.GetUserLogsAsync(userId, 1, _settings.DefaultPageSize), Times.Once);
+        _repositoryMock.Verify(r => r.GetUserLogsAsync(userId, 1, _settings.DefaultPageSize, null), Times.Once);
     }
 
     [Fact]
@@ -270,7 +270,7 @@ public class SecurityLogServiceTests
         // Arrange
         int userId = 1;
         _repositoryMock
-            .Setup(r => r.GetUserLogsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>()))
+            .Setup(r => r.GetUserLogsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()))
             .ThrowsAsync(new Exception("Database error"));
 
         // Act
@@ -281,6 +281,26 @@ public class SecurityLogServiceTests
         var failureResult = result as StayFit.Domain.Results.Result<PagedResult<SecurityLogDto>>.Failure;
         Assert.NotNull(failureResult);
         Assert.Equal("ERROR", failureResult.ErrorCode);
+    }
+
+    [Fact]
+    public async Task GetUserSecurityLogsAsync_WithEventType_UsesFilterInRepository()
+    {
+        // Arrange
+        const int userId = 1;
+        const int pageNumber = 1;
+        const string eventType = "PasswordChange";
+
+        _repositoryMock
+            .Setup(r => r.GetUserLogsAsync(userId, pageNumber, _settings.DefaultPageSize, eventType))
+            .ReturnsAsync((new List<SecurityLogEntry>(), 0));
+
+        // Act
+        var result = await _service.GetUserSecurityLogsAsync(userId, pageNumber, eventType);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        _repositoryMock.Verify(r => r.GetUserLogsAsync(userId, pageNumber, _settings.DefaultPageSize, eventType), Times.Once);
     }
 
     #endregion

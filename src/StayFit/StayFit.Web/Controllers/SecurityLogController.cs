@@ -28,13 +28,13 @@ public class SecurityLogController : BaseController
     /// Отримати журнал безпеки користувача з пагінацією
     /// </summary>
     [HttpGet("logs")]
-    public async Task<IActionResult> GetSecurityLogs(int page = 1)
+    public async Task<IActionResult> GetSecurityLogs(int page = 1, string? eventType = null)
     {
         var userId = GetRequiredCurrentUserId();
 
         try
         {
-            var result = await _securityLogService.GetUserSecurityLogsAsync(userId, page);
+            var result = await _securityLogService.GetUserSecurityLogsAsync(userId, page, eventType);
             return result.Match<IActionResult>(
                 success => Ok(success.Data),
                 failure =>

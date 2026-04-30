@@ -41,7 +41,7 @@ public interface ISecurityLogService
     /// <summary>
     /// Отримати записи журналу користувача з пагінацією
     /// </summary>
-    Task<Result<PagedResult<SecurityLogDto>>> GetUserSecurityLogsAsync(int userId, int pageNumber);
+    Task<Result<PagedResult<SecurityLogDto>>> GetUserSecurityLogsAsync(int userId, int pageNumber, string? eventType = null);
     
     /// <summary>
     /// Отримати останні записи журналу

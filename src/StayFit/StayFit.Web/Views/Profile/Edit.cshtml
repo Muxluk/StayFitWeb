@@ -410,6 +410,18 @@
                             <h5 class="mb-0">📋 Історія безпеки акаунту</h5>
                         </div>
                         <div class="card-body">
+                            <div class="row g-2 align-items-end mb-3">
+                                <div class="col-md-5 col-lg-4">
+                                    <label for="securityEventTypeFilter" class="form-label">Фільтр за типом події</label>
+                                    <select id="securityEventTypeFilter" class="form-select form-select-sm">
+                                        <option value="">Всі події</option>
+                                        <option value="Login">Вхід</option>
+                                        <option value="Logout">Вихід</option>
+                                        <option value="PasswordChange">Зміна пароля</option>
+                                        <option value="SessionTerminated">Сеанс завершено</option>
+                                    </select>
+                                </div>
+                            </div>
                             <div id="securityLogs">
                                 <div class="text-center text-muted py-3">
                                     <div class="spinner-border spinner-border-sm" role="status">
@@ -519,9 +531,16 @@
         }
 
         // Завантаження журналу безпеки
-        async function loadSecurityLogs() {
+        async function loadSecurityLogs(page = 1) {
             try {
-                const response = await fetch('/security-log/logs?page=1');
+                const eventType = document.getElementById('securityEventTypeFilter')?.value || '';
+                let requestUrl = '/security-log/logs?page=' + page;
+
+                if (eventType) {
+                    requestUrl += '&eventType=' + encodeURIComponent(eventType);
+                }
+
+                const response = await fetch(requestUrl);
                 if (!response.ok) {
                     let errorMessage = 'Помилка при завантаженні журналу';
                     try {
@@ -607,7 +626,14 @@
 
         // Завантажуємо журнал при завантаженні сторінки
         document.addEventListener('DOMContentLoaded', function() {
-            loadSecurityLogs();
+            const eventTypeFilter = document.getElementById('securityEventTypeFilter');
+            if (eventTypeFilter) {
+                eventTypeFilter.addEventListener('change', function () {
+                    loadSecurityLogs(1);
+                });
+            }
+
+            loadSecurityLogs(1);
         });
     </script>
 }
