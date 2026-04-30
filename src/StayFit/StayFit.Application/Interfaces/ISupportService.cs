@@ -19,7 +19,7 @@ public interface ISupportService
     Task<Result<IEnumerable<SupportTicketDto>>> GetMyTicketsAsync(int userId);
 
     /// <summary>
-    /// Отримати відповіді в межах конкретного звернення користувача.
+    /// Отримати деталі конкретного звернення з усіма відповідями.
     /// </summary>
-    Task<Result<IEnumerable<SupportTicketReplyDto>>> GetTicketRepliesAsync(int userId, int ticketId);
+    Task<Result<SupportTicketDto>> GetTicketRepliesAsync(int userId, int ticketId);
 }

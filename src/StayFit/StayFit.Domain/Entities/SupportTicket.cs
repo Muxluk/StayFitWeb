@@ -36,4 +36,9 @@ public class SupportTicket
     /// Відповіді в межах звернення.
     /// </summary>
     public ICollection<SupportTicketReply> Replies { get; set; } = new List<SupportTicketReply>();
+
+    /// <summary>
+    /// Навігаційна властивість до користувача, який створив звернення.
+    /// </summary>
+    public User? User { get; set; }
 }

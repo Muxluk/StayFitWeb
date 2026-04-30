@@ -23,6 +23,8 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
     public DbSet<UserSession> UserSessions => Set<UserSession>();
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<SecurityLogEntry> SecurityLogs => Set<SecurityLogEntry>();
+    public DbSet<SupportTicket> SupportTickets => Set<SupportTicket>();
+    public DbSet<SupportTicketReply> SupportTicketReplies => Set<SupportTicketReply>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -112,6 +114,38 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
                 .WithMany()
                 .HasForeignKey(sl => sl.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<SupportTicket>(entity =>
+        {
+            entity.HasKey(t => t.Id);
+            entity.Property(t => t.UserId).IsRequired();
+            entity.Property(t => t.Subject).IsRequired().HasMaxLength(200);
+            entity.Property(t => t.Message).IsRequired().HasMaxLength(2000);
+            entity.Property(t => t.Status).IsRequired().HasMaxLength(20);
+            entity.Property(t => t.CreatedAt).IsRequired();
+            entity.HasIndex(t => t.UserId);
+            entity.HasIndex(t => new { t.UserId, t.Status });
+            entity.HasIndex(t => t.CreatedAt);
+            entity.HasOne(t => t.User)
+                .WithMany()
+                .HasForeignKey(t => t.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasMany(t => t.Replies)
+                .WithOne(r => r.Ticket)
+                .HasForeignKey(r => r.TicketId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<SupportTicketReply>(entity =>
+        {
+            entity.HasKey(r => r.Id);
+            entity.Property(r => r.TicketId).IsRequired();
+            entity.Property(r => r.Message).IsRequired().HasMaxLength(2000);
+            entity.Property(r => r.CreatedAt).IsRequired();
+            entity.Property(r => r.IsAdminReply).IsRequired();
+            entity.HasIndex(r => r.TicketId);
+            entity.HasIndex(r => r.CreatedAt);
         });
     }
 }

@@ -13,6 +13,7 @@ public sealed class SupportTicketDto
     public string Message { get; init; } = string.Empty;
     public string Status { get; init; } = string.Empty;
     public DateTime CreatedAt { get; init; }
+    public List<SupportTicketReplyDto>? Replies { get; init; }
 }
 
 public sealed class SupportTicketReplyDto

@@ -103,17 +103,29 @@ public class SupportService : ISupportService
     }
 
     /// <inheritdoc />
-    public async Task<Result<IEnumerable<SupportTicketReplyDto>>> GetTicketRepliesAsync(int userId, int ticketId)
+    public async Task<Result<SupportTicketDto>> GetTicketRepliesAsync(int userId, int ticketId)
     {
         try
         {
             _logger.LogInformation(
-                "Отримання відповідей до звернення {TicketId} для користувача {UserId}",
+                "Отримання деталей звернення {TicketId} для користувача {UserId}",
                 ticketId,
                 userId);
 
+            // Get ticket first
+            var ticket = await _supportRepository.GetTicketByIdAsync(ticketId, userId);
+            if (ticket == null)
+            {
+                _logger.LogWarning(
+                    "Звернення {TicketId} не знайдено для користувача {UserId}",
+                    ticketId,
+                    userId);
+                return Result<SupportTicketDto>.Failure("Звернення не знайдено");
+            }
+
+            // Get replies
             var replies = await _supportRepository.GetRepliesByTicketIdAsync(ticketId, userId);
-            var result = replies.Select(r => new SupportTicketReplyDto
+            var replyDtos = replies.Select(r => new SupportTicketReplyDto
             {
                 Id = r.Id,
                 TicketId = r.TicketId,
@@ -122,22 +134,32 @@ public class SupportService : ISupportService
                 IsAdminReply = r.IsAdminReply
             }).ToList();
 
+            var ticketDto = new SupportTicketDto
+            {
+                Id = ticket.Id,
+                Subject = ticket.Subject,
+                Message = ticket.Message,
+                Status = ticket.Status,
+                CreatedAt = ticket.CreatedAt,
+                Replies = replyDtos
+            };
+
             _logger.LogInformation(
                 "Отримано {Count} відповідей до звернення {TicketId} для користувача {UserId}",
-                result.Count,
+                replyDtos.Count,
                 ticketId,
                 userId);
 
-            return Result<IEnumerable<SupportTicketReplyDto>>.Success(result);
+            return Result<SupportTicketDto>.Success(ticketDto);
         }
         catch (Exception ex)
         {
             _logger.LogError(
                 ex,
-                "Помилка при отриманні відповідей до звернення {TicketId} для користувача {UserId}",
+                "Помилка при отриманні деталей звернення {TicketId} для користувача {UserId}",
                 ticketId,
                 userId);
-            return Result<IEnumerable<SupportTicketReplyDto>>.Failure("Помилка при отриманні відповідей");
+            return Result<SupportTicketDto>.Failure("Помилка при отриманні деталей звернення");
         }
     }
 }
