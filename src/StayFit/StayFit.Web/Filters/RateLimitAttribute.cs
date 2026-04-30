@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System.Collections.Concurrent;
 
@@ -9,71 +8,53 @@ namespace StayFit.Web.Filters;
 /// за визначений проміжок часу.
 /// </summary>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false)]
-public sealed class RateLimitAttribute : TypeFilterAttribute
+public sealed class RateLimitAttribute : Attribute, IActionFilter
 {
-    public RateLimitAttribute(int maxRequests, int timeWindowMinutes)
-        : base(typeof(RateLimitFilter))
+    private static readonly ConcurrentDictionary<string, List<DateTime>> RequestLog = new();
+
+    public int MaxRequests { get; set; }
+
+    public int TimeWindowMinutes { get; set; }
+
+    public void OnActionExecuting(ActionExecutingContext context)
     {
-        MaxRequests = maxRequests;
-        TimeWindowMinutes = timeWindowMinutes;
-        Arguments = [maxRequests, timeWindowMinutes];
-    }
-
-    public int MaxRequests { get; }
-
-    public int TimeWindowMinutes { get; }
-
-    private sealed class RateLimitFilter : IActionFilter
-    {
-        private static readonly ConcurrentDictionary<string, List<DateTime>> RequestLog = new();
-        private readonly int _maxRequests;
-        private readonly TimeSpan _timeWindow;
-
-        public RateLimitFilter(int maxRequests, int timeWindowMinutes)
+        if (MaxRequests <= 0 || TimeWindowMinutes <= 0)
         {
-            _maxRequests = maxRequests;
-            _timeWindow = TimeSpan.FromMinutes(timeWindowMinutes);
+            return;
         }
 
-        public void OnActionExecuting(ActionExecutingContext context)
+        var timeWindow = TimeSpan.FromMinutes(TimeWindowMinutes);
+        var ipAddress = GetClientIp(context.HttpContext);
+        var now = DateTime.UtcNow;
+
+        var requests = RequestLog.GetOrAdd(ipAddress, _ => []);
+
+        lock (requests)
         {
-            if (_maxRequests <= 0 || _timeWindow <= TimeSpan.Zero)
+            requests.RemoveAll(requestTime => now - requestTime > timeWindow);
+
+            if (requests.Count >= MaxRequests)
             {
+                context.Result = new Microsoft.AspNetCore.Mvc.RedirectResult("/error/rate-limited");
                 return;
             }
 
-            var ipAddress = GetClientIp(context.HttpContext);
-            var now = DateTime.UtcNow;
-
-            var requests = RequestLog.GetOrAdd(ipAddress, _ => []);
-
-            lock (requests)
-            {
-                requests.RemoveAll(requestTime => now - requestTime > _timeWindow);
-
-                if (requests.Count >= _maxRequests)
-                {
-                    context.Result = new RedirectResult("/error/rate-limited");
-                    return;
-                }
-
-                requests.Add(now);
-            }
+            requests.Add(now);
         }
+    }
 
-        public void OnActionExecuted(ActionExecutedContext context)
+    public void OnActionExecuted(ActionExecutedContext context)
+    {
+    }
+
+    private static string GetClientIp(HttpContext httpContext)
+    {
+        var forwardedFor = httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(forwardedFor))
         {
+            return forwardedFor.Split(',')[0].Trim();
         }
 
-        private static string GetClientIp(HttpContext httpContext)
-        {
-            var forwardedFor = httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
-            if (!string.IsNullOrWhiteSpace(forwardedFor))
-            {
-                return forwardedFor.Split(',')[0].Trim();
-            }
-
-            return httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-        }
+        return httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
     }
 }
