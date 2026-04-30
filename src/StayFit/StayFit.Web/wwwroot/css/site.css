@@ -34,6 +34,22 @@ body {
     background-color: #e7f7e8 !important;
 }
 
+.support-fab {
+    position: fixed;
+    right: 1.5rem;
+    bottom: 1.5rem;
+    z-index: 1050;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .form-floating > .form-control-plaintext::placeholder,
 .form-floating > .form-control::placeholder {
     color: var(--bs-secondary-color);

@@ -132,6 +132,46 @@
         </main>
     </div>
 
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <button type="button"
+                class="btn btn-primary support-fab shadow"
+                data-bs-toggle="modal"
+                data-bs-target="#supportTicketModal"
+                aria-label="Звернутися до технічної підтримки"
+                title="Звернутися до технічної підтримки">
+            ?
+        </button>
+
+        <div class="modal fade" id="supportTicketModal" tabindex="-1" aria-labelledby="supportTicketModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="supportTicketModalLabel">Звернення до технічної підтримки</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрити"></button>
+                    </div>
+                    <form asp-controller="Support" asp-action="Create" method="post">
+                        @Html.AntiForgeryToken()
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="supportSubject" class="form-label">Тема</label>
+                                <input type="text" class="form-control" id="supportSubject" name="Subject" maxlength="200" required />
+                            </div>
+                            <div class="mb-3">
+                                <label for="supportMessage" class="form-label">Повідомлення</label>
+                                <textarea class="form-control" id="supportMessage" name="Message" rows="5" maxlength="2000" required></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Скасувати</button>
+                            <button type="submit" class="btn btn-primary">Надіслати</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+
     <footer class="border-top footer text-muted">
         <div class="container">
             &copy; 2026 - StayFit
