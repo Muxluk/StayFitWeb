@@ -1,0 +1,107 @@
+@using StayFit.Domain.Enums
+@model StayFit.Application.DTOs.SupportTicketAdminDto
+
+@{
+    ViewData["Title"] = "Деталі звернення";
+    Layout = "_Layout";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Звернення #@Model.Id</h2>
+        <a asp-action="Index" class="btn btn-outline-secondary">Назад до списку</a>
+    </div>
+
+    @if (TempData["Success"] != null) { <div class="alert alert-success">@TempData["Success"]</div> }
+    @if (TempData["Error"] != null) { <div class="alert alert-danger">@TempData["Error"]</div> }
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <!-- Повідомлення користувача -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+                    <div>
+                        <i class="bi bi-person-circle me-2"></i><strong>Від:</strong> @Model.UserEmail
+                    </div>
+                    <span class="small">@Model.CreatedAt.ToString("g")</span>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">@Model.Subject</h5>
+                    <p class="card-text text-muted mt-3" style="white-space: pre-wrap;">@Model.Message</p>
+                </div>
+            </div>
+
+            <!-- Історія відповідей -->
+            @foreach(var reply in Model.Replies)
+            {
+                <div class="card shadow-sm border-0 mb-3 @(reply.IsAdminReply ? "ms-5 border-start border-4 border-success" : "me-5 border-start border-4 border-secondary")">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center py-2 border-0">
+                        <strong class="@(reply.IsAdminReply ? "text-success" : "text-secondary")">
+                            <i class="bi @(reply.IsAdminReply ? "bi-person-badge" : "bi-person") me-1"></i>
+                            @(reply.IsAdminReply ? "Адміністратор" : "Користувач")
+                        </strong>
+                        <span class="text-muted small">@reply.CreatedAt.ToString("g")</span>
+                    </div>
+                    <div class="card-body py-2">
+                        <p class="card-text" style="white-space: pre-wrap;">@reply.Message</p>
+                    </div>
+                </div>
+            }
+
+            @if(Model.Status != SupportStatus.Closed)
+            {
+                <!-- Форма відповіді -->
+                <div class="card shadow-sm border-0 mt-4 bg-light">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3"><i class="bi bi-reply"></i> Написати відповідь</h5>
+                        <form asp-action="Reply" method="post">
+                            <input type="hidden" name="TicketId" value="@Model.Id" />
+                            <div class="mb-3">
+                                <textarea class="form-control" name="ReplyMessage" rows="4" placeholder="Введіть текст відповіді..." required></textarea>
+                            </div>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-send"></i> Надіслати та закрити звернення
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-secondary mt-4">
+                    <i class="bi bi-info-circle me-2"></i> Це звернення закрито. Відповіді більше не приймаються.
+                </div>
+            }
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Блок зміни статусу -->
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Статус звернення</h5>
+                    <div class="mb-4">
+                        Поточний статус: 
+                        @if(Model.Status == SupportStatus.New) { <span class="badge bg-primary">Нове</span> }
+                        else if(Model.Status == SupportStatus.InProgress) { <span class="badge bg-warning text-dark">В обробці</span> }
+                        else { <span class="badge bg-success">Закрито</span> }
+                    </div>
+
+                    <form asp-action="ChangeStatus" method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">Змінити на:</label>
+                            <select name="status" class="form-select">
+                                <option value="@SupportStatus.New" selected="@(Model.Status == SupportStatus.New ? "selected" : null)">Нове</option>
+                                <option value="@SupportStatus.InProgress" selected="@(Model.Status == SupportStatus.InProgress ? "selected" : null)">В обробці</option>
+                                <option value="@SupportStatus.Closed" selected="@(Model.Status == SupportStatus.Closed ? "selected" : null)">Закрито</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-outline-primary w-100">Оновити статус</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

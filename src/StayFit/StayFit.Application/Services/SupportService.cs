@@ -4,6 +4,7 @@ using StayFit.Application.DTOs;
 using StayFit.Application.Interfaces;
 using StayFit.Domain.Entities;
 using StayFit.Domain.Interfaces;
+using StayFit.Domain.Enums;
 
 namespace StayFit.Application.Services;
 
@@ -51,7 +52,7 @@ public class SupportService : ISupportService
                 UserId = userId,
                 Subject = request.Subject.Trim(),
                 Message = request.Message.Trim(),
-                Status = "New",
+                Status = SupportStatus.New.ToString(), // Зберігаємо як рядок
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -160,6 +161,106 @@ public class SupportService : ISupportService
                 ticketId,
                 userId);
             return Result<SupportTicketDto>.Failure("Помилка при отриманні деталей звернення");
+        }
+    }
+
+    // --- АДМІНСЬКІ МЕТОДИ ---
+
+    public async Task<PagedResult<SupportTicketAdminDto>> GetAdminTicketsAsync(SupportStatus? statusFilter, int pageNumber, int pageSize)
+    {
+        var skip = (pageNumber - 1) * pageSize;
+        var totalCount = await _supportRepository.GetTicketsCountAsync(statusFilter);
+        var tickets = await _supportRepository.GetAllTicketsAsync(statusFilter, skip, pageSize);
+
+        var dtos = tickets.Select(t => new SupportTicketAdminDto
+        {
+            Id = t.Id,
+            UserEmail = t.User?.Email ?? "Невідомий користувач",
+            Subject = t.Subject, 
+            // Безпечне перетворення рядка з БД в Enum для DTO
+            Status = Enum.TryParse<SupportStatus>(t.Status, true, out var status) ? status : SupportStatus.New,
+            CreatedAt = t.CreatedAt
+        }).ToList();
+
+        return new PagedResult<SupportTicketAdminDto>
+        {
+            Items = dtos,
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+    }
+
+    public async Task<SupportTicketAdminDto?> GetAdminTicketByIdAsync(int id)
+    {
+        var t = await _supportRepository.GetTicketWithRepliesByIdAsync(id);
+        if (t == null) return null;
+
+        return new SupportTicketAdminDto
+        {
+            Id = t.Id,
+            UserEmail = t.User?.Email ?? "Невідомий користувач",
+            Subject = t.Subject,
+            Message = t.Message,
+            Status = Enum.TryParse<SupportStatus>(t.Status, true, out var status) ? status : SupportStatus.New,
+            CreatedAt = t.CreatedAt,
+            Replies = t.Replies?.Select(r => new SupportTicketReplyAdminDto
+            {
+                Message = r.Message,
+                IsAdminReply = r.IsAdminReply, 
+                CreatedAt = r.CreatedAt
+            }).OrderBy(r => r.CreatedAt).ToList() ?? new List<SupportTicketReplyAdminDto>()
+        };
+    }
+
+    public async Task<bool> ChangeTicketStatusAsync(int id, SupportStatus newStatus)
+    {
+        try
+        {
+            var ticket = await _supportRepository.GetTicketWithRepliesByIdAsync(id);
+            if (ticket == null) return false;
+
+            ticket.Status = newStatus.ToString(); // Зберігаємо в БД як рядок
+            await _supportRepository.UpdateTicketAsync(ticket);
+            
+            _logger.LogInformation("Admin changed status for ticket {TicketId} to {Status}", id, newStatus);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error changing status for ticket {TicketId}", id);
+            return false;
+        }
+    }
+
+    public async Task<bool> ReplyToTicketAsync(SupportReplyDto replyDto)
+    {
+        try
+        {
+            var ticket = await _supportRepository.GetTicketWithRepliesByIdAsync(replyDto.TicketId);
+            if (ticket == null) return false;
+
+            var reply = new SupportTicketReply
+            {
+                TicketId = replyDto.TicketId,
+                Message = replyDto.ReplyMessage,
+                IsAdminReply = true,
+                CreatedAt = DateTime.UtcNow
+            };
+            
+            await _supportRepository.AddReplyAsync(reply);
+
+            // Закриваємо тікет після відповіді
+            ticket.Status = SupportStatus.Closed.ToString();
+            await _supportRepository.UpdateTicketAsync(ticket);
+
+            _logger.LogInformation("Admin replied to ticket {TicketId}", replyDto.TicketId);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error replying to ticket {TicketId}", replyDto.TicketId);
+            return false;
         }
     }
 }
