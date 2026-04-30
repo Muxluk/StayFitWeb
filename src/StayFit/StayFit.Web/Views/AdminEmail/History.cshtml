@@ -1,0 +1,38 @@
+@model IEnumerable<StayFit.Domain.Entities.EmailBroadcast>
+@{
+    ViewData["Title"] = "Історія email-розсилок";
+}
+<h2>Історія email-розсилок</h2>
+@if (TempData["AdminEmailError"] is string errorMessage)
+{
+    <div class="alert alert-warning" role="alert">
+        @errorMessage
+    </div>
+}
+@if (TempData["AdminEmailSuccess"] is string successMessage)
+{
+    <div class="alert alert-success" role="alert">
+        @successMessage
+    </div>
+}
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Дата</th>
+            <th>Тема</th>
+            <th>Аудиторія</th>
+            <th>Кількість отримувачів</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.SentAt.ToLocalTime().ToString("g")</td>
+            <td>@item.Subject</td>
+            <td>@item.Audience</td>
+            <td>@item.RecipientCount</td>
+        </tr>
+    }
+    </tbody>
+</table>
