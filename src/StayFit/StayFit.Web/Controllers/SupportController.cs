@@ -46,7 +46,7 @@ public class SupportController : Controller
         var result = await _supportService.GetTicketRepliesAsync(userId.Value, id);
         if (result.IsFailure)
         {
-            return View("Details", Enumerable.Empty<object>());
+            return RedirectToAction("Index");
         }
 
         return View(result.Value);
