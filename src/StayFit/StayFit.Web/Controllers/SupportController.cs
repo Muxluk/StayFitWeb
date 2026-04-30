@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StayFit.Application.DTOs;
 using StayFit.Application.Interfaces;
@@ -6,6 +7,7 @@ using StayFit.Application.Common;
 
 namespace StayFit.Web.Controllers;
 
+[Authorize]
 [Route("support")]
 public class SupportController : Controller
 {
