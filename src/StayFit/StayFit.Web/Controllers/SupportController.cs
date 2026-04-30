@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using StayFit.Application.DTOs;
 using StayFit.Application.Interfaces;
 using StayFit.Application.Common;
+using StayFit.Web.Filters;
 
 namespace StayFit.Web.Controllers;
 
@@ -52,6 +53,7 @@ public class SupportController : Controller
     }
 
     [HttpPost("create")]
+    [RateLimit(MaxRequests = 5, TimeWindowMinutes = 1)]
     public async Task<IActionResult> Create([FromForm] CreateSupportTicketRequestDto request)
     {
         var userId = ResolveUserId();
