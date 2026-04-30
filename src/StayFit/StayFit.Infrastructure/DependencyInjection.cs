@@ -38,6 +38,7 @@ public static class DependencyInjection
         services.AddScoped<ISessionRepository, SessionRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<ISecurityLogRepository, SecurityLogRepository>();
+        services.AddScoped<ISupportRepository, SupportRepository>();
 
         // Services
         services.AddScoped<IRegistrationService, RegistrationService>();
