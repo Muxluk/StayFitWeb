@@ -28,6 +28,8 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
     public DbSet<HydrationGoal> HydrationGoals { get; set; }
     public DbSet<WaterLog> WaterLogs { get; set; }
 
+    public DbSet<EmailBroadcast> EmailBroadcasts => Set<EmailBroadcast>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -148,6 +150,17 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
             entity.Property(r => r.IsAdminReply).IsRequired();
             entity.HasIndex(r => r.TicketId);
             entity.HasIndex(r => r.CreatedAt);
+        });
+
+        modelBuilder.Entity<EmailBroadcast>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.AdminId).IsRequired();
+            entity.Property(e => e.Subject).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Body).IsRequired();
+            entity.Property(e => e.Audience).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.SentAt).IsRequired();
+            entity.Property(e => e.RecipientCount).IsRequired();
         });
     }
 }

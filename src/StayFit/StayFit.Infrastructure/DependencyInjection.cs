@@ -39,6 +39,7 @@ public static class DependencyInjection
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<ISecurityLogRepository, SecurityLogRepository>();
         services.AddScoped<ISupportRepository, SupportRepository>();
+        services.AddScoped<IEmailBroadcastRepository, EmailBroadcastRepository>();
 
         // Services
         services.AddScoped<IRegistrationService, RegistrationService>();
@@ -70,6 +71,7 @@ public static class DependencyInjection
         services.AddScoped<ISupportService, SupportService>();
         services.AddScoped<ISystemStatisticsRepository, SystemStatisticsRepository>();
         services.AddScoped<ISystemStatisticsService, SystemStatisticsService>();
+        services.AddScoped<IEmailBroadcastService, EmailBroadcastService>();
         return services;
     }
 }
