@@ -25,6 +25,8 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
     public DbSet<SecurityLogEntry> SecurityLogs => Set<SecurityLogEntry>();
     public DbSet<SupportTicket> SupportTickets => Set<SupportTicket>();
     public DbSet<SupportTicketReply> SupportTicketReplies => Set<SupportTicketReply>();
+    public DbSet<HydrationGoal> HydrationGoals { get; set; }
+    public DbSet<WaterLog> WaterLogs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

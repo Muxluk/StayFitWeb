@@ -14,6 +14,8 @@ using StayFit.Infrastructure.Identity;
 using StayFit.Infrastructure.Repositories;
 using StayFit.Web.Services;
 using StayFit.Web.Middleware;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddUserSecrets<Program>(optional: true, reloadOnChange: true);
@@ -65,6 +67,7 @@ builder.Services.Configure<NotificationSettings>(builder.Configuration.GetSectio
 builder.Services.Configure<UsdaFoodDataOptions>(builder.Configuration.GetSection("UsdaFoodData"));
 builder.Services.Configure<SecurityLogSettings>(builder.Configuration.GetSection(SecurityLogSettings.SectionName));
 builder.Services.Configure<StayFit.Application.Configuration.SystemStatisticsSettings>(builder.Configuration.GetSection("SystemStatisticsCache"));
+builder.Services.Configure<HydrationSettings>(builder.Configuration.GetSection("HydrationSettings"));
 builder.Services.AddHttpClient();
 
 // ─── Identity ───────────────────────────────────────────────────────────────
@@ -86,7 +89,16 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LoginPath = "/Account/Login";
     options.AccessDeniedPath = "/Error/403";
 });
-
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("WaterLogPolicy", opt =>
+    {
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.PermitLimit = 40;
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 0;
+    });
+});
 // ─── Application Services ───────────────────────────────────────────────────
 builder.Services.AddScoped<LoggingService>();
 builder.Services.AddScoped<IFoodService>(provider =>
@@ -114,7 +126,8 @@ builder.Services.AddScoped<QuickAddService>(provider =>
     ));
 builder.Services.AddScoped<DiaryNoteService>();
 builder.Services.AddScoped<IProfilePhotoService, ProfilePhotoService>();
-
+builder.Services.AddScoped<IHydrationRepository, HydrationRepository>();
+builder.Services.AddScoped<IHydrationService, HydrationService>();
 // ─── Build ──────────────────────────────────────────────────────────────────
 var app = builder.Build();
 
@@ -140,7 +153,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 app.UseStatusCodePagesWithReExecute("/Error/{0}");
-
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseMiddleware<RequestExecutionTimeLoggingMiddleware>();
