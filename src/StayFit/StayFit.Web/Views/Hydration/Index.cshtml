@@ -1,0 +1,91 @@
+@model StayFit.Application.DTOs.HydrationProgressDto
+
+@{
+    ViewData["Title"] = "Відстеження води";
+}
+
+<div class="container mt-4">
+    <h2 class="text-primary"><i class="bi bi-droplet-fill"></i> Водний баланс</h2>
+
+    @if (TempData["Success"] != null) { <div class="alert alert-success">@TempData["Success"]</div> }
+    @if (TempData["Error"] != null) { <div class="alert alert-danger">@TempData["Error"]</div> }
+
+    <div class="row mt-4">
+        <!-- Блок прогресу -->
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-muted">Випито за сьогодні</h5>
+                    <h1 class="display-4 text-info fw-bold">@Model.ConsumedMl <small class="fs-5 text-muted">/ @Model.DailyGoalMl мл</small></h1>
+                    
+                    <div class="progress mt-3" style="height: 25px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" 
+                             role="progressbar" 
+                             style="width: @Model.Percentage%;" 
+                             aria-valuenow="@Model.Percentage" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                            @Model.Percentage%
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Блок додавання -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Додати воду</h5>
+                    <div class="d-flex gap-2 mb-3 flex-wrap">
+                        @foreach(var option in Model.QuickAddOptions)
+                        {
+                            <form asp-action="LogWater" method="post">
+                                <input type="hidden" name="volumeMl" value="@option" />
+                                <button type="submit" class="btn btn-outline-info">
+                                    <i class="bi bi-cup"></i> @option мл
+                                </button>
+                            </form>
+                        }
+                    </div>
+                    <hr />
+                    <form asp-action="LogWater" method="post" class="d-flex gap-2">
+                        <input type="number" name="volumeMl" class="form-control" placeholder="Своє значення (мл)" required min="1" max="2000" />
+                        <button type="submit" class="btn btn-info text-white">Додати</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Історія та налаштування -->
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Змінити денну ціль</h5>
+                    <form asp-action="SetCustomGoal" method="post" class="d-flex gap-2">
+                        <input type="number" name="goalMl" class="form-control" value="@Model.DailyGoalMl" required min="500" max="10000" />
+                        <button type="submit" class="btn btn-secondary">Зберегти</button>
+                    </form>
+                    <small class="text-muted">За замовчуванням ціль розраховується як ваша вага × 35 мл.</small>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Історія за сьогодні</h5>
+                </div>
+                <ul class="list-group list-group-flush" style="max-height: 250px; overflow-y: auto;">
+                    @if(!Model.TodayLogs.Any())
+                    {
+                        <li class="list-group-item text-muted text-center py-3">Ви ще не пили воду сьогодні. Час випити склянку!</li>
+                    }
+                    @foreach(var log in Model.TodayLogs)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-droplet text-info"></i> @log.VolumeMl мл</span>
+                            <span class="text-muted small">@log.LoggedAt.ToString("HH:mm")</span>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
