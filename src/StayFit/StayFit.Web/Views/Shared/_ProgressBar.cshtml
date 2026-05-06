@@ -1,0 +1,42 @@
+@model ProgressBarViewModel
+
+@{
+    var safeMax = Model.Max > 0 ? Model.Max : 0;
+    var rawPercent = safeMax > 0 ? (Model.Value / safeMax) * 100m : 0m;
+    var displayPercent = rawPercent > 100m ? 100m : rawPercent;
+    var percentText = displayPercent.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+    var percentValue = rawPercent.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+    var progressClass = string.IsNullOrWhiteSpace(Model.ProgressClass) ? "progress" : $"progress {Model.ProgressClass}";
+    var trackClass = string.IsNullOrWhiteSpace(Model.TrackClass) ? string.Empty : $" {Model.TrackClass}";
+}
+
+<div class="@Model.ContainerClass">
+    @if (!string.IsNullOrWhiteSpace(Model.Label) || !string.IsNullOrWhiteSpace(Model.ValueText))
+    {
+        <div class="d-flex justify-content-between small mb-1">
+            <span>@Model.Label</span>
+            @if (!string.IsNullOrWhiteSpace(Model.ValueText))
+            {
+                <span class="fw-semibold">@Model.ValueText</span>
+            }
+        </div>
+    }
+
+    <div class="@progressClass@trackClass">
+        <div class="progress-bar @Model.ColorClass @Model.BarClass" role="progressbar"
+             data-progress-width="@percentText"
+             aria-valuenow="@percentValue"
+             aria-valuemin="0"
+             aria-valuemax="100">
+            @if (Model.ShowBarText && !string.IsNullOrWhiteSpace(Model.BarText))
+            {
+                @Model.BarText
+            }
+        </div>
+    </div>
+
+    @if (Model.ShowPercentText)
+    {
+        <small class="@Model.PercentTextClass">@rawPercent.ToString("0.#")%</small>
+    }
+</div>

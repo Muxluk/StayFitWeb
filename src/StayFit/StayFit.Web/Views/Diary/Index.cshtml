@@ -6,8 +6,8 @@
 
 <h2>Щоденник харчування на @date.ToShortDateString()</h2>
 
-<form method="get" asp-action="Index" class="mb-4">
-    <input type="date" name="date" value="@date.ToString("yyyy-MM-dd")" onchange="this.form.submit()" />
+<form method="get" asp-action="Index" class="mb-4" data-auto-submit-change>
+    <input type="date" name="date" value="@date.ToString("yyyy-MM-dd")" class="form-control" />
 </form>
 
 <table class="table">

@@ -61,6 +61,13 @@ public class HomeController : BaseController
         }
     }
 
+    public IActionResult About()
+    {
+        _logger.LogInformation("Користувач відвідав сторінку About");
+        _loggingService.LogApplicationEvent("PageVisit", "Користувач відвідав сторінку 'Про нас'");
+        return View();
+    }
+
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {

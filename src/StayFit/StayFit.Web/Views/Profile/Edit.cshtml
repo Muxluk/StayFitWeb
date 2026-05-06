@@ -8,72 +8,6 @@
     var profilePhotoPath = ViewBag.ProfilePhotoPath as string;
 }
 
-<style>
-    .profile-header {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        border-radius: 0.5rem 0.5rem 0 0;
-        transition: box-shadow 0.3s ease;
-    }
-
-    .profile-card {
-        border: none;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .profile-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.18);
-    }
-
-    .nav-tabs .nav-link {
-        border: none;
-        border-bottom: 3px solid transparent;
-        color: #6c757d;
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
-
-    .nav-tabs .nav-link:hover {
-        color: #10b981;
-        border-bottom-color: #10b981;
-    }
-
-    .nav-tabs .nav-link.active {
-        color: #10b981;
-        border-bottom-color: #10b981;
-        background-color: transparent;
-    }
-
-    .form-control:focus,
-    .form-select:focus {
-        border-color: #10b981;
-        box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25);
-    }
-
-    .btn-primary {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        border: none;
-        transition: transform 0.2s ease;
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 0.5rem 1rem rgba(16, 185, 129, 0.4);
-    }
-
-    .security-header {
-        background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
-    }
-
-    .sessions-header {
-        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-    }
-
-    .danger-header {
-        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    }
-</style>
-
 <div class="container mt-5 mb-5">
     <div class="row justify-content-center">
         <div class="col-md-10">
@@ -108,7 +42,7 @@
             }
 
             <!-- TABS для переключення між Профілем та Безпекою -->
-            <ul class="nav nav-tabs mb-4 border-0" role="tablist">
+            <ul class="nav nav-tabs mb-4 border-0 profile-tabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link px-0 me-4 @(isSecurityTabActive ? "" : "active")" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane" type="button" role="tab">
                         👤 Мой профіль
@@ -136,11 +70,11 @@
 
                                         @if (!string.IsNullOrWhiteSpace(profilePhotoPath))
                                         {
-                                            <img src="@profilePhotoPath" alt="Фото профілю" class="img-fluid rounded shadow-sm mb-3" style="max-height: 220px; object-fit: cover;" />
+                                            <img src="@profilePhotoPath" alt="Фото профілю" class="img-fluid rounded shadow-sm mb-3 profile-photo-image" />
                                         }
                                         else
                                         {
-                                            <div class="d-flex align-items-center justify-content-center rounded border bg-white mb-3" style="height: 220px;">
+                                            <div class="d-flex align-items-center justify-content-center rounded border bg-white mb-3 profile-photo-placeholder">
                                                 <span class="text-muted">Фото ще не завантажено</span>
                                             </div>
                                         }
@@ -375,11 +309,14 @@
                                                     <td>
                                                         @if (!isCurrent)
                                                         {
-                                                            <form method="post" action="/sessions/terminate" style="display:inline;">
+                                                            <form method="post" action="/sessions/terminate" class="d-inline">
                                                                 @Html.AntiForgeryToken()
                                                                 <input type="hidden" name="sessionId" value="@session.Id" />
                                                                 <button type="submit" class="btn btn-outline-danger btn-sm"
-                                                                        onclick="return confirm('Завершити цей сеанс?')">
+                                                                            data-confirm-title="Завершити сеанс"
+                                                                            data-confirm-message="Завершити цей сеанс?"
+                                                                            data-confirm-button-text="Завершити"
+                                                                            data-confirm-button-class="btn-danger">
                                                                     <i class="bi bi-x-lg"></i> Завершити
                                                                 </button>
                                                             </form>
@@ -394,10 +331,13 @@
 
                             @if (activeSessions.Count(s => s.SessionToken != currentSessionToken) > 0)
                             {
-                                <form method="post" action="/sessions/terminate-all" style="display:inline;">
+                                <form method="post" action="/sessions/terminate-all" class="d-inline">
                                     @Html.AntiForgeryToken()
                                     <button type="submit" class="btn btn-warning btn-sm mt-2"
-                                            onclick="return confirm('Завершити всі інші сеанси?')">
+                                            data-confirm-title="Завершити всі інші сеанси"
+                                            data-confirm-message="Завершити всі інші сеанси?"
+                                            data-confirm-button-text="Завершити"
+                                            data-confirm-button-class="btn-warning">
                                         <i class="bi bi-box-arrow-right me-1"></i>Вийти зі всіх інших сеансів
                                     </button>
                                 </form>
@@ -406,7 +346,7 @@
                     </div>
 
                     <div class="card shadow mb-4">
-                        <div class="card-header" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white;">
+                        <div class="card-header profile-security-history-header">
                             <h5 class="mb-0">📋 Історія безпеки акаунту</h5>
                         </div>
                         <div class="card-body">

@@ -1,0 +1,20 @@
+[
+    {
+        "outputFileName": "wwwroot/css/bundle.min.css",
+        "inputFiles": ["wwwroot/css/site.css", "wwwroot/css/layout.css"],
+        "minify": {
+            "enabled": true,
+            "commentMode": "all"
+        },
+        "sourceMap": false
+    },
+    {
+        "outputFileName": "wwwroot/js/bundle.min.js",
+        "inputFiles": ["wwwroot/js/site.js"],
+        "minify": {
+            "enabled": true,
+            "commentMode": "all"
+        },
+        "sourceMap": false
+    }
+]

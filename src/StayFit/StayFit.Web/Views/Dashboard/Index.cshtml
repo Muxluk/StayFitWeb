@@ -21,72 +21,88 @@
         <div class="row mt-4">
             <!-- 1. Калорії -->
             <div class="col-md-4 mb-4">
-                <div class="card h-100">
+                <div class="card h-100 card-elevated">
                     <div class="card-body">
                         <h5 class="card-title text-primary">🔥 Калорії</h5>
                         <hr />
                         <p class="mb-1"><strong>Спожито:</strong> @Model.ActualCalories.ToString("F1") ккал</p>
                         <p class="mb-1"><strong>Ціль:</strong> @Model.TargetCalories.ToString("F1") ккал</p>
-                        @{ var calPercent = Model.TargetCalories > 0 ? (Model.ActualCalories / Model.TargetCalories * 100) : 0; }
-                        <div class="progress mt-2" style="height: 10px;">
-                            <div class="progress-bar bg-primary" style="width: @calPercent%"></div>
-                        </div>
-                        <small class="text-muted d-block mt-1 text-end">@calPercent.ToString("F1")%</small>
+                        @await Html.PartialAsync("_ProgressBar", new ProgressBarViewModel
+                        {
+                            Value = (decimal)Model.ActualCalories,
+                            Max = (decimal)Model.TargetCalories,
+                            ColorClass = "bg-primary",
+                            ProgressClass = "progress-sm",
+                            BarClass = "progress-bar-animated-width",
+                            ContainerClass = "mt-2"
+                        })
                     </div>
                 </div>
             </div>
 
             <!-- 2. Білки -->
             <div class="col-md-4 mb-4">
-                <div class="card h-100">
+                <div class="card h-100 card-elevated">
                     <div class="card-body">
                         <h5 class="card-title text-success">💪 Білки</h5>
                         <hr />
                         <p class="mb-1">@Model.ActualProtein.ToString("F1") / @Model.TargetProtein.ToString("F1") г</p>
-                        @{ var pPercent = Model.TargetProtein > 0 ? (Model.ActualProtein / Model.TargetProtein * 100) : 0; }
-                        <div class="progress mt-2" style="height: 10px;">
-                            <div class="progress-bar bg-success" style="width: @pPercent%"></div>
-                        </div>
-                        <small class="text-muted d-block mt-1 text-end">@pPercent.ToString("F1")%</small>
+                        @await Html.PartialAsync("_ProgressBar", new ProgressBarViewModel
+                        {
+                            Value = (decimal)Model.ActualProtein,
+                            Max = (decimal)Model.TargetProtein,
+                            ColorClass = "bg-success",
+                            ProgressClass = "progress-sm",
+                            BarClass = "progress-bar-animated-width",
+                            ContainerClass = "mt-2"
+                        })
                     </div>
                 </div>
             </div>
 
             <!-- 3. Жири -->
             <div class="col-md-4 mb-4">
-                <div class="card h-100">
+                <div class="card h-100 card-elevated">
                     <div class="card-body">
                         <h5 class="card-title text-warning">🧈 Жири</h5>
                         <hr />
                         <p class="mb-1">@Model.ActualFat.ToString("F1") / @Model.TargetFat.ToString("F1") г</p>
-                        @{ var fPercent = Model.TargetFat > 0 ? (Model.ActualFat / Model.TargetFat * 100) : 0; }
-                        <div class="progress mt-2" style="height: 10px;">
-                            <div class="progress-bar bg-warning" style="width: @fPercent%"></div>
-                        </div>
-                        <small class="text-muted d-block mt-1 text-end">@fPercent.ToString("F1")%</small>
+                        @await Html.PartialAsync("_ProgressBar", new ProgressBarViewModel
+                        {
+                            Value = (decimal)Model.ActualFat,
+                            Max = (decimal)Model.TargetFat,
+                            ColorClass = "bg-warning",
+                            ProgressClass = "progress-sm",
+                            BarClass = "progress-bar-animated-width",
+                            ContainerClass = "mt-2"
+                        })
                     </div>
                 </div>
             </div>
 
             <!-- 4. Вуглеводи -->
             <div class="col-md-4 mb-4">
-                <div class="card h-100">
+                <div class="card h-100 card-elevated">
                     <div class="card-body">
                         <h5 class="card-title text-danger">🍞 Вуглеводи</h5>
                         <hr />
                         <p class="mb-1">@Model.ActualCarbs.ToString("F1") / @Model.TargetCarbs.ToString("F1") г</p>
-                        @{ var cPercent = Model.TargetCarbs > 0 ? (Model.ActualCarbs / Model.TargetCarbs * 100) : 0; }
-                        <div class="progress mt-2" style="height: 10px;">
-                            <div class="progress-bar bg-danger" style="width: @cPercent%"></div>
-                        </div>
-                        <small class="text-muted d-block mt-1 text-end">@cPercent.ToString("F1")%</small>
+                        @await Html.PartialAsync("_ProgressBar", new ProgressBarViewModel
+                        {
+                            Value = (decimal)Model.ActualCarbs,
+                            Max = (decimal)Model.TargetCarbs,
+                            ColorClass = "bg-danger",
+                            ProgressClass = "progress-sm",
+                            BarClass = "progress-bar-animated-width",
+                            ContainerClass = "mt-2"
+                        })
                     </div>
                 </div>
             </div>
 
             <!-- 5. ВОДА (Тепер займає 1/3 ряду, як і інші) -->
             <div class="col-md-4 mb-4">
-                <div class="card bg-info text-white h-100 shadow-sm border-0">
+                <div class="card bg-info text-white h-100 shadow-sm border-0 card-elevated">
                     <div class="card-body d-flex flex-column text-center justify-content-center p-3">
                         <h5 class="card-title fw-bold mb-2">
                             <i class="bi bi-droplet-fill"></i> Вода
@@ -97,9 +113,17 @@
                             <small class="fs-6 text-light">/ @ViewBag.WaterProgress.DailyGoalMl мл</small>
                         </h3>
                         
-                        <div class="progress mt-2 mb-3" style="height: 8px; background-color: rgba(255,255,255,0.3);">
-                            <div class="progress-bar bg-white" style="width: @ViewBag.WaterProgress.Percentage%;"></div>
-                        </div>
+                        @await Html.PartialAsync("_ProgressBar", new ProgressBarViewModel
+                        {
+                            Value = (decimal)ViewBag.WaterProgress.Percentage,
+                            Max = 100m,
+                            ColorClass = "bg-white",
+                            ProgressClass = "progress-xs",
+                            TrackClass = "progress-track-soft",
+                            BarClass = "progress-bar-animated-width",
+                            ContainerClass = "mt-2 mb-3",
+                            ShowPercentText = false
+                        })
 
                         <a asp-controller="Hydration" asp-action="Index" class="btn btn-sm btn-light text-info fw-bold mt-auto rounded-pill">
                             <i class="bi bi-plus-circle"></i> Логувати воду
@@ -111,14 +135,3 @@
     }
 </div>
 
-<style>
-    .card {
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        transition: transform 0.2s;
-    }
-    .card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
-    }
-</style>

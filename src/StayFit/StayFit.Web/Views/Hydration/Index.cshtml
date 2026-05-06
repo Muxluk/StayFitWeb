@@ -17,17 +17,19 @@
                 <div class="card-body text-center">
                     <h5 class="card-title text-muted">Випито за сьогодні</h5>
                     <h1 class="display-4 text-info fw-bold">@Model.ConsumedMl <small class="fs-5 text-muted">/ @Model.DailyGoalMl мл</small></h1>
-                    
-                    <div class="progress mt-3" style="height: 25px;">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" 
-                             role="progressbar" 
-                             style="width: @Model.Percentage%;" 
-                             aria-valuenow="@Model.Percentage" 
-                             aria-valuemin="0" 
-                             aria-valuemax="100">
-                            @Model.Percentage%
-                        </div>
-                    </div>
+
+                    @await Html.PartialAsync("_ProgressBar", new ProgressBarViewModel
+                    {
+                        Value = (decimal)Model.Percentage,
+                        Max = 100m,
+                        ColorClass = "bg-info",
+                        ProgressClass = "progress-lg",
+                        BarClass = "progress-bar-striped progress-bar-animated",
+                        ContainerClass = "mt-3",
+                        BarText = $"{Model.Percentage}%",
+                        ShowBarText = true,
+                        ShowPercentText = false
+                    })
                 </div>
             </div>
 
@@ -72,7 +74,7 @@
                 <div class="card-header bg-white">
                     <h5 class="card-title mb-0">Історія за сьогодні</h5>
                 </div>
-                <ul class="list-group list-group-flush" style="max-height: 250px; overflow-y: auto;">
+                <ul class="list-group list-group-flush max-h-250-scroll">
                     @if(!Model.TodayLogs.Any())
                     {
                         <li class="list-group-item text-muted text-center py-3">Ви ще не пили воду сьогодні. Час випити склянку!</li>

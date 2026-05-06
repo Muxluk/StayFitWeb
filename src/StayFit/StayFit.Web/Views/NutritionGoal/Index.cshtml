@@ -56,59 +56,56 @@
             <div class="card shadow-sm">
                 <div class="card-body">
                     <h5 class="card-title mb-4">Прогрес за сьогодні</h5>
-                    
-                    @{
-                    void RenderProgress(string label, float cur, float target, string unit)
-                    {
-                        var rawPercent = target > 0 ? (cur / target) * 100 : 0;
-                        var displayPercent = Math.Min(rawPercent, 100); 
-                        
-                        string colorClass;
-                        
-                        if (rawPercent < 50) 
-                        {
-                            colorClass = "bg-danger";
-                        }
-                        else if (rawPercent < 95) 
-                        {
-                            colorClass = "bg-warning";
-                        }
-                        else if (rawPercent <= 105) 
-                        {
-                            colorClass = "bg-success";
-                        }
-                        else if (rawPercent <= 110) 
-                        {
-                            colorClass = "bg-warning";
-                        }
-                        else 
-                        {
-                            colorClass = "bg-danger";
-                        }
-
-                        <div class="mb-4">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span><strong>@label:</strong> @cur.ToString("0") / @target.ToString("0") @unit</span>
-                                <span class="fw-bold" style="color: @(colorClass == "bg-danger" ? "#dc3545" : "inherit")">
-                                    @rawPercent.ToString("0")%
-                                </span>
-                            </div>
-                            <div class="progress" style="height: 22px; border-radius: 10px; background-color: #e9ecef;">
-                                <div class="progress-bar @colorClass shadow-sm" role="progressbar" 
-                                    style="width: @(displayPercent.ToString("0", System.Globalization.CultureInfo.InvariantCulture))%; transition: width 0.6s ease;" 
-                                    aria-valuenow="@displayPercent" aria-valuemin="0" aria-valuemax="100">
-                                </div>
-                            </div>
-                        </div>
-                    }
-                }
 
                     @if (goal != null)
                     {
-                        RenderProgress("Калорії", curCalories, goal.CaloriesGoal, "ккал");
-                        RenderProgress("Білки", curProteins, goal.ProteinGoal, "г");
-                        RenderProgress("Жири", curFats, goal.FatGoal, "г");
-                        RenderProgress("Вуглеводи", curCarbs, goal.CarbsGoal, "г");
+                        @await Html.PartialAsync("_ProgressBar", new ProgressBarViewModel
+                        {
+                            Label = "Калорії",
+                            ValueText = $"{curCalories:0} / {goal.CaloriesGoal:0} ккал",
+                            Value = (decimal)curCalories,
+                            Max = (decimal)goal.CaloriesGoal,
+                            ColorClass = curCalories < goal.CaloriesGoal * 0.5f ? "bg-danger" : curCalories <= goal.CaloriesGoal * 1.05f ? "bg-success" : curCalories <= goal.CaloriesGoal * 1.1f ? "bg-warning" : "bg-danger",
+                            ProgressClass = "progress-md",
+                            TrackClass = "progress-track-default",
+                            BarClass = "shadow-sm progress-bar-animated-width"
+                        })
+
+                        @await Html.PartialAsync("_ProgressBar", new ProgressBarViewModel
+                        {
+                            Label = "Білки",
+                            ValueText = $"{curProteins:0} / {goal.ProteinGoal:0} г",
+                            Value = (decimal)curProteins,
+                            Max = (decimal)goal.ProteinGoal,
+                            ColorClass = curProteins < goal.ProteinGoal * 0.5f ? "bg-danger" : curProteins <= goal.ProteinGoal * 1.05f ? "bg-success" : curProteins <= goal.ProteinGoal * 1.1f ? "bg-warning" : "bg-danger",
+                            ProgressClass = "progress-md",
+                            TrackClass = "progress-track-default",
+                            BarClass = "shadow-sm progress-bar-animated-width"
+                        })
+
+                        @await Html.PartialAsync("_ProgressBar", new ProgressBarViewModel
+                        {
+                            Label = "Жири",
+                            ValueText = $"{curFats:0} / {goal.FatGoal:0} г",
+                            Value = (decimal)curFats,
+                            Max = (decimal)goal.FatGoal,
+                            ColorClass = curFats < goal.FatGoal * 0.5f ? "bg-danger" : curFats <= goal.FatGoal * 1.05f ? "bg-success" : curFats <= goal.FatGoal * 1.1f ? "bg-warning" : "bg-danger",
+                            ProgressClass = "progress-md",
+                            TrackClass = "progress-track-default",
+                            BarClass = "shadow-sm progress-bar-animated-width"
+                        })
+
+                        @await Html.PartialAsync("_ProgressBar", new ProgressBarViewModel
+                        {
+                            Label = "Вуглеводи",
+                            ValueText = $"{curCarbs:0} / {goal.CarbsGoal:0} г",
+                            Value = (decimal)curCarbs,
+                            Max = (decimal)goal.CarbsGoal,
+                            ColorClass = curCarbs < goal.CarbsGoal * 0.5f ? "bg-danger" : curCarbs <= goal.CarbsGoal * 1.05f ? "bg-success" : curCarbs <= goal.CarbsGoal * 1.1f ? "bg-warning" : "bg-danger",
+                            ProgressClass = "progress-md",
+                            TrackClass = "progress-track-default",
+                            BarClass = "shadow-sm progress-bar-animated-width"
+                        })
                     }
                     else
                     {

@@ -1,0 +1,41 @@
+@model CardViewModel
+
+@{
+    var cardClass = string.IsNullOrWhiteSpace(Model.CardClass)
+        ? "card"
+        : $"card {Model.CardClass}";
+    var hasHeader = !string.IsNullOrWhiteSpace(Model.Title) || !string.IsNullOrWhiteSpace(Model.IconClass) || !string.IsNullOrWhiteSpace(Model.Subtitle);
+    var headerClass = $"card-header bg-{Model.ColorClass} text-white";
+}
+
+<div class="@cardClass">
+    @if (hasHeader)
+    {
+        <div class="@headerClass">
+            <div class="d-flex align-items-center gap-2">
+                @if (!string.IsNullOrWhiteSpace(Model.IconClass))
+                {
+                    <i class="@Model.IconClass"></i>
+                }
+                <div>
+                    <div class="fw-semibold">@Model.Title</div>
+                    @if (!string.IsNullOrWhiteSpace(Model.Subtitle))
+                    {
+                        <div class="small opacity-75">@Model.Subtitle</div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="card-body">
+        @Html.Raw(Model.BodyHtml)
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.FooterHtml))
+    {
+        <div class="card-footer bg-transparent">
+            @Html.Raw(Model.FooterHtml)
+        </div>
+    }
+</div>

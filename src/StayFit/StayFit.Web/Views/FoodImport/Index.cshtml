@@ -21,14 +21,17 @@
         </li>
     </ul>
 
-    <form method="get" asp-controller="FoodImport" asp-action="Index" class="row g-3 mb-4 mt-2">
-        <div class="col-md-10">
-            <input type="text" name="searchTerm" class="form-control" placeholder="Введіть назву продукту..." value="@searchTerm" />
-        </div>
-        <div class="col-md-2">
-            <button type="submit" class="btn btn-primary w-100">Шукати в API</button>
-        </div>
-    </form>
+    @await Html.PartialAsync("_SearchFilter", new SearchFilterViewModel
+    {
+        Controller = "FoodImport",
+        Action = "Index",
+        SearchName = "searchTerm",
+        SearchValue = searchTerm,
+        Placeholder = "Введіть назву продукту...",
+        ButtonText = "Шукати в API",
+        SearchColClass = "col-md-10",
+        ButtonColClass = "col-md-2"
+    })
 
     @if (Model == null || !Model.Any())
     {

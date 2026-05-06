@@ -27,7 +27,7 @@
                 </div>
                 <div class="card-body">
                     <h5 class="card-title fw-bold">@Model.Subject</h5>
-                    <p class="card-text text-muted mt-3" style="white-space: pre-wrap;">@Model.Message</p>
+                    <p class="card-text text-muted mt-3 pre-wrap-text">@Model.Message</p>
                 </div>
             </div>
 
@@ -43,7 +43,7 @@
                         <span class="text-muted small">@reply.CreatedAt.ToString("g")</span>
                     </div>
                     <div class="card-body py-2">
-                        <p class="card-text" style="white-space: pre-wrap;">@reply.Message</p>
+                        <p class="card-text pre-wrap-text">@reply.Message</p>
                     </div>
                 </div>
             }

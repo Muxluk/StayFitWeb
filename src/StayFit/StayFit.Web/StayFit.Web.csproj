@@ -23,6 +23,7 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
     <PackageReference Include="Serilog.Sinks.Seq" Version="6.0.0" />
+    <PackageReference Include="BuildBundlerMinifier" Version="3.2.449" />
   </ItemGroup>
 
 </Project>
