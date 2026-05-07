@@ -59,6 +59,30 @@
                             </div>
                         </div>
 
+                        <div class="row g-3 mb-4">
+                            <div class="col-6">
+                                <label asp-for="Icon" class="form-label fw-semibold">
+                                    <i class="bi bi-emoji-smile me-1 text-warning"></i>Іконка (emoji)
+                                </label>
+                                <input asp-for="Icon" class="form-control" placeholder="Напр. 🍎" />
+                            </div>
+                            <div class="col-6">
+                                <label asp-for="ColorClass" class="form-label fw-semibold">
+                                    <i class="bi bi-palette me-1 text-info"></i>Колір (Bootstrap)
+                                </label>
+                                <select asp-for="ColorClass" class="form-select">
+                                    <option value="">— обрати —</option>
+                                    <option value="danger">🔴 danger (червоний)</option>
+                                    <option value="success">🟢 success (зелений)</option>
+                                    <option value="primary">🔵 primary (синій)</option>
+                                    <option value="warning">🟡 warning (жовтий)</option>
+                                    <option value="info">🛂 info (блакитний)</option>
+                                    <option value="secondary">⚪ secondary (сірий)</option>
+                                    <option value="dark">⚫ dark (чорний)</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <div class="d-flex justify-content-end gap-2">
                             <a asp-action="Index" class="btn btn-outline-secondary">Скасувати</a>
                             <button type="submit" class="btn btn-warning px-4">

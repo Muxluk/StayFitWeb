@@ -108,7 +108,7 @@ public class FoodCategoryService : IFoodCategoryService
     /// <summary>
     /// Створити нову категорію
     /// </summary>
-    public async Task<Result<FoodCategoryEntity>> CreateAsync(string name, string? description)
+    public async Task<Result<FoodCategoryEntity>> CreateAsync(string name, string? description, string? icon, string? colorClass)
     {
         try
         {
@@ -146,6 +146,8 @@ public class FoodCategoryService : IFoodCategoryService
             {
                 Name = name,
                 Description = description,
+                Icon = icon,
+                ColorClass = colorClass,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -172,7 +174,7 @@ public class FoodCategoryService : IFoodCategoryService
     /// <summary>
     /// Оновити категорію
     /// </summary>
-    public async Task<Result<FoodCategoryEntity>> UpdateAsync(int id, string name, string? description, bool isActive)
+    public async Task<Result<FoodCategoryEntity>> UpdateAsync(int id, string name, string? description, bool isActive, string? icon, string? colorClass)
     {
         try
         {
@@ -226,6 +228,8 @@ public class FoodCategoryService : IFoodCategoryService
             // Оновлення
             category.Name = name;
             category.Description = description;
+            category.Icon = icon;
+            category.ColorClass = colorClass;
             category.IsActive = isActive;
             category.UpdatedAt = DateTime.UtcNow;
 

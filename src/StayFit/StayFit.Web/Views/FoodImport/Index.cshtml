@@ -38,9 +38,24 @@
         </li>
     </ul>
 
+    @* TempData alerts *@
+    @if (TempData["ImportWarning"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ImportWarning"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ImportSuccess"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["ImportSuccess"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
     @* API info banner *@
-    <div class="sf-fi-info-banner mb-4">
-        <div class="sf-fi-info-icon">🌍</div>
+    <div class="sf-fi-info-banner mb-4">        <div class="sf-fi-info-icon">🌍</div>
         <div>
             <strong>USDA FoodData Central</strong> — безкоштовна світова база даних з понад 600&amp;nbsp;000 продуктів.
             найдені продукти можна додати до своєї локальної бази одним кліком.

@@ -55,7 +55,8 @@ public class FoodController : BaseController
         return View(food);
     }
 
-    // GET: Food/Edit/5
+    // GET: Food/{id}/edit
+    [HttpGet("Food/{id:int}/edit")]
     public async Task<IActionResult> Edit(int id)
     {
         var userId = GetCurrentUserIdOrDefault();
@@ -69,8 +70,8 @@ public class FoodController : BaseController
         return View(food);
     }
 
-    // POST: Food/Edit/5
-    [HttpPost]
+    // POST: Food/{id}/edit
+    [HttpPost("Food/{id:int}/edit")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id, Food food)
     {
@@ -105,10 +106,47 @@ public class FoodController : BaseController
         return RedirectToAction(nameof(Index));
     }
 
-    [HttpPost]
-    public async Task<IActionResult> AddToLog(int foodId, double quantity)
+    [HttpGet]
+    public async Task<IActionResult> AddToLog(int? foodId)
     {
-        _logger.LogInformation("🍽️ AddToLog (FoodController) викликана. FoodId={FoodId}, Quantity={Quantity}g", foodId, quantity);
+        if (foodId.HasValue)
+        {
+            var userId = GetCurrentUserIdOrDefault();
+            var food = await _foodService.GetFoodByIdAsync(foodId.Value, userId);
+            if (food != null)
+                ViewBag.SelectedFood = food;
+        }
+        return View();
+    }
+
+    [HttpGet]
+    [AllowAnonymous]
+    public async Task<IActionResult> SearchJson(string? q)
+    {
+        if (string.IsNullOrWhiteSpace(q) || q.Length < 2)
+            return Json(Array.Empty<object>());
+
+        var userId = GetCurrentUserIdOrDefault();
+        var all = await _foodService.GetAllFoodsAsync(userId);
+        var filtered = all
+            .Where(f => f.Name.Contains(q, StringComparison.OrdinalIgnoreCase))
+            .Take(20)
+            .Select(f => new {
+                f.Id,
+                f.Name,
+                f.CaloriesPer100g,
+                f.ProteinPer100g,
+                f.FatPer100g,
+                f.CarbsPer100g,
+                Category = f.Category.ToString()
+            });
+        return Json(filtered);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> AddToLog(int foodId, double quantity, string? mealType)
+    {
+        _logger.LogInformation("🍽️ AddToLog (FoodController) викликана. FoodId={FoodId}, Quantity={Quantity}g, MealType={MealType}", foodId, quantity, mealType);
 
         var userEmail = User.Identity?.Name;
         if (string.IsNullOrEmpty(userEmail))
@@ -117,7 +155,18 @@ public class FoodController : BaseController
             return Challenge();
         }
 
-        await _foodService.AddFoodToLogAsync(foodId, quantity, userEmail);
+        // Map meal type to a specific hour of today so diary grouping works
+        var today = DateTime.Today;
+        DateTime? loggedAt = mealType?.ToLowerInvariant() switch
+        {
+            "breakfast" => today.AddHours(8),
+            "lunch"     => today.AddHours(13),
+            "dinner"    => today.AddHours(19),
+            "snack"     => today.AddHours(23),
+            _           => null
+        };
+
+        await _foodService.AddFoodToLogAsync(foodId, quantity, userEmail, loggedAt);
 
         _logger.LogInformation("✅ AddToLog завершено FoodId={FoodId}, Email={Email}", foodId, userEmail);
 

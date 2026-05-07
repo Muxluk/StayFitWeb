@@ -72,7 +72,7 @@ public class AdminCategoryController : BaseController
         var userId = GetRequiredCurrentUserId();
         _logger.LogInformation("Адміністратор {AdminId} створює категорію: {CategoryName}", userId, request.Name);
 
-        var result = await _categoryService.CreateAsync(request.Name, request.Description);
+        var result = await _categoryService.CreateAsync(request.Name, request.Description, request.Icon, request.ColorClass);
         
         return MatchResult(
             result,
@@ -108,7 +108,9 @@ public class AdminCategoryController : BaseController
                 Id = category.Id,
                 Name = category.Name,
                 Description = category.Description,
-                IsActive = category.IsActive
+                IsActive = category.IsActive,
+                Icon = category.Icon,
+                ColorClass = category.ColorClass
             }),
             onFailure: failure =>
             {
@@ -132,7 +134,7 @@ public class AdminCategoryController : BaseController
         var userId = GetRequiredCurrentUserId();
         _logger.LogInformation("Адміністратор {AdminId} оновлює категорію #{CategoryId}", userId, id);
 
-        var result = await _categoryService.UpdateAsync(id, request.Name, request.Description, request.IsActive);
+        var result = await _categoryService.UpdateAsync(id, request.Name, request.Description, request.IsActive, request.Icon, request.ColorClass);
         
         return MatchResult(
             result,
@@ -185,6 +187,8 @@ public class CreateCategoryRequest
 {
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
+    public string? Icon { get; set; }
+    public string? ColorClass { get; set; }
 }
 
 public class EditCategoryRequest
@@ -193,4 +197,6 @@ public class EditCategoryRequest
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public bool IsActive { get; set; } = true;
+    public string? Icon { get; set; }
+    public string? ColorClass { get; set; }
 }
