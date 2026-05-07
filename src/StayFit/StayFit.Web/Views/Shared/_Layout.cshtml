@@ -21,18 +21,18 @@
     <title>@ViewData["Title"] - StayFit.Web</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/bundle.min.css" asp-append-version="true" />
 </head>
 <body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">StayFit.Web</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between" id="navbarSupportedContent">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Головна</a>
@@ -45,6 +45,11 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Diary" asp-action="Index">Мій щоденник</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Hydration" asp-action="Index">
+                                <i class="bi bi-droplet-fill text-info"></i> Моя вода
+                            </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Statistics" asp-action="Daily">Статистика</a>
@@ -73,6 +78,11 @@
                                     <span class="badge @environmentBadgeClass">ENV: @environmentName</span>
                                 </a>
                             </li>
+                            <li class="nav-item d-flex align-items-center me-2">
+                                <a asp-controller="AdminEmail" asp-action="Create" class="btn btn-sm btn-outline-primary">
+                                    Email-розсилка
+                                </a>
+                            </li>
                         }
                         @if (User.Identity?.IsAuthenticated == true)
                         {
@@ -80,22 +90,22 @@
                                 <div class="dropdown">
                                     <button class="btn btn-link nav-link text-dark position-relative" type="button" id="notificationBell" data-bs-toggle="dropdown" aria-expanded="false" title="Сповіщення">
                                         🔔
-                                        <span id="notificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">
+                                        <span id="notificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">
                                             <span id="notificationCount">0</span>
                                         </span>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationBell" id="notificationDropdown">
                                         <li class="dropdown-header">Сповіщення</li>
                                         <li><hr class="dropdown-divider"></li>
-                                        <li id="notificationList" class="p-3" style="min-width: 300px; max-height: 400px; overflow-y: auto;">
+                                        <li id="notificationList" class="p-3 notification-dropdown-list">
                                             <div class="text-center text-muted">Немає сповіщень</div>
                                         </li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li class="text-center p-2 d-flex gap-2">
-                                            <button type="button" class="btn btn-sm btn-outline-primary flex-grow-1" id="markAllReadBtn" style="display: none;">
+                                            <button type="button" class="btn btn-sm btn-outline-primary flex-grow-1 d-none" id="markAllReadBtn">
                                                 ✓ Прочитати все
                                             </button>
-                                            <button type="button" class="btn btn-sm btn-outline-danger flex-grow-1" id="clearAllBtn" style="display: none;">
+                                            <button type="button" class="btn btn-sm btn-outline-danger flex-grow-1 d-none" id="clearAllBtn">
                                                 🗑 Очистити все
                                             </button>
                                         </li>
@@ -132,11 +142,65 @@
         </main>
     </div>
 
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <button type="button"
+                class="btn btn-primary support-fab shadow"
+                data-bs-toggle="modal"
+                data-bs-target="#supportTicketModal"
+                aria-label="Звернутися до технічної підтримки"
+                title="Звернутися до технічної підтримки">
+            ?
+        </button>
+
+        <div class="modal fade" id="supportTicketModal" tabindex="-1" aria-labelledby="supportTicketModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="supportTicketModalLabel">Звернення до технічної підтримки</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрити"></button>
+                    </div>
+                    <form asp-controller="Support" asp-action="Create" method="post">
+                        @Html.AntiForgeryToken()
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="supportSubject" class="form-label">Тема</label>
+                                <input type="text" class="form-control" id="supportSubject" name="Subject" maxlength="200" required />
+                            </div>
+                            <div class="mb-3">
+                                <label for="supportMessage" class="form-label">Повідомлення</label>
+                                <textarea class="form-control" id="supportMessage" name="Message" rows="5" maxlength="2000" required></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <a href="@Url.Action("Index", "Support")" class="btn btn-info">
+                                📋 Мої запити
+                            </a>
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Скасувати</button>
+                            <button type="submit" class="btn btn-primary">Надіслати</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2026 - StayFit
+            <div class="row py-3 align-items-center">
+                <div class="col-md-6">&copy; 2026 - StayFit</div>
+                <div class="col-md-6 text-md-end">
+                    <ul class="list-inline mb-0">
+                        <li class="list-inline-item"><a class="text-decoration-none text-muted" asp-controller="Home" asp-action="Index">Головна</a></li>
+                        <li class="list-inline-item"><a class="text-decoration-none text-muted" asp-controller="Home" asp-action="About">Про нас</a></li>
+                        <li class="list-inline-item"><a class="text-decoration-none text-muted" asp-controller="Support" asp-action="Index">Контакти</a></li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </footer>
+
+    @await Html.PartialAsync("_ModalConfirm", new ModalConfirmViewModel())
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>

@@ -1,0 +1,17 @@
+@model ModalConfirmViewModel
+
+<div class="modal fade" id="@Model.ModalId" tabindex="-1" aria-labelledby="@Model.ModalId-Label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="@Model.ModalId-Label" data-confirm-modal-title>@Model.Title</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрити"></button>
+            </div>
+            <div class="modal-body" data-confirm-modal-message>@Model.Message</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">@Model.CancelButtonText</button>
+                <button type="button" class="btn @Model.ConfirmButtonClass" data-confirm-modal-action>@Model.ConfirmButtonText</button>
+            </div>
+        </div>
+    </div>
+</div>

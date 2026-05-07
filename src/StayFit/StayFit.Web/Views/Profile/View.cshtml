@@ -34,7 +34,7 @@
                                 <h6 class="text-muted small">Фото профілю</h6>
                                 @if (!string.IsNullOrWhiteSpace(profile.ProfilePhotoPath))
                                 {
-                                    <img src="@profile.ProfilePhotoPath" alt="Фото профілю" class="img-thumbnail shadow-sm" style="max-height: 260px; object-fit: cover;" />
+                                    <img src="@profile.ProfilePhotoPath" alt="Фото профілю" class="img-thumbnail shadow-sm image-cover-260" />
                                 }
                                 else
                                 {
@@ -66,7 +66,7 @@
                                 <p class="fs-5">
                                     @if (profile.Weight.HasValue)
                                     {
-                                        @profile.Weight.Value.ToString("F1") <span class="text-muted" style="font-size: 0.9em;">кг</span>
+                                        @profile.Weight.Value.ToString("F1") <span class="text-muted text-size-09">кг</span>
                                     }
                                     else
                                     {
@@ -80,7 +80,7 @@
                                 <p class="fs-5">
                                     @if (profile.Height.HasValue)
                                     {
-                                        @profile.Height.Value.ToString("F0") <span class="text-muted" style="font-size: 0.9em;">см</span>
+                                        @profile.Height.Value.ToString("F0") <span class="text-muted text-size-09">см</span>
                                     }
                                     else
                                     {

@@ -16,6 +16,7 @@ public class AccountController(
     IAuthService authService,
     IPasswordResetService passwordResetService,
     ISessionService sessionService,
+    ISecurityLogService securityLogService,
     IUserRepository userRepository,
     UserManager<ApplicationUser> userManager,
     SignInManager<ApplicationUser> signInManager)
@@ -71,6 +72,9 @@ public class AccountController(
                 SameSite = SameSiteMode.Lax,
                 Expires = DateTimeOffset.UtcNow.AddDays(1)
             });
+            
+            // Логування входу після реєстрації
+            await securityLogService.LogLoginAsync(domainUserId, regIp, regUa, true);
         }
 
         // Перенаправити на редагування профіля
@@ -102,6 +106,17 @@ public class AccountController(
         if (result.IsFailure)
         {
             ModelState.AddModelError(string.Empty, result.Errors.FirstOrDefault() ?? "Невірний email або пароль.");
+            
+            // Логування невдалої спроби входу
+            var failIp = HttpContext.Connection.RemoteIpAddress?.ToString();
+            var failUser = await userManager.FindByEmailAsync(model.Email);
+            if (failUser != null)
+            {
+                var failDomainUserId = await GetOrCreateDomainUserIdAsync(failUser.Id, model.Email, model.Email);
+                await securityLogService.LogLoginAsync(failDomainUserId, failIp, 
+                    HttpContext.Request.Headers.UserAgent.ToString(), false, "Invalid credentials");
+            }
+            
             return View(model);
         }
 
@@ -120,6 +135,9 @@ public class AccountController(
             SameSite = SameSiteMode.Lax,
             Expires = DateTimeOffset.UtcNow.AddDays(1)
         });
+        
+        // Логування успішного входу
+        await securityLogService.LogLoginAsync(domainUserId, ip, ua, true);
 
         if (!string.IsNullOrWhiteSpace(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
             return Redirect(model.ReturnUrl);
@@ -140,6 +158,14 @@ public class AccountController(
         {
             await sessionService.DeactivateSessionAsync(sessionToken);
             Response.Cookies.Delete("SessionToken");
+        }
+
+        // Логування виходу
+        var userId = GetCurrentUserIdOrDefault();
+        if (userId > 0)
+        {
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+            await securityLogService.LogLogoutAsync(userId, ip);
         }
 
         await signInManager.SignOutAsync();

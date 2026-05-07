@@ -106,17 +106,19 @@
                 @foreach (var item in chartItems)
                 {
                     var width = maxChartValue <= 0 ? 0 : (item.Value / maxChartValue) * 100m;
-                    var widthCss = width.ToString("0.##", CultureInfo.InvariantCulture);
 
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between small mb-1">
-                            <span>@item.Label</span>
-                            <span class="fw-semibold">@Math.Round(item.Value, 1) @item.Unit</span>
-                        </div>
-                        <div class="progress" style="height: 0.9rem;">
-                            <div class="progress-bar @item.Css" role="progressbar" style="width: @widthCss%" aria-valuenow="@Math.Round(width, 2)" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                    </div>
+                    @await Html.PartialAsync("_ProgressBar", new ProgressBarViewModel
+                    {
+                        Label = item.Label,
+                        ValueText = $"{Math.Round(item.Value, 1)} {item.Unit}",
+                        Value = width,
+                        Max = 100m,
+                        ColorClass = item.Css,
+                        ProgressClass = "progress-sm",
+                        BarClass = "progress-bar-animated-width",
+                        ShowPercentText = false,
+                        ContainerClass = "mb-3"
+                    })
                 }
             </div>
         </div>

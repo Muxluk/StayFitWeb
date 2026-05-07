@@ -13,18 +13,27 @@ public class PasswordChangeService : IPasswordChangeService
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly PasswordSettings _passwordSettings;
     private readonly ILogger<PasswordChangeService> _logger;
+    private readonly ISecurityLogService? _securityLogService;
 
     public PasswordChangeService(
         UserManager<ApplicationUser> userManager,
         IOptions<PasswordSettings> passwordSettings,
-        ILogger<PasswordChangeService> logger)
+        ILogger<PasswordChangeService> logger,
+        ISecurityLogService? securityLogService = null)
     {
         _userManager = userManager;
         _passwordSettings = passwordSettings.Value;
         _logger = logger;
+        _securityLogService = securityLogService;
     }
 
-    public async Task<Result<bool>> ChangePasswordAsync(int userId, string currentPassword, string newPassword, string confirmPassword)
+    public async Task<Result<bool>> ChangePasswordAsync(
+        int userId,
+        string currentPassword,
+        string newPassword,
+        string confirmPassword,
+        string? ipAddress = null,
+        string? userAgent = null)
     {
         _logger.LogInformation("Початок процесу зміни пароля для користувача з ID: {UserId}", userId);
 
@@ -70,11 +79,24 @@ public class PasswordChangeService : IPasswordChangeService
         if (result.Succeeded)
         {
             _logger.LogInformation("Користувач {UserId} успішно змінив пароль", userId);
+            
+            // Логування в журнал безпеки
+            if (_securityLogService != null)
+            {
+                await _securityLogService.LogPasswordChangeAsync(userId, ipAddress, userAgent, isSuccessful: true);
+            }
+            
             return new Result<bool>.Success(true);
         }
 
         var errors = string.Join(", ", result.Errors.Select(e => e.Description));
         _logger.LogError("Не вдалося змінити пароль для користувача {UserId}. Помилки: {Errors}", userId, errors);
+        
+        // Логування помилки в журнал безпеки
+        if (_securityLogService != null)
+        {
+            await _securityLogService.LogPasswordChangeAsync(userId, ipAddress, userAgent, isSuccessful: false, failureReason: errors);
+        }
 
         return new Result<bool>.Failure(string.Join(", ", result.Errors.Select(e => e.Description)), "PASSWORD_CHANGE_FAILED");
     }

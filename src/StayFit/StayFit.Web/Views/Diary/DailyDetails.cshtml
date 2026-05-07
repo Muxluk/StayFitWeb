@@ -3,8 +3,8 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Щоденник: @Model.Date.ToShortDateString()</h2>
-        <form asp-action="DailyDetails" method="get" class="d-flex">
-            <input type="date" name="date" value="@Model.Date.ToString("yyyy-MM-dd")" onchange="this.form.submit()" class="form-control" />
+        <form asp-action="DailyDetails" method="get" class="d-flex" data-auto-submit-change>
+            <input type="date" name="date" value="@Model.Date.ToString("yyyy-MM-dd")" class="form-control" />
         </form>
     </div>
 

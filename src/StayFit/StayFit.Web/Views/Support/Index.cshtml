@@ -1,0 +1,90 @@
+@model IEnumerable<StayFit.Application.DTOs.SupportTicketDto>
+
+@{
+    ViewData["Title"] = "Мої звернення";
+    var tickets = Model?.ToList() ?? new List<StayFit.Application.DTOs.SupportTicketDto>();
+}
+
+<div class="container mt-4">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+        <div>
+            <h2 class="mb-1">Мої звернення</h2>
+            <p class="text-muted mb-0">Тут відображаються ваші звернення до технічної підтримки та їхній статус.</p>
+        </div>
+        <span class="badge bg-primary fs-6">Всього: @tickets.Count</span>
+    </div>
+
+    @if (TempData["SupportError"] is string supportError && !string.IsNullOrWhiteSpace(supportError))
+    {
+        <div class="alert alert-danger">@supportError</div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="support-table-col-id">ID</th>
+                            <th>Тема</th>
+                            <th>Повідомлення</th>
+                            <th class="support-table-col-status">Статус</th>
+                            <th class="support-table-col-created">Створено</th>
+                            <th class="support-table-col-actions"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!tickets.Any())
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    Поки що немає жодного звернення.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var ticket in tickets)
+                            {
+                                <tr>
+                                    <td>#@ticket.Id</td>
+                                    <td class="fw-semibold">@ticket.Subject</td>
+                                    <td>
+                                        <div class="text-truncate text-truncate-max-420" title="@ticket.Message">
+                                            @ticket.Message
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @switch (ticket.Status?.Trim().ToLowerInvariant())
+                                        {
+                                            case "new":
+                                                <span class="badge bg-secondary">Нове</span>
+                                                break;
+                                            case "inprogress":
+                                            case "in_progress":
+                                            case "processing":
+                                                <span class="badge bg-warning text-dark">В обробці</span>
+                                                break;
+                                            case "closed":
+                                                <span class="badge bg-success">Закрито</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-light text-dark border">@ticket.Status</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td>@ticket.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                                    <td class="text-end">
+                                        <a asp-action="Details" asp-route-id="@ticket.Id" class="btn btn-sm btn-outline-primary">
+                                            Перегляд
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

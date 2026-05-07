@@ -1,0 +1,89 @@
+@model IEnumerable<StayFit.Domain.Entities.Food>
+@using StayFit.Domain.Enums
+
+@{
+    ViewData["Title"] = "Пошук у світовій базі";
+    var searchTerm = ViewBag.SearchTerm as string;
+}
+
+<div class="container mt-4">
+    <h2>Пошук продуктів</h2>
+
+    <ul class="nav nav-tabs mb-4 mt-3">
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="ProductSearch" asp-action="Index">Локальна база</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" aria-current="page" asp-controller="FoodImport" asp-action="Index">Пошук у світовій базі</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="Barcode" asp-action="Scan">Пошук за штрих-кодом</a>
+        </li>
+    </ul>
+
+    @await Html.PartialAsync("_SearchFilter", new SearchFilterViewModel
+    {
+        Controller = "FoodImport",
+        Action = "Index",
+        SearchName = "searchTerm",
+        SearchValue = searchTerm,
+        Placeholder = "Введіть назву продукту...",
+        ButtonText = "Шукати в API",
+        SearchColClass = "col-md-10",
+        ButtonColClass = "col-md-2"
+    })
+
+    @if (Model == null || !Model.Any())
+    {
+        if (!string.IsNullOrEmpty(searchTerm))
+        {
+            <div class="alert alert-warning">
+                Нічого не знайдено за запитом "@searchTerm". Спробуйте інше слово або англійською, наприклад, "Apple".
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                Введіть назву продукту для пошуку через USDA FoodData Central API.
+            </div>
+        }
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            @foreach (var item in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-info">
+                        <div class="card-body">
+                            <h5 class="card-title">@item.Name</h5>
+                            @if (!string.IsNullOrEmpty(item.Brand))
+                            {
+                                <h6 class="card-subtitle mb-2 text-muted">@item.Brand</h6>
+                            }
+                            
+                            <p class="card-text mb-1">
+                                <small class="text-muted">Джерело:</small> <strong>USDA FoodData Central</strong><br/>
+                                <small class="text-muted">Ккал/100г:</small> <strong>@item.CaloriesPer100g</strong><br/>
+                                <small class="text-muted">Б/Ж/В:</small> @item.ProteinPer100g / @item.FatPer100g / @item.CarbsPer100g
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent border-top-0">
+                            <form asp-controller="FoodImport" asp-action="Import" method="post" class="d-flex">
+                                <input type="hidden" name="Name" value="@item.Name" />
+                                <input type="hidden" name="Brand" value="@item.Brand" />
+                                <input type="hidden" name="CaloriesPer100g" value="@item.CaloriesPer100g" />
+                                <input type="hidden" name="ProteinPer100g" value="@item.ProteinPer100g" />
+                                <input type="hidden" name="FatPer100g" value="@item.FatPer100g" />
+                                <input type="hidden" name="CarbsPer100g" value="@item.CarbsPer100g" />
+                                <input type="hidden" name="IsVerified" value="true" />
+                                <input type="hidden" name="Category" value="@((int)FoodCategory.General)" />
+                                <button type="submit" class="btn btn-outline-primary btn-sm w-100">Імпортувати до моїх продуктів</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

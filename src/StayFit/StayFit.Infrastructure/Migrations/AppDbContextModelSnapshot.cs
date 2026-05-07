@@ -154,6 +154,43 @@ namespace StayFit.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("StayFit.Domain.Entities.EmailBroadcast", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdminId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Audience")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("RecipientCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EmailBroadcasts");
+                });
+
             modelBuilder.Entity("StayFit.Domain.Entities.Food", b =>
                 {
                     b.Property<int>("Id")
@@ -279,6 +316,27 @@ namespace StayFit.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("FoodLogs");
+                });
+
+            modelBuilder.Entity("StayFit.Domain.Entities.HydrationGoal", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DailyGoalMl")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("HydrationGoals");
                 });
 
             modelBuilder.Entity("StayFit.Domain.Entities.MealEntry", b =>
@@ -544,6 +602,30 @@ namespace StayFit.Infrastructure.Migrations
                     b.ToTable("UserSessions");
                 });
 
+            modelBuilder.Entity("StayFit.Domain.Entities.WaterLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("LoggedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("VolumeMl")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("WaterLogs");
+                });
+
             modelBuilder.Entity("StayFit.Infrastructure.Identity.ApplicationUser", b =>
                 {
                     b.Property<int>("Id")
@@ -692,7 +774,62 @@ namespace StayFit.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("StayFit.Domain.Entities.HydrationGoal", b =>
+                {
+                    b.HasOne("StayFit.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("StayFit.Domain.Entities.SecurityLogEntry", b =>
+                {
+                    b.HasOne("StayFit.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("StayFit.Domain.Entities.SupportTicket", b =>
+                {
+                    b.HasOne("StayFit.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("StayFit.Domain.Entities.SupportTicketReply", b =>
+                {
+                    b.HasOne("StayFit.Domain.Entities.SupportTicket", "Ticket")
+                        .WithMany("Replies")
+                        .HasForeignKey("TicketId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Ticket");
+                });
+
             modelBuilder.Entity("StayFit.Domain.Entities.UserSession", b =>
+                {
+                    b.HasOne("StayFit.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("StayFit.Domain.Entities.WaterLog", b =>
                 {
                     b.HasOne("StayFit.Domain.Entities.User", "User")
                         .WithMany()
@@ -716,6 +853,11 @@ namespace StayFit.Infrastructure.Migrations
             modelBuilder.Entity("StayFit.Domain.Entities.MealEntry", b =>
                 {
                     b.Navigation("FoodLogs");
+                });
+
+            modelBuilder.Entity("StayFit.Domain.Entities.SupportTicket", b =>
+                {
+                    b.Navigation("Replies");
                 });
 
             modelBuilder.Entity("StayFit.Domain.Entities.User", b =>

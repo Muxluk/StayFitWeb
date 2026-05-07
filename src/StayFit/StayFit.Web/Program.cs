@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Serilog;
 using StayFit.Application.Interfaces;
@@ -14,6 +15,8 @@ using StayFit.Infrastructure.Repositories;
 using StayFit.Web.Hubs;
 using StayFit.Web.Services;
 using StayFit.Web.Middleware;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddUserSecrets<Program>(optional: true, reloadOnChange: true);
@@ -65,6 +68,11 @@ builder.Services.Configure<ProfilePhotoOptions>(builder.Configuration.GetSection
 builder.Services.Configure<SessionSettings>(builder.Configuration.GetSection(SessionSettings.SectionName));
 builder.Services.Configure<DiaryNoteSettings>(builder.Configuration.GetSection("DiaryNotes"));
 builder.Services.Configure<NotificationSettings>(builder.Configuration.GetSection(NotificationSettings.SectionName));
+builder.Services.Configure<UsdaFoodDataOptions>(builder.Configuration.GetSection("UsdaFoodData"));
+builder.Services.Configure<SecurityLogSettings>(builder.Configuration.GetSection(SecurityLogSettings.SectionName));
+builder.Services.Configure<StayFit.Application.Configuration.SystemStatisticsSettings>(builder.Configuration.GetSection("SystemStatisticsCache"));
+builder.Services.Configure<HydrationSettings>(builder.Configuration.GetSection("HydrationSettings"));
+builder.Services.AddHttpClient();
 
 // ─── Identity ───────────────────────────────────────────────────────────────
 builder.Services
@@ -85,7 +93,16 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LoginPath = "/Account/Login";
     options.AccessDeniedPath = "/Error/403";
 });
-
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("WaterLogPolicy", opt =>
+    {
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.PermitLimit = 40;
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 0;
+    });
+});
 // ─── Application Services ───────────────────────────────────────────────────
 builder.Services.AddScoped<LoggingService>();
 builder.Services.AddScoped<IFoodService>(provider =>
@@ -120,6 +137,13 @@ builder.Services.AddHostedService<NutritionBackgroundService>();
 // ─── Build ──────────────────────────────────────────────────────────────────
 var app = builder.Build();
 
+// ─── Auto migrations ─────────────────────────────────────────────────────────
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await dbContext.Database.MigrateAsync();
+}
+
 await IdentityRoleSeeder.SeedRolesAsync(app.Services);
 await IdentityRoleSeeder.SeedAdminUserAsync(app.Services, app.Configuration);
 
@@ -135,7 +159,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 app.UseStatusCodePagesWithReExecute("/Error/{0}");
-
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseMiddleware<RequestExecutionTimeLoggingMiddleware>();

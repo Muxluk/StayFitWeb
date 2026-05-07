@@ -1,0 +1,137 @@
+@model StayFit.Application.DTOs.SupportTicketDto
+
+@{
+    ViewData["Title"] = "Деталі звернення";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">@Model.Subject</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Ticket Info -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong>Номер звернення:</strong> #@Model.Id</p>
+                            <p><strong>Дата створення:</strong> @Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Статус:</strong>
+                                @switch(Model.Status)
+                                {
+                                    case "New":
+                                        <span class="badge bg-primary">Нове</span>
+                                        break;
+                                    case "InProgress":
+                                        <span class="badge bg-warning">В обробці</span>
+                                        break;
+                                    case "Closed":
+                                        <span class="badge bg-success">Закрито</span>
+                                        break;
+                                    default:
+                                        <span class="badge bg-secondary">@Model.Status</span>
+                                        break;
+                                }
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Original Message -->
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2">Ваше звернення:</h5>
+                        <div class="alert alert-light">
+                            @Model.Message
+                        </div>
+                    </div>
+
+                    <!-- Replies -->
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2">
+                            Відповіді
+                            @if (Model.Replies != null && Model.Replies.Any())
+                            {
+                                <span class="badge bg-info">@Model.Replies.Count</span>
+                            }
+                        </h5>
+
+                        @if (Model.Replies != null && Model.Replies.Any())
+                        {
+                            @foreach (var reply in Model.Replies)
+                            {
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                @if (reply.IsAdminReply)
+                                                {
+                                                    <span class="badge bg-danger me-2">Адмін</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary me-2">Ви</span>
+                                                }
+                                                <small class="text-muted">@reply.CreatedAt.ToString("dd.MM.yyyy HH:mm")</small>
+                                            </div>
+                                        </div>
+                                        <p class="card-text mt-2">@reply.Message</p>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="alert alert-info">
+                                Поки що немає відповідей на ваше звернення. Адмін розглядає ваш запит.
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Back Button -->
+                    <div class="d-flex gap-2">
+                        <a href="@Url.Action("Index", "Support")" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Назад до списку
+                        </a>
+                        @if (Model.Status != "Closed")
+                        {
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#replyModal">
+                                <i class="bi bi-reply"></i> Додати коментар
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reply Modal (Optional - for future enhancement) -->
+@if (Model.Status != "Closed")
+{
+    <div class="modal fade" id="replyModal" tabindex="-1" aria-labelledby="replyModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="replyModalLabel">Додати коментар</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post" action="@Url.Action("AddReply", "Support")">
+                    <div class="modal-body">
+                        <input type="hidden" name="ticketId" value="@Model.Id" />
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Ваш коментар:</label>
+                            <textarea class="form-control" id="message" name="message" rows="4" required placeholder="Введіть ваш коментар..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
+                        <button type="submit" class="btn btn-primary">Надіслати</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+

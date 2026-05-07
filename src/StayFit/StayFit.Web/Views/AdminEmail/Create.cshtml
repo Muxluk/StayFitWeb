@@ -1,0 +1,37 @@
+@model dynamic
+@{
+    ViewData["Title"] = "Створити email-розсилку";
+}
+<h2>Створити email-розсилку</h2>
+@if (TempData["AdminEmailError"] is string errorMessage)
+{
+    <div class="alert alert-danger" role="alert">
+        @errorMessage
+    </div>
+}
+@if (TempData["AdminEmailSuccess"] is string successMessage)
+{
+    <div class="alert alert-success" role="alert">
+        @successMessage
+    </div>
+}
+<form asp-controller="AdminEmail" asp-action="Send" method="post">
+    <div class="mb-3">
+        <label for="subject" class="form-label">Тема</label>
+        <input type="text" class="form-control" id="subject" name="subject" maxlength="200" required />
+    </div>
+    <div class="mb-3">
+        <label for="body" class="form-label">Текст листа</label>
+        <textarea class="form-control" id="body" name="body" rows="6" required></textarea>
+    </div>
+    <div class="mb-3">
+        <label for="audience" class="form-label">Аудиторія</label>
+        <select class="form-select" id="audience" name="audience" required>
+            <option value="All">Всі користувачі</option>
+            <option value="Active">Лише активні</option>
+            <option value="Role:User">Лише з роллю User</option>
+            <option value="Role:Admin">Лише з роллю Admin</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Надіслати</button>
+</form>

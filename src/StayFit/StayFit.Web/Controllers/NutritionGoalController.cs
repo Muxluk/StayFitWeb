@@ -12,17 +12,20 @@ public class NutritionGoalController : BaseController
 {
     private readonly INutritionGoalService _nutritionGoalService;
     private readonly IFoodService _foodService;
+    private readonly IHydrationService _hydrationService; // Додано
     private readonly IUserRepository _userRepository;
     private readonly INotificationService _notificationService;
-
+    
     public NutritionGoalController(
         INutritionGoalService nutritionGoalService, 
         IFoodService foodService,
+        IHydrationService hydrationService, // Додано
         IUserRepository userRepository,
         INotificationService notificationService)
     {
         _nutritionGoalService = nutritionGoalService;
         _foodService = foodService;
+        _hydrationService = hydrationService; // Додано
         _userRepository = userRepository;
         _notificationService = notificationService;
     }
@@ -30,11 +33,19 @@ public class NutritionGoalController : BaseController
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var userId = GetRequiredCurrentUserId().ToString();
+        var userIdInt = GetRequiredCurrentUserId();
+        var userIdStr = userIdInt.ToString();
         var userEmail = GetCurrentUserEmailOrEmpty();
 
-        var goalResult = await _nutritionGoalService.GetGoalAsync(userId);
+        // Отримання цілей КБЖВ
+        var goalResult = await _nutritionGoalService.GetGoalAsync(userIdStr);
+        
+        // Отримання логів їжі
         var logs = await _foodService.GetDailyLogAsync(userEmail, DateTime.Today);
+        
+        // Отримання прогресу води
+        var waterResult = await _hydrationService.GetTodayProgressAsync(userIdInt);
+        ViewBag.WaterProgress = waterResult.IsSuccess ? waterResult.Value : new HydrationProgressDto();
 
         var model = new SetNutritionGoalDto();
         if (goalResult.IsSuccess && goalResult.Value != null)
@@ -55,12 +66,11 @@ public class NutritionGoalController : BaseController
     {
         if (!ModelState.IsValid) return await Index(); 
 
-        var userId = GetRequiredCurrentUserId().ToString();
-        var result = await _nutritionGoalService.SetGoalAsync(userId, dto);
+        var userIdStr = GetRequiredCurrentUserId().ToString();
+        var result = await _nutritionGoalService.SetGoalAsync(userIdStr, dto);
 
         if (result.IsSuccess)
         {
-            // Створити сповіщення про встановлення цілі
             var userEmail = GetCurrentUserEmailOrEmpty();
             if (!string.IsNullOrEmpty(userEmail))
             {
@@ -75,7 +85,8 @@ public class NutritionGoalController : BaseController
             return RedirectToAction(nameof(Index));
         }
 
-        ModelState.AddModelError(string.Empty, result.Errors?.FirstOrDefault() ?? "Помилка");
+        // Використовуємо .Errors, як у твоїй логіці Result
+        ModelState.AddModelError(string.Empty, result.Errors?.FirstOrDefault() ?? "Помилка при збереженні");
         return await Index();
     }
 }

@@ -6,6 +6,14 @@
     <h2 class="mb-4">Адміністрування</h2>
     <p class="text-muted">Оберіть розділ, у який потрібно перейти.</p>
 
+    @{ 
+        var adminUsersUrl = Url.Action("Index", "AdminUser");
+        var adminCategoriesUrl = Url.Action("Index", "AdminCategory");
+        var adminProductsUrl = Url.Action("Index", "AdminProduct");
+        var adminStatisticsUrl = Url.Action("Index", "AdminStatistics");
+        var adminSupportUrl = Url.Action("Index", "AdminSupport");
+    }
+
     <div class="row g-3 mt-1">
         <div class="col-md-4">
             <div class="card sf-card h-100">

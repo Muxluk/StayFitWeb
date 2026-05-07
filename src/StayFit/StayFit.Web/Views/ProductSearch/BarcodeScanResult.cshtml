@@ -1,0 +1,95 @@
+@model StayFit.Application.DTOs.BarcodeScanResultDto
+@using StayFit.Domain.Enums
+
+@{
+    ViewData["Title"] = "Пошук за штрих-кодом";
+    var barcodeSearchTerm = TempData["BarcodeSearchTerm"] as string;
+}
+
+<div class="container mt-4">
+    <h2>Пошук продуктів</h2>
+
+    <ul class="nav nav-tabs mb-4 mt-3">
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="ProductSearch" asp-action="Index">Локальна база</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="FoodImport" asp-action="Index">Пошук у світовій базі</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="#">Пошук за штрих-кодом</a>
+        </li>
+    </ul>
+
+    <form method="get" asp-controller="Barcode" asp-action="Scan" class="row g-3 mb-4 mt-2">
+        <div class="col-md-10">
+            <input type="text" name="barcode" class="form-control" placeholder="Введіть штрих-код (наприклад, 867824000001)..." value="@barcodeSearchTerm" required />
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Знайти</button>
+        </div>
+    </form>
+
+    @if (Model == null && !string.IsNullOrEmpty(barcodeSearchTerm))
+    {
+        <div class="alert alert-warning">
+            Продукт зі штрих-кодом "@barcodeSearchTerm" не знайдено в базі USDA.
+        </div>
+    }
+    else if (Model != null)
+    {
+        var item = Model.Food;
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            <div class="col">
+                <div class="card h-100 shadow-sm border-info">
+                    <div class="card-body">
+                        <h5 class="card-title">@item.Name</h5>
+                        @if (!string.IsNullOrEmpty(item.Brand))
+                        {
+                            <h6 class="card-subtitle mb-2 text-muted">@item.Brand</h6>
+                        }
+                        
+                        <p class="card-text mb-1">
+                            <small class="text-muted">Джерело:</small> <strong>USDA FoodData Central</strong><br/>
+                            <small class="text-muted">Штрих-код:</small> <strong>@item.Barcode</strong><br/>
+                            <small class="text-muted">Ккал/100г:</small> <strong>@item.CaloriesPer100g</strong><br/>
+                            <small class="text-muted">Б/Ж/В:</small> @item.ProteinPer100g / @item.FatPer100g / @item.CarbsPer100g
+                        </p>
+                    </div>
+                    <div class="card-footer bg-transparent border-top-0">
+                        @if (Model.ExistsInLocalDb)
+                        {
+                            <form asp-controller="Food" asp-action="AddToLog" method="post" class="d-flex">
+                                <input type="hidden" name="foodId" value="@item.Id" />
+                                <input type="number" name="quantity" class="form-control form-control-sm me-2" placeholder="Вага (г)" value="100" min="1" required />
+                                <button type="submit" class="btn btn-outline-success btn-sm w-100">В щоденник</button>
+                            </form>
+                            <small class="text-success mt-2 d-block text-center">Цей продукт вже є у вашій базі.</small>
+                        }
+                        else
+                        {
+                            <form asp-controller="FoodImport" asp-action="Import" method="post" class="d-flex">
+                                <input type="hidden" name="Name" value="@item.Name" />
+                                <input type="hidden" name="Brand" value="@item.Brand" />
+                                <input type="hidden" name="Barcode" value="@item.Barcode" />
+                                <input type="hidden" name="CaloriesPer100g" value="@item.CaloriesPer100g" />
+                                <input type="hidden" name="ProteinPer100g" value="@item.ProteinPer100g" />
+                                <input type="hidden" name="FatPer100g" value="@item.FatPer100g" />
+                                <input type="hidden" name="CarbsPer100g" value="@item.CarbsPer100g" />
+                                <input type="hidden" name="IsVerified" value="true" />
+                                <input type="hidden" name="Category" value="@((int)FoodCategory.General)" />
+                                <button type="submit" class="btn btn-outline-primary btn-sm w-100">Імпортувати до моїх продуктів</button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            Введіть штрих-код продукту (GTIN/UPC) для пошуку.
+        </div>
+    }
+</div>

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StayFit.Application.Interfaces;
@@ -18,7 +19,10 @@ public static class DependencyInjection
     {
         // БД
         services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+            options
+                .UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
+                .ConfigureWarnings(warnings =>
+                    warnings.Ignore(RelationalEventId.PendingModelChangesWarning)));
 
         // Репозиторії
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
@@ -55,6 +59,17 @@ public static class DependencyInjection
         services.AddScoped<IAccountDeletionRepository, AccountDeletionRepository>();
         services.AddScoped<IAccountDeletionService, AccountDeletionService>();
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IFoodImportRepository, FoodImportRepository>();
+        services.AddScoped<IFoodImportService, FoodImportService>();
+        services.AddHttpClient<IUsdaFoodDataClient, UsdaFoodDataClient>();
+
+        services.AddScoped<IBarcodeScanRepository, BarcodeScanRepository>();
+        services.AddScoped<IBarcodeScanService, BarcodeScanService>();
+        services.AddScoped<ISecurityLogService, SecurityLogService>();
+        services.AddScoped<ISupportService, SupportService>();
+        services.AddScoped<ISystemStatisticsRepository, SystemStatisticsRepository>();
+        services.AddScoped<ISystemStatisticsService, SystemStatisticsService>();
+        services.AddScoped<IEmailBroadcastService, EmailBroadcastService>();
         return services;
     }
 }

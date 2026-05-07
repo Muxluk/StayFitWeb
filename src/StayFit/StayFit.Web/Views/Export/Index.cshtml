@@ -4,7 +4,7 @@
     ViewData["Title"] = "Експорт харчування";
 }
 
-<div class="container mt-4" style="max-width: 560px;">
+<div class="container mt-4 mw-560">
     <h2 class="mb-4">📤 Експорт записів харчування</h2>
 
     <div class="card shadow-sm">
@@ -12,7 +12,7 @@
             <form asp-action="Export" asp-controller="Export" method="post">
                 @Html.AntiForgeryToken()
 
-                <div asp-validation-summary="All" class="alert alert-danger" style="display:none"
+                 <div asp-validation-summary="All" class="alert alert-danger d-none"
                      id="validationSummary"></div>
 
                 @{

@@ -123,7 +123,10 @@
                             </div>
 
                             <button type="submit" class="btn btn-danger"
-                                    onclick="return confirm('Скинути пароль для цього користувача?');">
+                                    data-confirm-title="Скинути пароль"
+                                    data-confirm-message="Скинути пароль для цього користувача?"
+                                    data-confirm-button-text="Скинути"
+                                    data-confirm-button-class="btn-danger">
                                 Скинути пароль
                             </button>
                         </form>
@@ -143,32 +146,41 @@
 
                             @if (Model.User.IsLocked)
                             {
-                                <form method="post" asp-action="UnblockUser" asp-controller="AdminUser" 
-                                      asp-route-userId="@Model.User.UserId" style="margin-bottom: 0;">
+                                                                        <form method="post" asp-action="UnblockUser" asp-controller="AdminUser" 
+                                                                            asp-route-userId="@Model.User.UserId" class="mb-0">
                                     @Html.AntiForgeryToken()
                                     <button type="submit" class="btn btn-success w-100"
-                                            onclick="return confirm('Розблокувати цього користувача?');">
+                                            data-confirm-title="Розблокувати користувача"
+                                            data-confirm-message="Розблокувати цього користувача?"
+                                            data-confirm-button-text="Розблокувати"
+                                            data-confirm-button-class="btn-success">
                                         <i class="bi bi-unlock"></i> Розблокувати
                                     </button>
                                 </form>
                             }
                             else
                             {
-                                <form method="post" asp-action="BlockUser" asp-controller="AdminUser"
-                                      asp-route-userId="@Model.User.UserId" style="margin-bottom: 0;">
+                                  <form method="post" asp-action="BlockUser" asp-controller="AdminUser"
+                                      asp-route-userId="@Model.User.UserId" class="mb-0">
                                     @Html.AntiForgeryToken()
                                     <button type="submit" class="btn btn-warning w-100"
-                                            onclick="return confirm('Заблокувати цього користувача?');">
+                                            data-confirm-title="Заблокувати користувача"
+                                            data-confirm-message="Заблокувати цього користувача?"
+                                            data-confirm-button-text="Заблокувати"
+                                            data-confirm-button-class="btn-warning">
                                         <i class="bi bi-lock"></i> Заблокувати
                                     </button>
                                 </form>
                             }
 
-                            <form method="post" asp-action="DeleteUser" asp-controller="AdminUser"
-                                  asp-route-userId="@Model.User.UserId" style="margin-bottom: 0;">
+                                <form method="post" asp-action="DeleteUser" asp-controller="AdminUser"
+                                    asp-route-userId="@Model.User.UserId" class="mb-0">
                                 @Html.AntiForgeryToken()
                                 <button type="submit" class="btn btn-danger w-100"
-                                        onclick="return confirm('УВАГА! Видалити цього користувача? Цю дію не можна скасувати!');">
+                                        data-confirm-title="Видалити користувача"
+                                        data-confirm-message="УВАГА! Видалити цього користувача? Цю дію не можна скасувати!"
+                                        data-confirm-button-text="Видалити"
+                                        data-confirm-button-class="btn-danger">
                                     <i class="bi bi-trash"></i> Видалити
                                 </button>
                             </form>
