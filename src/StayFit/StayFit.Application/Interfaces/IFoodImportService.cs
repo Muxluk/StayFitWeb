@@ -6,4 +6,5 @@ public interface IFoodImportService
 {
     Task<IEnumerable<Food>> SearchGlobalAsync(string searchTerm);
     Task ImportProductAsync(Food product, int ownerUserId, string userEmail);
+    Task<HashSet<string>> GetExistingNamesAsync(IEnumerable<string> names);
 }

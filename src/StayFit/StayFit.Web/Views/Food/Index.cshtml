@@ -1,57 +1,172 @@
 @model IEnumerable<StayFit.Domain.Entities.Food>
 
 @{
-    ViewData["Title"] = "Список продуктів";
+    ViewData["Title"] = "Мої продукти";
+    var currentUser = User.Identity?.Name;
 }
 
-<h1>Продукти харчування</h1>
+<div class="container mt-4">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h2>Мої продукти</h2>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Додати продукт
+        </a>
+    </div>
 
-<p>
-    <a asp-action="Create" class="btn btn-primary">Додати новий продукт</a>
-</p>
-
-<table class="table table-striped">
-    <thead>
-    <tr>
-        <th>Назва</th>
-        <th>Калорії (на 100г)</th>
-        <th>Білки</th>
-        <th>Жири</th>
-        <th>Вуглеводи</th>
-        <th>Додано користувачем</th> <th>Дії</th>
-    </tr>
-    </thead>
-    <tbody>
-    @foreach (var item in Model)
+    @if (TempData["SuccessMessage"] != null)
     {
-        <tr>
-            <td>@item.Name</td>
-            <td>@item.CaloriesPer100g</td>
-            <td>@item.ProteinPer100g</td>
-            <td>@item.FatPer100g</td>
-            <td>@item.CarbsPer100g</td>
-            <td>@(string.IsNullOrEmpty(item.CreatedByEmail) ? "Система" : item.CreatedByEmail)</td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Редагувати</a>
-                <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('Ви впевнені, що хочете видалити цей продукт?');">
-                    <button type="submit" class="btn btn-sm btn-danger">Видалити</button>
-                </form>
-            </td>
-            <td>
-                <form asp-action="AddToLog" method="post" class="d-flex align-items-center">
-                    <input type="hidden" name="foodId" value="@item.Id" />
-                    <input type="number" name="quantity" value="100" class="form-control form-control-sm me-2 w-70" />
-                    <button type="submit" class="btn btn-sm btn-success">
-                        <i class="bi bi-plus-lg"></i> В раціон
-                    </button>
-                </form>
-                
-                @if (item.CreatedByEmail == User.Identity?.Name)
-                {
-                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-warning mt-1">Ред.</a>
-                }
-            </td>
-        </tr>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
     }
-    </tbody>
-</table>
+
+    @if (!Model.Any())
+    {
+        <div class="card sf-card">
+            <div class="card-body text-center py-5">
+                <p class="text-muted mb-3">У вас ще немає продуктів. Додайте перший!</p>
+                <a asp-action="Create" class="btn btn-primary">Додати продукт</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        @* ── Таблиця (md+) ── *@
+        <div class="card sf-card d-none d-md-block">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Назва</th>
+                                <th class="text-end">ккал</th>
+                                <th class="text-end">Б</th>
+                                <th class="text-end">Ж</th>
+                                <th class="text-end">В</th>
+                                <th class="text-center">Статус</th>
+                                <th class="text-center">Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@item.Name</td>
+                                    <td class="text-end">@item.CaloriesPer100g.ToString("F0")</td>
+                                    <td class="text-end text-info">@item.ProteinPer100g.ToString("F1")</td>
+                                    <td class="text-end text-warning">@item.FatPer100g.ToString("F1")</td>
+                                    <td class="text-end text-success">@item.CarbsPer100g.ToString("F1")</td>
+                                    <td class="text-center">
+                                        @if (item.IsApproved)
+                                        {
+                                            <span class="badge bg-success">Підтверджено</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark">На модерації</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center gap-1 align-items-center">
+                                            @* В раціон *@
+                                            <form asp-action="AddToLog" method="post" class="d-flex gap-1">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="foodId" value="@item.Id" />
+                                                <input type="number" name="quantity" value="100" min="1" max="9999"
+                                                       class="form-control form-control-sm" style="width: 65px;" />
+                                                <button type="submit" class="btn btn-sm btn-success" title="Додати в раціон">
+                                                    + В раціон
+                                                </button>
+                                            </form>
+
+                                            @if (item.CreatedByEmail == currentUser)
+                                            {
+                                                @* Редагувати *@
+                                                <a asp-action="Edit" asp-route-id="@item.Id"
+                                                   class="btn btn-sm btn-outline-warning" title="Редагувати">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+
+                                                @* Видалити *@
+                                                <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                            title="Видалити"
+                                                            data-confirm-title="Видалити продукт"
+                                                            data-confirm-message="Видалити «@item.Name»? Цю дію неможливо скасувати."
+                                                            data-confirm-button-text="Видалити"
+                                                            data-confirm-button-class="btn-danger">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        @* ── Картки (xs/sm) ── *@
+        <div class="d-md-none">
+            @foreach (var item in Model)
+            {
+                <div class="card sf-card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="card-title mb-1 fw-semibold">@item.Name</h6>
+                                @if (item.IsApproved)
+                                {
+                                    <span class="badge bg-success">Підтверджено</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">На модерації</span>
+                                }
+                            </div>
+                            <span class="sf-card-value">@item.CaloriesPer100g.ToString("F0")<small class="text-muted fs-6"> ккал</small></span>
+                        </div>
+
+                        <div class="d-flex gap-3 mb-3 small">
+                            <span class="text-info">Б: @item.ProteinPer100g.ToString("F1") г</span>
+                            <span class="text-warning">Ж: @item.FatPer100g.ToString("F1") г</span>
+                            <span class="text-success">В: @item.CarbsPer100g.ToString("F1") г</span>
+                        </div>
+
+                        <form asp-action="AddToLog" method="post" class="d-flex gap-2 mb-2">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="foodId" value="@item.Id" />
+                            <input type="number" name="quantity" value="100" min="1" max="9999"
+                                   class="form-control form-control-sm" style="width: 80px;" />
+                            <button type="submit" class="btn btn-sm btn-success flex-grow-1">+ В раціон</button>
+                        </form>
+
+                        @if (item.CreatedByEmail == currentUser)
+                        {
+                            <div class="d-flex gap-2">
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-warning flex-grow-1">
+                                    <i class="bi bi-pencil"></i> Редагувати
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="flex-grow-1">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-danger w-100"
+                                            data-confirm-title="Видалити продукт"
+                                            data-confirm-message="Видалити «@item.Name»? Цю дію неможливо скасувати."
+                                            data-confirm-button-text="Видалити"
+                                            data-confirm-button-class="btn-danger">
+                                        <i class="bi bi-trash"></i> Видалити
+                                    </button>
+                                </form>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

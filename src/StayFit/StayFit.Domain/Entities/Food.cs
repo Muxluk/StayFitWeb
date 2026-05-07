@@ -23,5 +23,8 @@ public class Food
 
     public bool IsApproved { get; set; } = false;
 
+    /// <summary>Час, коли продукт був надісланий на модерацію.</summary>
+    public DateTime? SubmittedAt { get; set; }
+
     public ICollection<FoodLog> FoodLogs { get; set; } = new List<FoodLog>();
 }

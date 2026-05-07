@@ -38,6 +38,10 @@ public static class DependencyInjection
         services.AddScoped<ISessionRepository, SessionRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<ISupportMessageRepository, SupportMessageRepository>();
+        services.AddScoped<IHydrationRepository, HydrationRepository>();
+        services.AddScoped<ISecurityLogRepository, SecurityLogRepository>();
+        services.AddScoped<ISupportRepository, SupportRepository>();
+        services.AddScoped<IEmailBroadcastRepository, EmailBroadcastRepository>();
 
         // Services
         services.AddScoped<IRegistrationService, RegistrationService>();
@@ -59,6 +63,7 @@ public static class DependencyInjection
         services.AddScoped<IAccountDeletionRepository, AccountDeletionRepository>();
         services.AddScoped<IAccountDeletionService, AccountDeletionService>();
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IHydrationService, HydrationService>();
         services.AddScoped<IFoodImportRepository, FoodImportRepository>();
         services.AddScoped<IFoodImportService, FoodImportService>();
         services.AddHttpClient<IUsdaFoodDataClient, UsdaFoodDataClient>();

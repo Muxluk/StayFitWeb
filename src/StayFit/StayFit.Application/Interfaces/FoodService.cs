@@ -63,6 +63,7 @@ public class FoodService : IFoodService
         }
 
         food.OwnerUserId = userId;
+        food.SubmittedAt ??= DateTime.UtcNow;
         _logger.LogInformation("Додавання нового продукту: {Name}", food.Name);
         await _foodRepository.AddAsync(food);
     }

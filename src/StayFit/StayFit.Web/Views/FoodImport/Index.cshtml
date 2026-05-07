@@ -1,89 +1,266 @@
-@model IEnumerable<StayFit.Domain.Entities.Food>
+﻿@model IEnumerable<StayFit.Domain.Entities.Food>
 @using StayFit.Domain.Enums
+
+@functions {
+    string CategoryIcon(FoodCategory cat) => cat switch {
+        FoodCategory.General    => "🍽️",
+        FoodCategory.Meat       => "🥩",
+        FoodCategory.Dairy      => "🥛",
+        FoodCategory.Vegetables => "🥦",
+        FoodCategory.Fruits     => "🍎",
+        FoodCategory.Sweets     => "🍰",
+        FoodCategory.Drinks     => "🥤",
+        _                       => "🍽️"
+    };
+}
 
 @{
     ViewData["Title"] = "Пошук у світовій базі";
-    var searchTerm = ViewBag.SearchTerm as string;
+    var searchTerm    = ViewBag.SearchTerm as string;
+    var existingNames = ViewBag.ExistingNames as HashSet<string> ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 }
 
 <div class="container mt-4">
-    <h2>Пошук продуктів</h2>
 
-    <ul class="nav nav-tabs mb-4 mt-3">
+    <div class="d-flex align-items-center mb-3">
+        <h2 class="mb-0">Пошук продуктів</h2>
+    </div>
+
+    <ul class="nav nav-tabs mb-4">
         <li class="nav-item">
             <a class="nav-link" asp-controller="ProductSearch" asp-action="Index">Локальна база</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link active" aria-current="page" asp-controller="FoodImport" asp-action="Index">Пошук у світовій базі</a>
+            <a class="nav-link active" asp-controller="FoodImport" asp-action="Index">Світова база</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" asp-controller="Barcode" asp-action="Scan">Пошук за штрих-кодом</a>
+            <a class="nav-link" asp-controller="Barcode" asp-action="Scan">Штрих-код</a>
         </li>
     </ul>
 
-    @await Html.PartialAsync("_SearchFilter", new SearchFilterViewModel
-    {
-        Controller = "FoodImport",
-        Action = "Index",
-        SearchName = "searchTerm",
-        SearchValue = searchTerm,
-        Placeholder = "Введіть назву продукту...",
-        ButtonText = "Шукати в API",
-        SearchColClass = "col-md-10",
-        ButtonColClass = "col-md-2"
-    })
+    @* API info banner *@
+    <div class="sf-fi-info-banner mb-4">
+        <div class="sf-fi-info-icon">🌍</div>
+        <div>
+            <strong>USDA FoodData Central</strong> — безкоштовна світова база даних з понад 600&amp;nbsp;000 продуктів.
+            найдені продукти можна додати до своєї локальної бази одним кліком.
+            <br />
+            <small class="text-muted">ошук англійською дає більше результатів.</small>
+        </div>
+    </div>
 
-    @if (Model == null || !Model.Any())
-    {
-        if (!string.IsNullOrEmpty(searchTerm))
+    @* Search form *@
+    <form id="sf-fi-form" method="get" asp-controller="FoodImport" asp-action="Index"
+          class="row g-2 mb-4 align-items-end">
+        <div class="col-12 col-sm-8 col-md-9">
+            <label class="form-label text-muted sf-ps-field-label">Назва продукту (українською або англійською)</label>
+            <input type="text" name="searchTerm" id="sf-fi-input"
+                   class="form-control"
+                   placeholder="Наприклад: chicken breast / куряча грудка..."
+                   value="@searchTerm" autocomplete="off" />
+        </div>
+        <div class="col-12 col-sm-4 col-md-3">
+            <button type="submit" class="btn btn-primary w-100" id="sf-fi-btn">
+                <span id="sf-fi-btn-text"><i class="bi bi-search me-1"></i>Шукати в API</span>
+                <span id="sf-fi-btn-spinner" class="d-none">
+                    <span class="spinner-border spinner-border-sm me-1" role="status"></span>Завантаження...
+                </span>
+            </button>
+        </div>
+    </form>
+
+    @* Skeleton *@
+    <div id="sf-fi-skeleton" class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4 d-none">
+        @for (int s = 0; s < 6; s++)
         {
-            <div class="alert alert-warning">
-                Нічого не знайдено за запитом "@searchTerm". Спробуйте інше слово або англійською, наприклад, "Apple".
+            <div class="col">
+                <div class="sf-ps-card">
+                    <div class="sf-ps-img-wrap sf-skeleton-shimmer"></div>
+                    <div class="card-body d-flex flex-column gap-2">
+                        <div class="sf-skeleton-line sf-skeleton-line--lg sf-skeleton-shimmer"></div>
+                        <div class="sf-skeleton-line sf-skeleton-line--sm sf-skeleton-shimmer"></div>
+                        <div class="sf-ps-macro-row mt-2">
+                            <div class="sf-skeleton-macro sf-skeleton-shimmer"></div>
+                            <div class="sf-skeleton-macro sf-skeleton-shimmer"></div>
+                            <div class="sf-skeleton-macro sf-skeleton-shimmer"></div>
+                            <div class="sf-skeleton-macro sf-skeleton-shimmer"></div>
+                        </div>
+                    </div>
+                    <div class="sf-ps-footer">
+                        <div class="sf-skeleton-line sf-skeleton-shimmer"></div>
+                    </div>
+                </div>
             </div>
+        }
+    </div>
+
+    @* Results *@
+    <div id="sf-fi-results">
+        @if (Model == null || !Model.Any())
+        {
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                <div class="sf-ps-empty">
+                    <div class="sf-ps-empty-icon">🔍</div>
+                    <h5 class="text-muted">Нічого не знайдено</h5>
+                    <p class="text-muted small">Спробуйте запит англійською, наприклад <em>«@searchTerm»</em></p>
+                </div>
+            }
+            else
+            {
+                <div class="sf-ps-empty">
+                    <div class="sf-ps-empty-icon">🌍</div>
+                    <h5 class="text-muted">Введіть запит для пошуку</h5>
+                    <p class="text-muted small">Пошук у базі USDA FoodData Central</p>
+                </div>
+            }
         }
         else
         {
-            <div class="alert alert-info">
-                Введіть назву продукту для пошуку через USDA FoodData Central API.
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <small class="text-muted">
+                    Знайдено: <strong>@Model.Count()</strong> результатів
+                    @if (!string.IsNullOrEmpty(searchTerm))
+                    {
+                        <span> за запитом «<em>@searchTerm</em>»</span>
+                    }
+                </small>
+                <span class="badge bg-info-subtle text-info border border-info-subtle">
+                    <i class="bi bi-database me-1"></i>USDA FoodData Central
+                </span>
             </div>
-        }
-    }
-    else
-    {
-        <div class="row row-cols-1 row-cols-md-3 g-4">
-            @foreach (var item in Model)
-            {
-                <div class="col">
-                    <div class="card h-100 shadow-sm border-info">
-                        <div class="card-body">
-                            <h5 class="card-title">@item.Name</h5>
-                            @if (!string.IsNullOrEmpty(item.Brand))
-                            {
-                                <h6 class="card-subtitle mb-2 text-muted">@item.Brand</h6>
-                            }
-                            
-                            <p class="card-text mb-1">
-                                <small class="text-muted">Джерело:</small> <strong>USDA FoodData Central</strong><br/>
-                                <small class="text-muted">Ккал/100г:</small> <strong>@item.CaloriesPer100g</strong><br/>
-                                <small class="text-muted">Б/Ж/В:</small> @item.ProteinPer100g / @item.FatPer100g / @item.CarbsPer100g
-                            </p>
-                        </div>
-                        <div class="card-footer bg-transparent border-top-0">
-                            <form asp-controller="FoodImport" asp-action="Import" method="post" class="d-flex">
-                                <input type="hidden" name="Name" value="@item.Name" />
-                                <input type="hidden" name="Brand" value="@item.Brand" />
-                                <input type="hidden" name="CaloriesPer100g" value="@item.CaloriesPer100g" />
-                                <input type="hidden" name="ProteinPer100g" value="@item.ProteinPer100g" />
-                                <input type="hidden" name="FatPer100g" value="@item.FatPer100g" />
-                                <input type="hidden" name="CarbsPer100g" value="@item.CarbsPer100g" />
-                                <input type="hidden" name="IsVerified" value="true" />
-                                <input type="hidden" name="Category" value="@((int)FoodCategory.General)" />
-                                <button type="submit" class="btn btn-outline-primary btn-sm w-100">Імпортувати до моїх продуктів</button>
-                            </form>
+
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4 mb-4">
+                @foreach (var item in Model)
+                {
+                    var alreadyExists = existingNames.Contains(item.Name);
+                    <div class="col">
+                        <div class="sf-ps-card @(alreadyExists ? "sf-fi-card--exists" : "")">
+
+                            <div class="sf-ps-img-wrap sf-ps-no-img sf-fi-no-img">
+                                <span class="sf-ps-no-img-icon">@CategoryIcon(item.Category)</span>
+                            </div>
+
+                            <div class="card-body d-flex flex-column">
+                                <div class="mb-auto">
+                                    <div class="sf-fi-source-badge">
+                                        <i class="bi bi-globe me-1"></i>USDA
+                                    </div>
+                                    <h5 class="sf-ps-title">@item.Name</h5>
+                                    @if (!string.IsNullOrEmpty(item.Brand))
+                                    {
+                                        <p class="sf-ps-brand">🏷️ @item.Brand</p>
+                                    }
+                                    @if (alreadyExists)
+                                    {
+                                        <div class="sf-fi-exists-badge">
+                                            <i class="bi bi-check-circle-fill me-1"></i>Вже є в локальній базі
+                                        </div>
+                                    }
+                                </div>
+
+                                <div class="sf-ps-macro-row mt-2">
+                                    <div class="sf-ps-macro sf-ps-macro--cal">
+                                        <span class="sf-ps-macro-val">@item.CaloriesPer100g</span>
+                                        <span class="sf-ps-macro-lbl">ккал</span>
+                                    </div>
+                                    <div class="sf-ps-macro sf-ps-macro--prot">
+                                        <span class="sf-ps-macro-val">@item.ProteinPer100g</span>
+                                        <span class="sf-ps-macro-lbl">білки</span>
+                                    </div>
+                                    <div class="sf-ps-macro sf-ps-macro--fat">
+                                        <span class="sf-ps-macro-val">@item.FatPer100g</span>
+                                        <span class="sf-ps-macro-lbl">жири</span>
+                                    </div>
+                                    <div class="sf-ps-macro sf-ps-macro--carb">
+                                        <span class="sf-ps-macro-val">@item.CarbsPer100g</span>
+                                        <span class="sf-ps-macro-lbl">вуглев.</span>
+                                    </div>
+                                </div>
+                                <p class="sf-ps-per100">на 100 г</p>
+                            </div>
+
+                            <div class="sf-ps-footer">
+                                @if (alreadyExists)
+                                {
+                                    <a asp-controller="ProductSearch" asp-action="Index"
+                                       asp-route-searchTerm="@item.Name"
+                                       class="btn btn-outline-secondary btn-sm w-100">
+                                           <i class="bi bi-search me-1"></i>Знайти в локальній базі
+                                    </a>
+                                }
+                                else
+                                {
+                                    <form asp-controller="FoodImport" asp-action="Import" method="post">
+                                        <input type="hidden" name="Name"            value="@item.Name" />
+                                        <input type="hidden" name="Brand"           value="@item.Brand" />
+                                        <input type="hidden" name="CaloriesPer100g" value="@item.CaloriesPer100g" />
+                                        <input type="hidden" name="ProteinPer100g"  value="@item.ProteinPer100g" />
+                                        <input type="hidden" name="FatPer100g"      value="@item.FatPer100g" />
+                                        <input type="hidden" name="CarbsPer100g"    value="@item.CarbsPer100g" />
+                                        <input type="hidden" name="IsVerified"      value="true" />
+                                        <input type="hidden" name="Category"        value="@((int)FoodCategory.General)" />
+                                        <button type="submit" class="btn btn-outline-primary btn-sm w-100">
+                                            <i class="bi bi-cloud-download me-1"></i>Імпортувати до бази
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+
                         </div>
                     </div>
-                </div>
-            }
-        </div>
-    }
+                }
+            </div>
+        }
+    </div>
+
 </div>
+
+@section Scripts {
+<script>
+(function () {
+    const form     = document.getElementById('sf-fi-form');
+    const skeleton = document.getElementById('sf-fi-skeleton');
+    const results  = document.getElementById('sf-fi-results');
+    const btn      = document.getElementById('sf-fi-btn');
+    const btnText  = document.getElementById('sf-fi-btn-text');
+    const btnSpin  = document.getElementById('sf-fi-btn-spinner');
+
+    if (!form) return;
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const url = new URL(form.action || location.href, location.origin);
+        new FormData(form).forEach((v, k) => {
+            if (v) url.searchParams.set(k, v);
+            else   url.searchParams.delete(k);
+        });
+
+        results.classList.add('d-none');
+        skeleton.classList.remove('d-none');
+        btn.disabled = true;
+        btnText.classList.add('d-none');
+        btnSpin.classList.remove('d-none');
+
+        history.pushState(null, '', url.toString());
+
+        fetch(url.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(r => r.text())
+            .then(html => {
+                const doc   = new DOMParser().parseFromString(html, 'text/html');
+                const fresh = doc.getElementById('sf-fi-results');
+                if (fresh) results.innerHTML = fresh.innerHTML;
+            })
+            .catch(() => { location.href = url.toString(); })
+            .finally(() => {
+                skeleton.classList.add('d-none');
+                results.classList.remove('d-none');
+                btn.disabled = false;
+                btnText.classList.remove('d-none');
+                btnSpin.classList.add('d-none');
+            });
+    });
+})();
+</script>
+}

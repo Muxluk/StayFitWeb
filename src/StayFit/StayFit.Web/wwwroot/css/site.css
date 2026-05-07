@@ -487,6 +487,63 @@ button.accept-policy {
     animation: sf-progress-pulse 0.8s ease-in-out 2;
 }
 
+/* ─── Food category picker ───────────────────────────────────────────────── */
+.sf-category-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+@media (max-width: 480px) {
+    .sf-category-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.sf-cat-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.5rem 0.25rem;
+    border: 2px solid #dee2e6;
+    border-radius: 0.5rem;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, transform 0.1s;
+    user-select: none;
+}
+
+.sf-cat-btn:hover {
+    border-color: var(--primary-color);
+    background: #f0faf0;
+    transform: translateY(-1px);
+}
+
+.sf-cat-btn.active {
+    border-color: var(--primary-color);
+    background: #e8f5e9;
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+}
+
+.sf-cat-icon {
+    font-size: 1.4rem;
+    line-height: 1;
+}
+
+.sf-cat-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-align: center;
+    color: #495057;
+    line-height: 1.2;
+}
+
+.sf-cat-btn.active .sf-cat-label {
+    color: var(--primary-color);
+}
+
 /* ─── Quick-add water buttons ────────────────────────────────────────────── */
 .water-btn {
     font-weight: 600;
@@ -528,5 +585,311 @@ button.accept-policy {
     }
 }
 
+/* ─── Skeleton shimmer ────────────────────────────────────────────────────── */
+@keyframes sf-shimmer {
+    0%   { background-position: -400px 0; }
+    100% { background-position:  400px 0; }
+}
 
+.sf-skeleton-shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 800px 100%;
+    animation: sf-shimmer 1.4s infinite linear;
+    border-radius: 0.375rem;
+}
+
+.sf-skeleton-line {
+    height: 0.9rem;
+    border-radius: 0.375rem;
+    width: 80%;
+}
+
+.sf-skeleton-line--lg {
+    height: 1.1rem;
+    width: 70%;
+}
+
+.sf-skeleton-line--sm {
+    height: 0.75rem;
+    width: 45%;
+}
+
+.sf-skeleton-macro {
+    height: 3.5rem;
+    border-radius: 0.5rem;
+    flex: 1;
+}
+
+/* ─── Product search cards ────────────────────────────────────────────────── */
+.sf-ps-field-label {
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+}
+
+.sf-ps-search-btn {
+    font-weight: 600;
+}
+
+/* Card */
+.sf-ps-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    background: var(--surface-color);
+    box-shadow: var(--shadow-card);
+    transition: box-shadow 0.2s, transform 0.15s;
+}
+
+.sf-ps-card:hover {
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-2px);
+}
+
+/* Image container — fixed height for uniform cards */
+.sf-ps-img-wrap {
+    width: 100%;
+    height: 160px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #f8f9fa;
+}
+
+.sf-ps-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* No-image placeholder */
+.sf-ps-no-img {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f1f8f1, #e8f5e9);
+}
+
+.sf-ps-no-img-icon {
+    font-size: 3.5rem;
+    line-height: 1;
+    opacity: 0.7;
+}
+
+/* Card body text */
+.sf-ps-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.sf-ps-brand {
+    font-size: 0.8rem;
+    color: var(--secondary-text-color);
+    margin-bottom: 0.5rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sf-ps-badges {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
+}
+
+.sf-ps-category-badge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.55rem;
+    border-radius: 1rem;
+    background: #e8f5e9;
+    color: var(--primary-color);
+    border: 1px solid #c8e6c9;
+    white-space: nowrap;
+}
+
+.sf-ps-verified {
+    font-size: 0.72rem;
+}
+
+/* Macro row */
+.sf-ps-macro-row {
+    display: flex;
+    gap: 0.4rem;
+    margin-top: auto;
+}
+
+.sf-ps-macro {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.35rem 0.2rem;
+    border-radius: 0.5rem;
+    min-width: 0;
+}
+
+.sf-ps-macro-val {
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.sf-ps-macro-lbl {
+    font-size: 0.62rem;
+    color: var(--secondary-text-color);
+    white-space: nowrap;
+}
+
+.sf-ps-macro--cal  { background: #fff8e1; }
+.sf-ps-macro--cal  .sf-ps-macro-val { color: #e65100; }
+.sf-ps-macro--prot { background: #e3f2fd; }
+.sf-ps-macro--prot .sf-ps-macro-val { color: #0277bd; }
+.sf-ps-macro--fat  { background: #fff3e0; }
+.sf-ps-macro--fat  .sf-ps-macro-val { color: #f57c00; }
+.sf-ps-macro--carb { background: #e8f5e9; }
+.sf-ps-macro--carb .sf-ps-macro-val { color: #2e7d32; }
+
+.sf-ps-per100 {
+    font-size: 0.68rem;
+    color: var(--secondary-text-color);
+    text-align: center;
+    margin-top: 0.3rem;
+    margin-bottom: 0;
+}
+
+/* Footer */
+.sf-ps-footer {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--border-color);
+    background: #fafafa;
+    flex-shrink: 0;
+}
+
+.sf-ps-qty {
+    width: 72px;
+    flex-shrink: 0;
+}
+
+/* Empty state */
+.sf-ps-empty {
+    padding: 3rem 1rem;
+    text-align: center;
+}
+
+.sf-ps-empty-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    line-height: 1;
+}
+
+/* Mobile adjustments */
+@media (max-width: 576px) {
+    .sf-ps-img-wrap {
+        height: 140px;
+    }
+
+    .sf-ps-macro-val {
+        font-size: 0.82rem;
+    }
+
+    .sf-ps-macro-lbl {
+        font-size: 0.58rem;
+    }
+
+    .sf-ps-title {
+        font-size: 0.9rem;
+    }
+
+    .sf-ps-footer {
+        padding: 0.6rem 0.75rem;
+    }
+}
+
+/* ─── Food Import page ────────────────────────────────────────────────────── */
+.sf-fi-info-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.9rem 1.1rem;
+    background: linear-gradient(135deg, #e3f2fd, #f0f7ff);
+    border: 1px solid #b3d9f7;
+    border-radius: 0.75rem;
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+.sf-fi-info-icon {
+    font-size: 1.75rem;
+    line-height: 1;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+
+/* Source badge on card */
+.sf-fi-source-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #0277bd;
+    background: #e3f2fd;
+    border: 1px solid #b3d9f7;
+    border-radius: 0.35rem;
+    padding: 0.1rem 0.45rem;
+    margin-bottom: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* "Already exists" badge */
+.sf-fi-exists-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #2e7d32;
+    background: #e8f5e9;
+    border: 1px solid #c8e6c9;
+    border-radius: 0.4rem;
+    padding: 0.2rem 0.6rem;
+    margin-top: 0.3rem;
+}
+
+/* Card with "exists" tint */
+.sf-fi-card--exists {
+    border-color: #a5d6a7 !important;
+}
+
+.sf-fi-card--exists .sf-ps-img-wrap {
+    background: linear-gradient(135deg, #e8f5e9, #f1f8f1);
+}
+
+/* No-image bg override for import (blue tint) */
+.sf-fi-no-img {
+    background: linear-gradient(135deg, #e3f2fd, #f0f7ff) !important;
+}
+
+/* Admin category page */
+.sf-admin-category-id-col {
+    width: 50px;
+}
+
+.sf-admin-category-switch {
+    width: 2.5rem;
+    height: 1.3rem;
+    cursor: pointer;
+}
 

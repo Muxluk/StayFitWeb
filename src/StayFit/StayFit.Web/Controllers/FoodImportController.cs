@@ -19,12 +19,18 @@ public class FoodImportController : BaseController
     public async Task<IActionResult> Index(string? searchTerm)
     {
         ViewBag.SearchTerm = searchTerm;
-        
+
         IEnumerable<Food> results = Array.Empty<Food>();
-        
+
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
             results = await _foodImportService.SearchGlobalAsync(searchTerm);
+
+            if (results.Any())
+            {
+                var existingNames = await _foodImportService.GetExistingNamesAsync(results.Select(r => r.Name));
+                ViewBag.ExistingNames = existingNames;
+            }
         }
 
         return View(results);

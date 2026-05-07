@@ -2,14 +2,16 @@
 @using StayFit.Domain.Enums
 
 @{
-    ViewData["Title"] = "Пошук за штрих-кодом";
+    ViewData["Title"] = "Сканування штрих-коду";
     var barcodeSearchTerm = TempData["BarcodeSearchTerm"] as string;
 }
 
 <div class="container mt-4">
-    <h2>Пошук продуктів</h2>
+    <div class="d-flex align-items-center mb-3">
+        <h2 class="mb-0">Пошук продуктів</h2>
+    </div>
 
-    <ul class="nav nav-tabs mb-4 mt-3">
+    <ul class="nav nav-tabs mb-4">
         <li class="nav-item">
             <a class="nav-link" asp-controller="ProductSearch" asp-action="Index">Локальна база</a>
         </li>
@@ -17,79 +19,193 @@
             <a class="nav-link" asp-controller="FoodImport" asp-action="Index">Пошук у світовій базі</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="#">Пошук за штрих-кодом</a>
+            <a class="nav-link active" aria-current="page" href="#">Штрих-код</a>
         </li>
     </ul>
 
-    <form method="get" asp-controller="Barcode" asp-action="Scan" class="row g-3 mb-4 mt-2">
-        <div class="col-md-10">
-            <input type="text" name="barcode" class="form-control" placeholder="Введіть штрих-код (наприклад, 867824000001)..." value="@barcodeSearchTerm" required />
-        </div>
-        <div class="col-md-2">
-            <button type="submit" class="btn btn-primary w-100">Знайти</button>
-        </div>
-    </form>
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex align-items-start gap-3 mb-4">
+                <div class="bg-dark text-white rounded p-3 text-center flex-shrink-0" style="min-width:56px;">
+                    <i class="bi bi-upc-scan fs-2"></i>
+                </div>
+                <div>
+                    <h6 class="mb-1 fw-semibold">Пошук за штрих-кодом (GTIN / EAN / UPC)</h6>
+                    <p class="text-muted small mb-0">
+                        Введіть цифровий штрих-код з упаковки продукту. Пошук виконується через
+                        <strong>USDA FoodData Central</strong> — базу з сотнями тисяч продуктів.
+                        Знайдений продукт можна одразу додати до щоденника або імпортувати до своєї бази.
+                    </p>
+                </div>
+            </div>
 
-    @if (Model == null && !string.IsNullOrEmpty(barcodeSearchTerm))
-    {
-        <div class="alert alert-warning">
-            Продукт зі штрих-кодом "@barcodeSearchTerm" не знайдено в базі USDA.
-        </div>
-    }
-    else if (Model != null)
-    {
-        var item = Model.Food;
-        <div class="row row-cols-1 row-cols-md-3 g-4">
-            <div class="col">
-                <div class="card h-100 shadow-sm border-info">
-                    <div class="card-body">
-                        <h5 class="card-title">@item.Name</h5>
-                        @if (!string.IsNullOrEmpty(item.Brand))
-                        {
-                            <h6 class="card-subtitle mb-2 text-muted">@item.Brand</h6>
-                        }
-                        
-                        <p class="card-text mb-1">
-                            <small class="text-muted">Джерело:</small> <strong>USDA FoodData Central</strong><br/>
-                            <small class="text-muted">Штрих-код:</small> <strong>@item.Barcode</strong><br/>
-                            <small class="text-muted">Ккал/100г:</small> <strong>@item.CaloriesPer100g</strong><br/>
-                            <small class="text-muted">Б/Ж/В:</small> @item.ProteinPer100g / @item.FatPer100g / @item.CarbsPer100g
-                        </p>
+            <form id="sf-bc-form" method="get" asp-controller="Barcode" asp-action="Scan" class="row g-2 align-items-end">
+                <div class="col-12 col-sm-8 col-md-9">
+                    <label class="form-label text-muted small">Штрих-код продукту</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-upc"></i></span>
+                        <input type="text" name="barcode" id="sf-bc-input"
+                               class="form-control form-control-lg"
+                               placeholder="Наприклад: 867824000001"
+                               value="@barcodeSearchTerm"
+                               inputmode="numeric" pattern="[0-9]*"
+                               autocomplete="off" />
                     </div>
-                    <div class="card-footer bg-transparent border-top-0">
-                        @if (Model.ExistsInLocalDb)
-                        {
-                            <form asp-controller="Food" asp-action="AddToLog" method="post" class="d-flex">
-                                <input type="hidden" name="foodId" value="@item.Id" />
-                                <input type="number" name="quantity" class="form-control form-control-sm me-2" placeholder="Вага (г)" value="100" min="1" required />
-                                <button type="submit" class="btn btn-outline-success btn-sm w-100">В щоденник</button>
-                            </form>
-                            <small class="text-success mt-2 d-block text-center">Цей продукт вже є у вашій базі.</small>
-                        }
-                        else
-                        {
-                            <form asp-controller="FoodImport" asp-action="Import" method="post" class="d-flex">
-                                <input type="hidden" name="Name" value="@item.Name" />
-                                <input type="hidden" name="Brand" value="@item.Brand" />
-                                <input type="hidden" name="Barcode" value="@item.Barcode" />
-                                <input type="hidden" name="CaloriesPer100g" value="@item.CaloriesPer100g" />
-                                <input type="hidden" name="ProteinPer100g" value="@item.ProteinPer100g" />
-                                <input type="hidden" name="FatPer100g" value="@item.FatPer100g" />
-                                <input type="hidden" name="CarbsPer100g" value="@item.CarbsPer100g" />
-                                <input type="hidden" name="IsVerified" value="true" />
-                                <input type="hidden" name="Category" value="@((int)FoodCategory.General)" />
-                                <button type="submit" class="btn btn-outline-primary btn-sm w-100">Імпортувати до моїх продуктів</button>
-                            </form>
-                        }
+                    <div class="form-text">Зазвичай 8, 12 або 13 цифр під смугами на упаковці</div>
+                </div>
+                <div class="col-12 col-sm-4 col-md-3">
+                    <button type="submit" class="btn btn-primary btn-lg w-100" id="sf-bc-btn">
+                        <span id="sf-bc-btn-text"><i class="bi bi-search me-1"></i>Знайти</span>
+                        <span id="sf-bc-btn-spin" class="d-none">
+                            <span class="spinner-border spinner-border-sm me-1"></span>Пошук...
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(barcodeSearchTerm))
+    {
+        if (Model == null)
+        {
+            <div class="card border-warning shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-exclamation-circle display-4 text-warning mb-3"></i>
+                    <h5>Продукт не знайдено</h5>
+                    <p class="text-muted">
+                        Штрих-код <strong>@barcodeSearchTerm</strong> не знайдено у базі USDA FoodData Central.<br />
+                        Перевірте правильність введеного коду або спробуйте пошук за назвою.
+                    </p>
+                    <div class="d-flex justify-content-center gap-2 mt-3">
+                        <a asp-controller="FoodImport" asp-action="Index" class="btn btn-outline-primary">
+                            <i class="bi bi-globe me-1"></i>Пошук за назвою
+                        </a>
+                        <a asp-controller="Food" asp-action="Create" class="btn btn-outline-secondary">
+                            <i class="bi bi-plus-lg me-1"></i>Додати вручну
+                        </a>
                     </div>
                 </div>
             </div>
-        </div>
+        }
+        else
+        {
+            var item = Model.Food;
+            <div class="card border-0 shadow-sm" style="max-width: 540px;">
+                <div class="card-header d-flex align-items-center gap-2 bg-success-subtle border-success-subtle">
+                    <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                    <span class="fw-semibold text-success">Продукт знайдено</span>
+                    @if (Model.ExistsInLocalDb)
+                    {
+                        <span class="badge bg-success ms-auto">Вже у вашій базі</span>
+                    }
+                </div>
+                <div class="card-body">
+                    <h5 class="fw-bold mb-1">@item.Name</h5>
+                    @if (!string.IsNullOrEmpty(item.Brand))
+                    {
+                        <p class="text-muted mb-3"><i class="bi bi-tag me-1"></i>@item.Brand</p>
+                    }
+                    <div class="mb-3 small text-muted">
+                        <i class="bi bi-upc me-1"></i>Штрих-код: <strong>@item.Barcode</strong>
+                        &nbsp;·&nbsp;<i class="bi bi-database me-1"></i>USDA FoodData Central
+                    </div>
+
+                    <hr />
+
+                    <h6 class="text-muted text-uppercase small mb-3">Харчова цінність на 100 г</h6>
+                    <div class="row g-2 text-center mb-3">
+                        <div class="col-6 col-sm-3">
+                            <div class="card bg-warning bg-opacity-10 border-0 py-2">
+                                <div class="fw-bold text-warning fs-5">@item.CaloriesPer100g</div>
+                                <small class="text-muted">ккал</small>
+                            </div>
+                        </div>
+                        <div class="col-6 col-sm-3">
+                            <div class="card bg-info bg-opacity-10 border-0 py-2">
+                                <div class="fw-bold text-info fs-5">@item.ProteinPer100g</div>
+                                <small class="text-muted">Білки (г)</small>
+                            </div>
+                        </div>
+                        <div class="col-6 col-sm-3">
+                            <div class="card bg-danger bg-opacity-10 border-0 py-2">
+                                <div class="fw-bold text-danger fs-5">@item.FatPer100g</div>
+                                <small class="text-muted">Жири (г)</small>
+                            </div>
+                        </div>
+                        <div class="col-6 col-sm-3">
+                            <div class="card bg-success bg-opacity-10 border-0 py-2">
+                                <div class="fw-bold text-success fs-5">@item.CarbsPer100g</div>
+                                <small class="text-muted">Вуглеводи (г)</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Model.ExistsInLocalDb)
+                    {
+                        <div class="alert alert-success py-2 mb-3 small">
+                            <i class="bi bi-check-circle me-1"></i>Цей продукт вже є у вашій базі. Можна додати до щоденника.
+                        </div>
+                        <form asp-controller="Food" asp-action="AddToLog" method="post" class="d-flex gap-2">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="foodId" value="@item.Id" />
+                            <div class="input-group">
+                                <input type="number" name="quantity" class="form-control"
+                                       placeholder="Кількість (г)" value="100" min="1" max="9999" />
+                                <span class="input-group-text">г</span>
+                            </div>
+                            <button type="submit" class="btn btn-success text-nowrap">
+                                <i class="bi bi-plus-lg me-1"></i>В щоденник
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <form asp-controller="FoodImport" asp-action="Import" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="Name"            value="@item.Name" />
+                            <input type="hidden" name="Brand"           value="@item.Brand" />
+                            <input type="hidden" name="Barcode"         value="@item.Barcode" />
+                            <input type="hidden" name="CaloriesPer100g" value="@item.CaloriesPer100g" />
+                            <input type="hidden" name="ProteinPer100g"  value="@item.ProteinPer100g" />
+                            <input type="hidden" name="FatPer100g"      value="@item.FatPer100g" />
+                            <input type="hidden" name="CarbsPer100g"    value="@item.CarbsPer100g" />
+                            <input type="hidden" name="IsVerified"      value="true" />
+                            <input type="hidden" name="Category"        value="@((int)FoodCategory.General)" />
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-cloud-download me-1"></i>Імпортувати до моїх продуктів
+                            </button>
+                        </form>
+                    }
+                </div>
+            </div>
+        }
     }
     else
     {
-        <div class="alert alert-info">
-            Введіть штрих-код продукту (GTIN/UPC) для пошуку.
+        <div class="card border-0 bg-light">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-upc-scan display-4 text-muted mb-3"></i>
+                <h5 class="text-muted">Готовий до пошуку</h5>
+                <p class="text-muted small">Введіть штрих-код з упаковки продукту вище</p>
+            </div>
         </div>
     }
 </div>
+
+@section Scripts {
+<script>
+(function () {
+    const form = document.getElementById('sf-bc-form');
+    const btn = document.getElementById('sf-bc-btn');
+    const btnText = document.getElementById('sf-bc-btn-text');
+    const btnSpin = document.getElementById('sf-bc-btn-spin');
+    if (!form) return;
+    form.addEventListener('submit', function () {
+        btn.disabled = true;
+        btnText.classList.add('d-none');
+        btnSpin.classList.remove('d-none');
+    });
+})();
+</script>
+}

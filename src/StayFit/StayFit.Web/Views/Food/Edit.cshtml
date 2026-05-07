@@ -4,46 +4,39 @@
     ViewData["Title"] = "Редагувати продукт";
 }
 
-<h1>Редагувати продукт</h1>
+<div class="container mt-4">
+    <div class="d-flex align-items-center mb-4">
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm me-3">
+            <i class="bi bi-arrow-left"></i> Назад
+        </a>
+        <h2 class="mb-0">Редагувати продукт</h2>
+    </div>
 
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <input type="hidden" asp-for="OwnerUserId" />
-            <input type="hidden" asp-for="CreatedByEmail" />
-            <div class="form-group mb-3">
-                <label asp-for="Name" class="control-label">Назва</label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-9 col-lg-7">
+            <div class="card sf-card">
+                <div class="card-body">
+                    <form asp-action="Edit">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="OwnerUserId" />
+                        <input type="hidden" asp-for="CreatedByEmail" />
+                        <input type="hidden" asp-for="IsApproved" />
+                        @await Html.PartialAsync("_FoodFormFields", Model)
+                        <div class="d-grid gap-2 d-sm-flex mt-2">
+                            <button type="submit" class="btn btn-primary btn-lg flex-grow-1">Зберегти зміни</button>
+                            <a asp-action="Index" class="btn btn-outline-secondary btn-lg">Скасувати</a>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="form-group mb-3">
-                <label asp-for="CaloriesPer100g" class="control-label">Калорії (на 100г)</label>
-                <input asp-for="CaloriesPer100g" class="form-control" type="number" step="0.1" />
-                <span asp-validation-for="CaloriesPer100g" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-3">
-                <label asp-for="ProteinPer100g" class="control-label">Білки (на 100г)</label>
-                <input asp-for="ProteinPer100g" class="form-control" type="number" step="0.1" />
-                <span asp-validation-for="ProteinPer100g" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-3">
-                <label asp-for="FatPer100g" class="control-label">Жири (на 100г)</label>
-                <input asp-for="FatPer100g" class="form-control" type="number" step="0.1" />
-                <span asp-validation-for="FatPer100g" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-3">
-                <label asp-for="CarbsPer100g" class="control-label">Вуглеводи (на 100г)</label>
-                <input asp-for="CarbsPer100g" class="form-control" type="number" step="0.1" />
-                <span asp-validation-for="CarbsPer100g" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Зберегти зміни" class="btn btn-success" />
-                <a asp-action="Index" class="btn btn-secondary">Назад до списку</a>
-            </div>
-        </form>
+            @if (!Model.IsApproved)
+            {
+                <div class="alert alert-warning mt-3">
+                    <small>Продукт на модерації. Після збереження змін продукт знову потрапить на перевірку.</small>
+                </div>
+            }
+        </div>
     </div>
 </div>
 

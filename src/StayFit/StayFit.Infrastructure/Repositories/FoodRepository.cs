@@ -60,7 +60,8 @@ public class FoodRepository : Repository<Food>, IFoodRepository
     {
         return await DbSet
             .Where(f => f.IsApproved == false)
-            .OrderByDescending(f => f.Id)
+            .OrderByDescending(f => f.SubmittedAt)
+            .ThenByDescending(f => f.Id)
             .ToListAsync();
     }
 

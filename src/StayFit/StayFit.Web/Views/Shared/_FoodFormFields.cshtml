@@ -1,0 +1,193 @@
+@model StayFit.Domain.Entities.Food
+@using StayFit.Domain.Enums
+@*
+    Shared form fields for Food Create / Edit.
+    Caller must wrap this in <form> and provide hidden fields + submit button.
+*@
+
+@* ── Секція 1: Назва та категорія ── *@
+<div class="mb-4">
+    <h6 class="text-muted text-uppercase small fw-semibold mb-3">Основна інформація</h6>
+
+    <div class="mb-3">
+        <label asp-for="Name" class="form-label fw-semibold">Назва продукту</label>
+        <input asp-for="Name" class="form-control form-control-lg"
+               placeholder="Наприклад: Куряча грудка варена" autocomplete="off" />
+        <span asp-validation-for="Name" class="text-danger small"></span>
+    </div>
+
+    <div class="mb-1">
+        <label class="form-label fw-semibold">Категорія</label>
+        <input type="hidden" asp-for="Category" id="categoryInput" />
+        <div class="sf-category-grid" id="categoryGrid">
+            @{
+                var cats = new[]
+                {
+                    ("General",    "🍽️", "Загальне",          "secondary"),
+                    ("Meat",       "🥩", "М'ясо",              "danger"),
+                    ("Fish",       "🐟", "Риба",               "info"),
+                    ("Dairy",      "🥛", "Молочне",            "primary"),
+                    ("Vegetables", "🥦", "Овочі",              "success"),
+                    ("Fruits",     "🍎", "Фрукти",             "warning"),
+                    ("Sweets",     "🍰", "Солодощі",           "pink"),
+                    ("Drinks",     "🥤", "Напої",              "cyan"),
+                };
+                foreach (var (val, icon, label, color) in cats)
+                {
+                    var isSelected = (Model?.Category.ToString() ?? "General") == val;
+                    <button type="button"
+                            class="sf-cat-btn @(isSelected ? "active" : "")"
+                            data-value="@val"
+                            data-color="@color">
+                        <span class="sf-cat-icon">@icon</span>
+                        <span class="sf-cat-label">@label</span>
+                    </button>
+                }
+            }
+        </div>
+        <span asp-validation-for="Category" class="text-danger small"></span>
+    </div>
+</div>
+
+<hr class="my-4" />
+
+@* ── Секція 2: КБЖВ на 100 г ── *@
+<div class="mb-4">
+    <h6 class="text-muted text-uppercase small fw-semibold mb-1">Харчова цінність</h6>
+    <p class="text-muted small mb-3">Всі значення вказуються <strong>на 100 г</strong> продукту</p>
+
+    <div class="mb-3">
+        <label asp-for="CaloriesPer100g" class="form-label fw-semibold">Калорійність</label>
+        <div class="input-group">
+            <span class="input-group-text bg-warning-subtle text-warning fw-bold">🔥</span>
+            <input asp-for="CaloriesPer100g" id="inp_cal"
+                   class="form-control form-control-lg"
+                   type="number" step="0.1" min="0" placeholder="0" />
+            <span class="input-group-text">ккал / 100 г</span>
+        </div>
+        <span asp-validation-for="CaloriesPer100g" class="text-danger small"></span>
+    </div>
+
+    <div class="row g-3 mb-1">
+        <div class="col-sm-4">
+            <label asp-for="ProteinPer100g" class="form-label fw-semibold">Білки</label>
+            <div class="input-group">
+                <span class="input-group-text bg-info-subtle text-info fw-bold">Б</span>
+                <input asp-for="ProteinPer100g" id="inp_prot"
+                       class="form-control" type="number" step="0.1" min="0" placeholder="0" />
+                <span class="input-group-text">г</span>
+            </div>
+            <span asp-validation-for="ProteinPer100g" class="text-danger small"></span>
+        </div>
+        <div class="col-sm-4">
+            <label asp-for="FatPer100g" class="form-label fw-semibold">Жири</label>
+            <div class="input-group">
+                <span class="input-group-text bg-warning-subtle text-warning fw-bold">Ж</span>
+                <input asp-for="FatPer100g" id="inp_fat"
+                       class="form-control" type="number" step="0.1" min="0" placeholder="0" />
+                <span class="input-group-text">г</span>
+            </div>
+            <span asp-validation-for="FatPer100g" class="text-danger small"></span>
+        </div>
+        <div class="col-sm-4">
+            <label asp-for="CarbsPer100g" class="form-label fw-semibold">Вуглеводи</label>
+            <div class="input-group">
+                <span class="input-group-text bg-success-subtle text-success fw-bold">В</span>
+                <input asp-for="CarbsPer100g" id="inp_carb"
+                       class="form-control" type="number" step="0.1" min="0" placeholder="0" />
+                <span class="input-group-text">г</span>
+            </div>
+            <span asp-validation-for="CarbsPer100g" class="text-danger small"></span>
+        </div>
+    </div>
+    <div class="text-muted small mt-2">
+        Б + Ж + В не обов'язково дорівнюють 100 г — в продукті є вода, клітковина тощо
+    </div>
+</div>
+
+<hr class="my-4" />
+
+@* ── Секція 3: Попередній перегляд порції ── *@
+<div class="mb-4">
+    <h6 class="text-muted text-uppercase small fw-semibold mb-3">Перегляд для порції</h6>
+
+    <div class="d-flex align-items-center gap-3 mb-3">
+        <label class="form-label fw-semibold mb-0 text-nowrap">Розмір порції:</label>
+        <div class="input-group" style="max-width: 160px;">
+            <input type="number" id="previewGrams" class="form-control"
+                   value="100" min="1" max="9999" step="1" />
+            <span class="input-group-text">г</span>
+        </div>
+    </div>
+
+    <div class="card border-0 bg-light">
+        <div class="card-body py-3">
+            <div class="row text-center g-0">
+                <div class="col-6 col-sm-3 border-end">
+                    <div class="text-warning fw-bold fs-5" id="prev_cal">–</div>
+                    <small class="text-muted">ккал</small>
+                </div>
+                <div class="col-6 col-sm-3 border-end">
+                    <div class="text-info fw-bold fs-5" id="prev_prot">–</div>
+                    <small class="text-muted">г білків</small>
+                </div>
+                <div class="col-6 col-sm-3 border-end mt-2 mt-sm-0">
+                    <div class="text-warning fw-bold fs-5" id="prev_fat">–</div>
+                    <small class="text-muted">г жирів</small>
+                </div>
+                <div class="col-6 col-sm-3 mt-2 mt-sm-0">
+                    <div class="text-success fw-bold fs-5" id="prev_carb">–</div>
+                    <small class="text-muted">г вуглев.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(function () {
+    // ── Категорія ─────────────────────────────────────────────────────────
+    const catInput = document.getElementById('categoryInput');
+    document.querySelectorAll('.sf-cat-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.sf-cat-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            catInput.value = this.dataset.value;
+        });
+    });
+
+    // ── Попередній перегляд порції ────────────────────────────────────────
+    const inpCal  = document.getElementById('inp_cal');
+    const inpProt = document.getElementById('inp_prot');
+    const inpFat  = document.getElementById('inp_fat');
+    const inpCarb = document.getElementById('inp_carb');
+    const inpG    = document.getElementById('previewGrams');
+
+    const prevCal  = document.getElementById('prev_cal');
+    const prevProt = document.getElementById('prev_prot');
+    const prevFat  = document.getElementById('prev_fat');
+    const prevCarb = document.getElementById('prev_carb');
+
+    function calcPreview() {
+        const g    = parseFloat(inpG.value)    || 0;
+        const cal  = parseFloat(inpCal.value)  || 0;
+        const prot = parseFloat(inpProt.value) || 0;
+        const fat  = parseFloat(inpFat.value)  || 0;
+        const carb = parseFloat(inpCarb.value) || 0;
+        const k = g / 100;
+        prevCal.textContent  = g ? (cal  * k).toFixed(0) : '–';
+        prevProt.textContent = g ? (prot * k).toFixed(1) : '–';
+        prevFat.textContent  = g ? (fat  * k).toFixed(1) : '–';
+        prevCarb.textContent = g ? (carb * k).toFixed(1) : '–';
+    }
+
+    [inpCal, inpProt, inpFat, inpCarb, inpG].forEach(el => {
+        if (el) el.addEventListener('input', calcPreview);
+    });
+
+    // Початковий розрахунок (для Edit з існуючими значеннями)
+    calcPreview();
+})();
+</script>
+}
