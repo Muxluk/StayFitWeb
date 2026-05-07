@@ -1,0 +1,35 @@
+@{
+    ViewData["Title"] = "Сторінку не знайдено";
+}
+
+<div class="error-page-container">
+    <div class="error-content">
+        <div class="error-illustration text-primary">
+            <i class="bi bi-question-circle"></i>
+        </div>
+        
+        <h1 class="error-code text-primary">404</h1>
+        <h2 class="error-title">Сторінку не знайдено</h2>
+        <p class="error-message">Вибачте, але сторінка, яку ви шукаєте, не існує або була видалена.</p>
+
+        <div class="alert alert-info mb-4">
+            <strong><i class="bi bi-lightbulb"></i> Спробуйте перейти на одну з цих сторінок:</strong>
+            <ul class="mb-0 mt-2">
+                <li><a href="@Url.Action("Index", "Home")" class="alert-link"><i class="bi bi-house"></i> Головна</a></li>
+                <li><a href="@Url.Action("Index", "Diary")" class="alert-link"><i class="bi bi-book"></i> Щоденник харчування</a></li>
+                <li><a href="@Url.Action("Daily", "Statistics")" class="alert-link"><i class="bi bi-bar-chart"></i> Статистика</a></li>
+                <li><a href="@Url.Action("Edit", "Profile")" class="alert-link"><i class="bi bi-person"></i> Мій профіль</a></li>
+                <li><a href="@Url.Action("Index", "Support")" class="alert-link"><i class="bi bi-chat"></i> Технічна підтримка</a></li>
+            </ul>
+        </div>
+
+        <div class="error-actions">
+            <a href="@Url.Action("Index", "Home")" class="btn btn-primary btn-lg">
+                <i class="bi bi-house"></i> На головну
+            </a>
+            <a href="javascript:window.history.back()" class="btn btn-outline-secondary btn-lg">
+                <i class="bi bi-arrow-left"></i> Повернутися назад
+            </a>
+        </div>
+    </div>
+</div>

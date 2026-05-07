@@ -17,13 +17,13 @@
 
             <div class="card shadow">
                 <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">👤 Мій профіль</h3>
+                    <h3 class="mb-0"><i class="bi bi-person-fill me-1"></i> Мій профіль</h3>
                 </div>
                 <div class="card-body">
                     @if (Model == null)
                     {
                         <div class="alert alert-warning" role="alert">
-                            ℹ️ Профіль не знайдено. <a href="@Url.Action("Edit", "Profile")">Створити профіль</a>
+                            <i class="bi bi-info-circle"></i> Профіль не знайдено. <a href="@Url.Action("Edit", "Profile")">Створити профіль</a>
                         </div>
                     }
                     else

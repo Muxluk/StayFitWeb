@@ -1,14 +1,95 @@
 @model StayFit.Web.Models.HttpErrorViewModel
 @{
     ViewData["Title"] = $"Помилка {Model.StatusCode}";
+    
+    var errorIcon = Model.StatusCode switch
+    {
+        404 => "bi-question-circle",
+        500 => "bi-exclamation-triangle-fill",
+        429 => "bi-clock-history",
+        _ => "bi-exclamation-circle"
+    };
+    
+    var errorColor = Model.StatusCode switch
+    {
+        404 => "primary",
+        500 => "danger",
+        429 => "warning",
+        _ => "secondary"
+    };
 }
 
-<div class="container py-5">
-    <div class="text-center">
-        <h1 class="display-4 text-danger">@Model.StatusCode</h1>
-        <h2 class="mb-3">@Model.Title</h2>
-        <p class="text-muted mb-4">@Model.Message</p>
+<div class="error-page-container">
+    <div class="error-content">
+        <div class="error-illustration text-@errorColor">
+            <i class="bi @errorIcon"></i>
+        </div>
+        
+        <h1 class="error-code text-@errorColor">@Model.StatusCode</h1>
+        <h2 class="error-title">@Model.Title</h2>
+        <p class="error-message">@Model.Message</p>
 
-        <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Повернутися на головну</a>
+        @if (Model.StatusCode == 404)
+        {
+            <div class="alert alert-info mb-4">
+                <strong><i class="bi bi-info-circle"></i> Корисні посилання:</strong>
+                <ul class="mb-0 mt-2">
+                    <li><a href="@Url.Action("Index", "Home")" class="alert-link">На головну</a></li>
+                    <li><a href="@Url.Action("Index", "Diary")" class="alert-link">Щоденник</a></li>
+                    <li><a href="@Url.Action("Daily", "Statistics")" class="alert-link">Статистика</a></li>
+                    <li><a href="@Url.Action("Edit", "Profile")" class="alert-link">Профіль</a></li>
+                </ul>
+            </div>
+        }
+
+        @if (Model.StatusCode == 500)
+        {
+            <div class="alert alert-warning mb-4">
+                <i class="bi bi-exclamation-triangle"></i> 
+                <strong>Що сталося?</strong> Наша система зустрілася з внутрішньою помилкою. Ми вже отримали звіт про цю проблему і працюємо над її вирішенням.
+            </div>
+        }
+
+        @if (Model.StatusCode == 429)
+        {
+            <div class="alert alert-danger mb-4">
+                <i class="bi bi-clock-history"></i>
+                <strong>Забагато запитів!</strong> Ви відправили занадто багато запитів за короткий час. Спробуйте повторити через кілька хвилин.
+                <div class="mt-3" id="rateLimitTimer"></div>
+            </div>
+        }
+
+        <div class="error-actions">
+            <a href="@Url.Action("Index", "Home")" class="btn btn-primary btn-lg">
+                <i class="bi bi-house"></i> На головну
+            </a>
+            <a href="javascript:window.history.back()" class="btn btn-outline-secondary btn-lg">
+                <i class="bi bi-arrow-left"></i> Назад
+            </a>
+        </div>
     </div>
 </div>
+
+@if (Model.StatusCode == 429)
+{
+    <script>
+        // Rate limit timer (example: 60 seconds)
+        const timerElement = document.getElementById('rateLimitTimer');
+        let secondsLeft = 60;
+        
+        function updateTimer() {
+            const minutes = Math.floor(secondsLeft / 60);
+            const seconds = secondsLeft % 60;
+            timerElement.innerHTML = `<strong>Повторити можна через: ${minutes}:${seconds.toString().padStart(2, '0')}</strong>`;
+            
+            if (secondsLeft > 0) {
+                secondsLeft--;
+                setTimeout(updateTimer, 1000);
+            } else {
+                timerElement.innerHTML = '<strong class="text-success">Спробуйте ще раз!</strong>';
+            }
+        }
+        
+        updateTimer();
+    </script>
+}

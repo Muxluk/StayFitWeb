@@ -1,0 +1,42 @@
+@{
+    ViewData["Title"] = "Внутрішня помилка сервера";
+}
+
+<div class="error-page-container">
+    <div class="error-content">
+        <div class="error-illustration text-danger">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+        </div>
+        
+        <h1 class="error-code text-danger">500</h1>
+        <h2 class="error-title">Внутрішня помилка сервера</h2>
+        <p class="error-message">На жаль, на сервері сталася непередбачена помилка. Це не ваша вина!</p>
+
+        <div class="alert alert-warning mb-4">
+            <strong><i class="bi bi-info-circle"></i> Що відбулося?</strong>
+            <p class="mt-2 mb-0">
+                Наша система зустрілася з проблемою під час обробки вашого запиту. 
+                Ми вже отримали автоматичний звіт про цю проблему та працюємо над її вирішенням.
+            </p>
+        </div>
+
+        <div class="alert alert-info mb-4">
+            <strong><i class="bi bi-gear"></i> Що ви можете зробити:</strong>
+            <ul class="mb-0 mt-2">
+                <li>Спробуйте оновити сторінку через кілька хвилин</li>
+                <li><a href="javascript:window.history.back()" class="alert-link">Повернутися на попередню сторінку</a></li>
+                <li><a href="@Url.Action("Index", "Home")" class="alert-link">Перейти на головну</a></li>
+                <li><a href="@Url.Action("Index", "Support")" class="alert-link">Звернутися до технічної підтримки</a></li>
+            </ul>
+        </div>
+
+        <div class="error-actions">
+            <button class="btn btn-primary btn-lg" onclick="window.location.reload()">
+                <i class="bi bi-arrow-clockwise"></i> Оновити сторінку
+            </button>
+            <a href="@Url.Action("Index", "Home")" class="btn btn-outline-secondary btn-lg">
+                <i class="bi bi-house"></i> На головну
+            </a>
+        </div>
+    </div>
+</div>

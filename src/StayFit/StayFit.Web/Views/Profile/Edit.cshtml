@@ -15,42 +15,42 @@
             @if (TempData["Success"] != null)
             {
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    ✅ @TempData["Success"]
+                    <i class="bi bi-check-circle"></i> @TempData["Success"]
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             }
             @if (TempData["Error"] != null)
             {
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    ❌ @TempData["Error"]
+                    <i class="bi bi-exclamation-circle"></i> @TempData["Error"]
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             }
             @if (TempData["SuccessMessage"] != null)
             {
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    ✅ @TempData["SuccessMessage"]
+                    <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             }
             @if (TempData["ErrorMessage"] != null)
             {
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    ❌ @TempData["ErrorMessage"]
+                    <i class="bi bi-exclamation-circle"></i> @TempData["ErrorMessage"]
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             }
 
             <!-- TABS для переключення між Профілем та Безпекою -->
-            <ul class="nav nav-tabs mb-4 border-0 profile-tabs" role="tablist">
+            <ul class="nav nav-tabs mb-4 profile-tabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link px-0 me-4 @(isSecurityTabActive ? "" : "active")" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane" type="button" role="tab">
-                        👤 Мой профіль
+                    <button class="nav-link @(isSecurityTabActive ? "" : "active")" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane">
+                        <i class="bi bi-person-circle"></i> Мій профіль
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link px-0 me-4 @(isSecurityTabActive ? "active" : "")" id="security-tab" data-bs-toggle="tab" data-bs-target="#security-tab-pane" type="button" role="tab">
-                        🔐 Безпека акаунту
+                    <button class="nav-link @(isSecurityTabActive ? "active" : "")" id="security-tab" data-bs-toggle="tab" data-bs-target="#security-tab-pane" type="button" role="tab" aria-controls="security-tab-pane">
+                        <i class="bi bi-lock-fill"></i> Безпека акаунту
                     </button>
                 </li>
             </ul>
@@ -59,14 +59,14 @@
                 <!-- TAB 1: ПРОФІЛЬ -->
                 <div class="tab-pane fade @(isSecurityTabActive ? "" : "show active")" id="profile-tab-pane" role="tabpanel">
                     <div class="card shadow profile-card">
-                        <div class="card-header profile-header text-white">
-                            <h3 class="mb-0">👤 Мій профіль</h3>
+                        <div class="card-header profile-header">
+                            <h3 class="mb-0"><i class="bi bi-person-fill"></i> Мій профіль</h3>
                         </div>
                         <div class="card-body">
                             <div class="row mb-4">
                                 <div class="col-lg-6">
                                     <div class="border rounded p-3 h-100 bg-light-subtle">
-                                        <h5 class="mb-3">Фото профілю</h5>
+                                        <h5 class="mb-3"><i class="bi bi-image"></i> Фото профілю</h5>
 
                                         @if (!string.IsNullOrWhiteSpace(profilePhotoPath))
                                         {
@@ -75,7 +75,10 @@
                                         else
                                         {
                                             <div class="d-flex align-items-center justify-content-center rounded border bg-white mb-3 profile-photo-placeholder">
-                                                <span class="text-muted">Фото ще не завантажено</span>
+                                                <div class="text-center">
+                                                    <i class="bi bi-person-square text-muted" style="font-size: 3rem;"></i>
+                                                    <div class="text-muted small">Фото ще не завантажено</div>
+                                                </div>
                                             </div>
                                         }
 
@@ -83,9 +86,9 @@
                                             @Html.AntiForgeryToken()
                                             <div class="mb-3">
                                                 <input class="form-control" type="file" name="photo" accept=".jpg,.png,image/jpeg,image/png" required />
-                                                <small class="text-muted">Дозволено: JPG, PNG</small>
+                                                <small class="text-muted">Дозволено: JPG, PNG | Макс. розмір: 5MB</small>
                                             </div>
-                                            <button type="submit" class="btn btn-outline-success">
+                                            <button type="submit" class="btn btn-outline-success w-100">
                                                 <i class="bi bi-upload"></i> Завантажити фото
                                             </button>
                                         </form>
@@ -96,8 +99,8 @@
                             @if (!ViewData.ModelState.IsValid)
                             {
                                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                    <h5>⚠️ Помилки у формі:</h5>
-                                    <ul class="mb-0">
+                                    <h5><i class="bi bi-exclamation-triangle"></i> Помилки у формі:</h5>
+                                    <ul class="mb-0 small">
                                         @foreach (var modelState in ViewData.ModelState.Values)
                                         {
                                             @foreach (var error in modelState.Errors)
@@ -118,7 +121,7 @@
                                         <label for="FullName" class="form-label"><strong>Ім'я</strong> <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control @(ViewData.ModelState["FullName"]?.Errors.Count > 0 ? "is-invalid" : "")" 
                                                id="FullName" name="FullName" value="@(Model?.FullName ?? "")" 
-                                               placeholder="Введіть Ваше ім'я" required>
+                                               placeholder="Вашу повне ім'я" required>
                                         @if (ViewData.ModelState["FullName"]?.Errors.Count > 0)
                                         {
                                             <div class="invalid-feedback d-block">
@@ -162,10 +165,10 @@
                                     </div>
 
                                     <div class="col-md-6 mb-3">
-                                        <label for="Weight" class="form-label"><strong>Вага</strong> (кг)</label>
+                                        <label for="Weight" class="form-label"><strong>Вага (кг)</strong></label>
                                         <input type="number" class="form-control @(ViewData.ModelState["Weight"]?.Errors.Count > 0 ? "is-invalid" : "")" 
                                                id="Weight" name="Weight" value="@(Model?.Weight?.ToString("F1") ?? "")" 
-                                               placeholder="Введіть Вашу вагу" step="0.1" min="20" max="500">
+                                               placeholder="60" step="0.1" min="20" max="500">
                                         @if (ViewData.ModelState["Weight"]?.Errors.Count > 0)
                                         {
                                             <div class="invalid-feedback d-block">
@@ -178,10 +181,10 @@
                                     </div>
 
                                     <div class="col-md-6 mb-3">
-                                        <label for="Height" class="form-label"><strong>Зріст</strong> (см)</label>
+                                        <label for="Height" class="form-label"><strong>Зріст (см)</strong></label>
                                         <input type="number" class="form-control @(ViewData.ModelState["Height"]?.Errors.Count > 0 ? "is-invalid" : "")" 
                                                id="Height" name="Height" value="@(Model?.Height?.ToString("F0") ?? "")" 
-                                               placeholder="Введіть Ваш зріст" step="1" min="100" max="250">
+                                               placeholder="170" step="1" min="100" max="250">
                                         @if (ViewData.ModelState["Height"]?.Errors.Count > 0)
                                         {
                                             <div class="invalid-feedback d-block">
@@ -198,6 +201,7 @@
                                         <input type="date" class="form-control @(ViewData.ModelState["DateOfBirth"]?.Errors.Count > 0 ? "is-invalid" : "")" 
                                                id="DateOfBirth" name="DateOfBirth" 
                                                value="@(Model?.DateOfBirth?.ToString("yyyy-MM-dd") ?? "")">
+                                        <small class="text-muted">Необов'язково</small>
                                         @if (ViewData.ModelState["DateOfBirth"]?.Errors.Count > 0)
                                         {
                                             <div class="invalid-feedback d-block">
@@ -207,14 +211,13 @@
                                                 }
                                             </div>
                                         }
-                                        <small class="text-muted">Необов'язково</small>
                                     </div>
                                 </div>
 
                                 <hr class="my-4">
 
                                 <div class="d-flex gap-2">
-                                    <a href="@Url.Action("View", "Profile")" class="btn btn-outline-success btn-lg">
+                                    <a href="@Url.Action("View", "Profile")" class="btn btn-outline-secondary btn-lg">
                                         <i class="bi bi-arrow-left"></i> Скасувати
                                     </a>
                                     <button type="submit" class="btn btn-success btn-lg">
@@ -229,8 +232,8 @@
                 <!-- TAB 2: БЕЗПЕКА -->
                 <div class="tab-pane fade @(isSecurityTabActive ? "show active" : "")" id="security-tab-pane" role="tabpanel">
                     <div class="card shadow mb-4">
-                        <div class="card-header security-header text-white">
-                            <h5 class="mb-0">Змінення пароля</h5>
+                        <div class="card-header security-header">
+                            <h5 class="mb-0"><i class="bi bi-key-fill"></i> Змінення пароля</h5>
                         </div>
                         <div class="card-body">
                             <form method="post" action="/account-security/change-password">
@@ -238,28 +241,30 @@
 
                                 <div class="mb-3">
                                     <label for="currentPassword" class="form-label">Поточний пароль</label>
-                                    <input type="password" class="form-control" name="CurrentPassword" id="currentPassword" required>
+                                    <input type="password" class="form-control" name="CurrentPassword" id="currentPassword" placeholder="Введіть поточний пароль" required>
                                 </div>
 
                                 <div class="mb-3">
                                     <label for="newPassword" class="form-label">Новий пароль</label>
-                                    <input type="password" class="form-control" name="NewPassword" id="newPassword" required minlength="8">
-                                    <small class="form-text text-muted">Мінімум 8 символів</small>
+                                    <input type="password" class="form-control" name="NewPassword" id="newPassword" placeholder="Мінімум 8 символів" required minlength="8">
+                                    <small class="form-text text-muted">Мінімум 8 символів, зі спеціальними символами</small>
                                 </div>
 
                                 <div class="mb-3">
                                     <label for="confirmPassword" class="form-label">Підтвердження пароля</label>
-                                    <input type="password" class="form-control" name="ConfirmPassword" id="confirmPassword" required minlength="8">
+                                    <input type="password" class="form-control" name="ConfirmPassword" id="confirmPassword" placeholder="Повторіть новий пароль" required minlength="8">
                                 </div>
 
-                                <button type="submit" class="btn btn-success">Змінити пароль</button>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-check-lg"></i> Змінити пароль
+                                </button>
                             </form>
                         </div>
                     </div>
 
                     <div class="card shadow mb-4">
-                        <div class="card-header sessions-header text-white">
-                            <h5 class="mb-0">Активні сеанси</h5>
+                        <div class="card-header sessions-header">
+                            <h5 class="mb-0"><i class="bi bi-lightning-fill"></i> Активні сеанси</h5>
                         </div>
                         <div class="card-body">
                             @{
@@ -268,13 +273,13 @@
                             }
                             @if (!activeSessions.Any())
                             {
-                                <p class="text-muted">Немає активних сеансів.</p>
+                                <p class="text-muted mb-0">Немає активних сеансів.</p>
                             }
                             else
                             {
                                 <div class="table-responsive">
-                                    <table class="table table-sm table-hover align-middle">
-                                        <thead>
+                                    <table class="table table-sm table-hover align-middle mb-0">
+                                        <thead class="table-light">
                                             <tr>
                                                 <th>Пристрій</th>
                                                 <th>IP адреса</th>
@@ -317,7 +322,7 @@
                                                                             data-confirm-message="Завершити цей сеанс?"
                                                                             data-confirm-button-text="Завершити"
                                                                             data-confirm-button-class="btn-danger">
-                                                                    <i class="bi bi-x-lg"></i> Завершити
+                                                                    <i class="bi bi-x-lg"></i>
                                                                 </button>
                                                             </form>
                                                         }
@@ -327,32 +332,32 @@
                                         </tbody>
                                     </table>
                                 </div>
-                            }
 
-                            @if (activeSessions.Count(s => s.SessionToken != currentSessionToken) > 0)
-                            {
-                                <form method="post" action="/sessions/terminate-all" class="d-inline">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-warning btn-sm mt-2"
-                                            data-confirm-title="Завершити всі інші сеанси"
-                                            data-confirm-message="Завершити всі інші сеанси?"
-                                            data-confirm-button-text="Завершити"
-                                            data-confirm-button-class="btn-warning">
-                                        <i class="bi bi-box-arrow-right me-1"></i>Вийти зі всіх інших сеансів
-                                    </button>
-                                </form>
+                                @if (activeSessions.Count(s => s.SessionToken != currentSessionToken) > 0)
+                                {
+                                    <form method="post" action="/sessions/terminate-all" class="d-inline mt-3">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-warning btn-sm"
+                                                data-confirm-title="Завершити всі інші сеанси"
+                                                data-confirm-message="Завершити всі інші сеанси?"
+                                                data-confirm-button-text="Завершити"
+                                                data-confirm-button-class="btn-warning">
+                                            <i class="bi bi-box-arrow-right me-1"></i> Вийти зі всіх інших сеансів
+                                        </button>
+                                    </form>
+                                }
                             }
                         </div>
                     </div>
 
                     <div class="card shadow mb-4">
                         <div class="card-header profile-security-history-header">
-                            <h5 class="mb-0">📋 Історія безпеки акаунту</h5>
+                            <h5 class="mb-0"><i class="bi bi-shield-check"></i> Історія безпеки акаунту</h5>
                         </div>
                         <div class="card-body">
                             <div class="row g-2 align-items-end mb-3">
                                 <div class="col-md-5 col-lg-4">
-                                    <label for="securityEventTypeFilter" class="form-label">Фільтр за типом події</label>
+                                    <label for="securityEventTypeFilter" class="form-label small">Фільтр за типом події</label>
                                     <select id="securityEventTypeFilter" class="form-select form-select-sm">
                                         <option value="">Всі події</option>
                                         <option value="Login">Вхід</option>
@@ -373,14 +378,14 @@
                     </div>
 
                     <div class="card shadow border-danger">
-                        <div class="card-header danger-header text-white">
-                            <h5 class="mb-0">Видалення акаунту</h5>
+                        <div class="card-header danger-header">
+                            <h5 class="mb-0"><i class="bi bi-exclamation-triangle-fill"></i> Видалення акаунту</h5>
                         </div>
                         <div class="card-body">
-                            <p class="text-danger"><strong>⚠️ Увага!</strong> Цю дію не можна відмінити. Усі ваші дані будуть видалені.</p>
+                            <p class="text-danger mb-3"><strong><i class="bi bi-exclamation-circle"></i> Увага!</strong> Цю дію не можна відмінити. Усі ваші дані будуть видалені.</p>
 
                             <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
-                                Видалити акаунт
+                                <i class="bi bi-trash"></i> Видалити акаунт
                             </button>
                         </div>
                     </div>
@@ -394,8 +399,8 @@
 <div class="modal fade" id="deleteAccountModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title">Підтвердження видалення акаунту</h5>
+            <div class="modal-header danger-header">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill"></i> Підтвердження видалення акаунту</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form method="post" action="/account-security/delete-account">
@@ -403,7 +408,7 @@
 
                 <div class="modal-body">
                     <p>Ви впевнені, що хочете видалити свій акаунт?</p>
-                    <p class="text-danger"><strong>Ця дія не може бути скасована! Всі ваші дані (профіль, цілі, щоденники) будуть назавжди видалені.</strong></p>
+                    <p class="text-danger"><strong><i class="bi bi-exclamation-circle"></i> Ця дія не може бути скасована! Всі ваші дані (профіль, цілі, щоденники) будуть назавжди видалені.</strong></p>
 
                     <div class="mb-3 mt-4">
                         <label for="deletePassword" class="form-label">
@@ -423,7 +428,7 @@
 
 @section Scripts {
     <script>
-        // Активуємо вкладку безпеки лише коли це явно запрошено контролером безпеки
+        // Активуємо вкладку безпеки лише коли це явно запрошено контролером
         @if (isSecurityTabActive)
         {
             <text>
@@ -500,14 +505,14 @@
             } catch (error) {
                 console.error('Помилка завантаження логів:', error);
                 document.getElementById('securityLogs').innerHTML = 
-                    '<div class="alert alert-warning">Не вдалося завантажити історію безпеки: ' + (error?.message || 'невідома помилка') + '</div>';
+                    '<div class="alert alert-warning"><i class="bi bi-exclamation-triangle"></i> Не вдалося завантажити історію безпеки: ' + (error?.message || 'невідома помилка') + '</div>';
             }
         }
 
         function renderSecurityLogs(pagedResult) {
             const container = document.getElementById('securityLogs');
             if (!pagedResult || typeof pagedResult !== 'object') {
-                container.innerHTML = '<div class="alert alert-warning">Сервер повернув некоректні дані журналу безпеки.</div>';
+                container.innerHTML = '<div class="alert alert-warning"><i class="bi bi-exclamation-triangle"></i> Сервер повернув некоректні дані журналу безпеки.</div>';
                 return;
             }
 
@@ -522,8 +527,8 @@
             }
 
             let html = '<div class="table-responsive">';
-            html += '<table class="table table-sm table-hover align-middle">';
-            html += '<thead><tr>';
+            html += '<table class="table table-sm table-hover align-middle mb-0">';
+            html += '<thead class="table-light"><tr>';
             html += '<th>Дата/Час</th><th>Тип івенту</th><th>Опис</th><th>Пристрій</th><th>IP адреса</th><th>Статус</th>';
             html += '</tr></thead><tbody>';
 
@@ -531,15 +536,15 @@
                 const date = new Date(log.createdAt);
                 const formattedDate = date.toLocaleDateString('uk-UA') + ' ' + date.toLocaleTimeString('uk-UA');
                 const statusBadge = log.status === 'Success' 
-                    ? '<span class="badge bg-success">Успіх</span>'
-                    : '<span class="badge bg-danger">Помилка</span>';
+                    ? '<span class="badge bg-success"><i class="bi bi-check-lg"></i> Успіх</span>'
+                    : '<span class="badge bg-danger"><i class="bi bi-x-lg"></i> Помилка</span>';
                 
                 let eventBadge = '';
                 switch(log.eventType) {
-                    case 'Login': eventBadge = '<span class="badge bg-info">Вхід</span>'; break;
-                    case 'Logout': eventBadge = '<span class="badge bg-secondary">Вихід</span>'; break;
-                    case 'PasswordChange': eventBadge = '<span class="badge bg-warning">Зміна пароля</span>'; break;
-                    case 'SessionTerminated': eventBadge = '<span class="badge bg-danger">Сеанс завершено</span>'; break;
+                    case 'Login': eventBadge = '<span class="badge bg-info"><i class="bi bi-box-arrow-in-right"></i> Вхід</span>'; break;
+                    case 'Logout': eventBadge = '<span class="badge bg-secondary"><i class="bi bi-box-arrow-right"></i> Вихід</span>'; break;
+                    case 'PasswordChange': eventBadge = '<span class="badge bg-warning"><i class="bi bi-key"></i> Зміна пароля</span>'; break;
+                    case 'SessionTerminated': eventBadge = '<span class="badge bg-danger"><i class="bi bi-stop-circle"></i> Сеанс завершено</span>'; break;
                     default: eventBadge = '<span class="badge bg-dark">' + log.eventType + '</span>';
                 }
                 

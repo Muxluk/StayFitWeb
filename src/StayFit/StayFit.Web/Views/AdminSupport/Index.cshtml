@@ -4,14 +4,21 @@
 @{
     ViewData["Title"] = "Керування зверненнями";
     Layout = "_Layout";
+    var newTicketsCount = Model?.Items?.Count(t => t.Status == SupportStatus.New) ?? 0;
 }
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2><i class="bi bi-envelope text-warning"></i> Керування зверненнями</h2>
-        <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Назад до панелі
-        </a>
+        <div class="d-flex align-items-center gap-2">
+            @if (newTicketsCount > 0)
+            {
+                <span class="badge bg-primary">@newTicketsCount нових</span>
+            }
+            <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Назад до панелі
+            </a>
+        </div>
     </div>
 
     <!-- Фільтр -->
@@ -52,11 +59,11 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if (!Model.Items.Any())
+                    @if (Model?.Items == null || !Model.Items.Any())
                     {
                         <tr><td colspan="6" class="text-center py-4 text-muted">Звернень не знайдено</td></tr>
                     }
-                    @foreach (var ticket in Model.Items)
+                    @foreach (var ticket in Model!.Items!)
                     {
                         <tr>
                             <td>#@ticket.Id</td>
