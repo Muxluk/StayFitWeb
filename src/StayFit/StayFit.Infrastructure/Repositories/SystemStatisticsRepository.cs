@@ -32,7 +32,8 @@ public class SystemStatisticsRepository : ISystemStatisticsRepository
             TotalUsers = totalUsers,
             TotalProducts = totalProducts,
             TotalDiaryEntries = mealEntriesCount + foodLogsCount,
-            ActiveSessions = activeSessions
+            ActiveSessions = activeSessions,
+            LastUpdated = DateTime.UtcNow
         };
     }
 }

@@ -6,4 +6,5 @@ public class SystemStatisticsDto
     public int TotalProducts { get; set; }
     public int TotalDiaryEntries { get; set; }
     public int ActiveSessions { get; set; }
+    public DateTime LastUpdated { get; set; }
 }

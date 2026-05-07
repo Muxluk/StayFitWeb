@@ -40,6 +40,10 @@
                     @* ── Рівень в'язкості (мікрокопія) ── *@
                     <div id="waterDrops" class="sf-water-drops mt-3"></div>
 
+                    <div id="waterWarning" class="alert alert-warning mt-2 py-1 px-2 small" style="display:none;">
+                        ⚠️ Ви перевищили рекомендовану норму водовживання!
+                    </div>
+
                     <small class="text-muted d-block mt-2">
                         Натисніть на крапельку щоб відзначити склянку або використайте кнопки нижче
                     </small>
@@ -86,20 +90,20 @@
                 <div class="card-body">
                     <h5 class="card-title mb-3">Швидке додавання</h5>
                     <div class="d-grid gap-2 d-sm-flex flex-wrap">
-                        <button class="btn btn-lg btn-outline-info water-btn" data-glasses="1" title="Додати 1 склянку">
-                            1 склянка
+                        <button class="btn btn-lg btn-outline-info water-btn" data-glasses="1" title="Додати ~200мл">
+                            💧 200 мл
                         </button>
-                        <button class="btn btn-lg btn-outline-info water-btn" data-glasses="2" title="Додати 2 склянки">
-                            2 склянки
+                        <button class="btn btn-lg btn-outline-info water-btn" data-glasses="1" title="Додати ~300мл">
+                            💧 300 мл
                         </button>
-                        <button class="btn btn-lg btn-outline-info water-btn" data-glasses="3" title="Додати 3 склянки">
-                            3 склянки
+                        <button class="btn btn-lg btn-outline-info water-btn" data-glasses="2" title="Додати ~500мл">
+                            💧 500 мл
                         </button>
                         <button class="btn btn-lg btn-info water-btn" data-glasses="4" title="Додати половину норми">
-                            Половина (4)
+                            💧 Половина (4)
                         </button>
                         <button class="btn btn-lg btn-success water-btn" data-glasses="8" title="Заповнити всю норму">
-                            Вся норма (8)
+                            💧 Вся норма (8)
                         </button>
                     </div>
                 </div>
@@ -195,14 +199,17 @@
     }
 
     function updateProgressBar(count) {
-        const pct = Math.min(count / GOAL * 100, 100);
-        const bar = document.querySelector('.sf-progress-bar');
+        var pct = count / GOAL * 100;
+        var displayPct = Math.min(pct, 100);
+        var bar = document.querySelector('.sf-progress-bar');
         if (bar) {
-            bar.style.width = pct + '%';
-            bar.className = 'sf-progress-bar bg-info';
+            bar.style.width = displayPct + '%';
+            bar.className = count > GOAL ? 'sf-progress-bar bg-danger' : 'sf-progress-bar bg-info';
         }
-        const label = document.querySelector('.sf-progress-pct');
-        if (label) label.textContent = pct.toFixed(0) + '%';
+        var label = document.querySelector('.sf-progress-pct');
+        if (label) label.textContent = displayPct.toFixed(0) + '%';
+        var warning = document.getElementById('waterWarning');
+        if (warning) warning.style.display = count > GOAL ? 'block' : 'none';
     }
 
     function updateHistory() {
