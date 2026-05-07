@@ -17,6 +17,17 @@
     --shadow-card-hover: 0 4px 15px rgba(0, 0, 0, 0.12);
 }
 
+[data-bs-theme="dark"] {
+    --surface-color: #1e1e2e;
+    --surface-muted: #2a2a3d;
+    --secondary-text-color: #a0a0b0;
+    --border-color: #2d5a2d;
+    --shadow-soft: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.4);
+    --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.4);
+    --shadow-card-hover: 0 4px 15px rgba(0, 0, 0, 0.5);
+    color-scheme: dark;
+}
+
 a.navbar-brand {
     white-space: normal;
     text-align: center;

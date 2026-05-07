@@ -260,6 +260,27 @@
                     </div>
                 </div>
 
+                <!-- Зовнішній вигляд -->
+                <div class="card shadow mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-palette-fill me-2"></i>Зовнішній вигляд</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between p-3 bg-body-secondary rounded">
+                            <div>
+                                <div class="fw-semibold"><i class="bi bi-moon-stars-fill me-2 text-primary"></i>Темна тема</div>
+                                <div class="text-muted small">Перемикає темний/світлий інтерфейс. Вибір зберігається в браузері.</div>
+                            </div>
+                            <div class="form-check form-switch mb-0 ms-4">
+                                <input class="form-check-input fs-5" type="checkbox" role="switch"
+                                       id="sf-profile-theme-switch"
+                                       onchange="sfToggleTheme()" />
+                                <label class="form-check-label visually-hidden" for="sf-profile-theme-switch">Темна тема</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- TAB 2: БЕЗПЕКА -->
                 <div class="tab-pane fade @(isSecurityTabActive ? "show active" : "")" id="security-tab-pane" role="tabpanel">
                     <div class="card shadow mb-4">
@@ -459,6 +480,12 @@
 
 @section Scripts {
     <script>
+        // Sync dark mode toggle switch with current theme
+        (function() {
+            var sw = document.getElementById('sf-profile-theme-switch');
+            if (sw) sw.checked = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+        })();
+
         // Активуємо вкладку безпеки лише коли це явно запрошено контролером
         @if (isSecurityTabActive)
         {
