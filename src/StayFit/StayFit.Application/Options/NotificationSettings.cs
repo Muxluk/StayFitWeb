@@ -16,4 +16,9 @@ public class NotificationSettings
     /// 110 означає, що сповіщення буде при 110% від норми
     /// </summary>
     public decimal CalorieThresholdPercent { get; set; } = 100;
+
+    /// <summary>
+    /// Інтервал між перевірками BackgroundService (у секундах)
+    /// </summary>
+    public int BackgroundServiceIntervalSeconds { get; set; } = 60;
 }

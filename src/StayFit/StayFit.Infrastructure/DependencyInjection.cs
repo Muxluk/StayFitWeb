@@ -33,6 +33,7 @@ public static class DependencyInjection
         services.AddScoped<IFoodCategoryRepository, FoodCategoryRepository>();
         services.AddScoped<ISessionRepository, SessionRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
+        services.AddScoped<ISupportMessageRepository, SupportMessageRepository>();
 
         // Services
         services.AddScoped<IRegistrationService, RegistrationService>();

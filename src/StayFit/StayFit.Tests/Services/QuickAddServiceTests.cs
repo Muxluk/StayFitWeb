@@ -1,5 +1,8 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
+using StayFit.Application.Interfaces;
+using StayFit.Application.Options;
 using StayFit.Application.Services;
 using StayFit.Domain.Entities;
 using StayFit.Domain.Interfaces;
@@ -11,6 +14,9 @@ public class QuickAddServiceTests
 {
     private readonly Mock<IMealRepository> _mealRepositoryMock;
     private readonly Mock<IFoodLogRepository> _foodLogRepositoryMock;
+    private readonly Mock<IUserRepository> _userRepositoryMock;
+    private readonly Mock<INutritionGoalRepository> _nutritionGoalRepositoryMock;
+    private readonly Mock<INotificationService> _notificationServiceMock;
     private readonly Mock<ILogger<QuickAddService>> _loggerMock;
     private readonly QuickAddService _quickAddService;
 
@@ -18,11 +24,20 @@ public class QuickAddServiceTests
     {
         _mealRepositoryMock = new Mock<IMealRepository>();
         _foodLogRepositoryMock = new Mock<IFoodLogRepository>();
+        _userRepositoryMock = new Mock<IUserRepository>();
+        _nutritionGoalRepositoryMock = new Mock<INutritionGoalRepository>();
+        _notificationServiceMock = new Mock<INotificationService>();
         _loggerMock = new Mock<ILogger<QuickAddService>>();
+
+        var notificationSettings = Options.Create(new NotificationSettings());
 
         _quickAddService = new QuickAddService(
             _mealRepositoryMock.Object,
             _foodLogRepositoryMock.Object,
+            _userRepositoryMock.Object,
+            _nutritionGoalRepositoryMock.Object,
+            _notificationServiceMock.Object,
+            notificationSettings,
             _loggerMock.Object);
     }
 

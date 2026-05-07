@@ -8,7 +8,27 @@
 
     <div class="row g-3 mt-1">
         <div class="col-md-4">
-            <div class="card h-100">
+            <div class="card sf-card h-100">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">Статистика системи</h5>
+                    <p class="card-text text-muted">Перегляд ключових метрик та стану системи.</p>
+                    <a asp-controller="Admin" asp-action="Statistics" class="btn btn-primary mt-auto">Відкрити</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card sf-card h-100">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">Розсилка email</h5>
+                    <p class="card-text text-muted">Відправлення повідомлень усім користувачам системи.</p>
+                    <a asp-controller="AdminEmail" asp-action="Index" class="btn btn-primary mt-auto">Відкрити</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card sf-card h-100">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">Керування користувачами</h5>
                     <p class="card-text text-muted">Пошук, перегляд і зміна стану акаунтів.</p>
@@ -18,7 +38,7 @@
         </div>
 
         <div class="col-md-4">
-            <div class="card h-100">
+            <div class="card sf-card h-100">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">Керування продуктами</h5>
                     <p class="card-text text-muted">Робота з категоріями продуктів і базовими довідниками.</p>
@@ -28,7 +48,7 @@
         </div>
 
         <div class="col-md-4">
-            <div class="card h-100 border-danger">
+            <div class="card sf-card h-100 border-danger">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title text-danger">Модерація продуктів</h5>
                     <p class="card-text text-muted">Підтвердження або відхилення нових продуктів.</p>
@@ -38,3 +58,5 @@
         </div>
     </div>
 </div>
+
+

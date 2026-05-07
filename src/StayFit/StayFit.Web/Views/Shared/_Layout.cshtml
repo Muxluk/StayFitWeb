@@ -53,6 +53,9 @@
                             <a class="nav-link text-dark" asp-controller="NutritionGoal" asp-action="Index">Мої цілі</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Hydration" asp-action="Index">Вода</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Export" asp-action="Index">Експорт</a>
                         </li>
                         @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
@@ -71,9 +74,6 @@
                                 </a>
                             </li>
                         }
-                        <li class="nav-item d-flex align-items-center me-2">
-                            <span class="badge bg-light text-dark border">Dashboard N: @DashboardOptions.Value.RecentDiaryEntriesCount</span>
-                        </li>
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item d-flex align-items-center me-2">
@@ -139,6 +139,7 @@
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

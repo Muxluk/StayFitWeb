@@ -9,6 +9,7 @@ class NotificationManager {
     constructor() {
         this.notifications = [];
         this.loadInterval = null;
+        this.signalRConnection = null;
         this.init();
     }
 
@@ -19,7 +20,7 @@ class NotificationManager {
         // Завантажити сповіщення при завантаженні сторінки
         this.loadNotifications();
 
-        // Перезавантажувати кожні 30 секунд
+        // Перезавантажувати кожні 30 секунд (резервний polling)
         this.loadInterval = setInterval(() => this.loadNotifications(), 30000);
 
         // Позначити всі як прочитані
@@ -27,6 +28,55 @@ class NotificationManager {
 
         // Очистити всі
         document.getElementById('clearAllBtn')?.addEventListener('click', () => this.clearAllNotifications());
+
+        // Підключити SignalR для отримання сповіщень в реальному часі
+        this.initSignalR();
+    }
+
+    initSignalR() {
+        if (typeof signalR === 'undefined') return;
+
+        this.signalRConnection = new signalR.HubConnectionBuilder()
+            .withUrl('/notificationHub')
+            .withAutomaticReconnect()
+            .build();
+
+        this.signalRConnection.on('ReceiveNotification', (notification) => {
+            this.onRealTimeNotification(notification);
+        });
+
+        this.signalRConnection.start()
+            .then(() => console.log('SignalR підключено до NotificationHub'))
+            .catch(err => console.warn('SignalR: не вдалося підключитися:', err));
+    }
+
+    onRealTimeNotification(notification) {
+        // Показати toast-сповіщення
+        this.showToast(notification.title, notification.message);
+        // Перезавантажити список сповіщень
+        this.loadNotifications();
+    }
+
+    showToast(title, message) {
+        // Створюємо тимчасовий toast елемент
+        const toast = document.createElement('div');
+        toast.className = 'position-fixed bottom-0 end-0 p-3';
+        toast.style.zIndex = '11';
+        toast.innerHTML = `
+            <div class="toast show align-items-center text-bg-primary border-0" role="alert" aria-live="assertive">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <strong>${this.escapeHtml(title)}</strong><br>
+                        <small>${this.escapeHtml(message)}</small>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>`;
+        document.body.appendChild(toast);
+
+        const bsToast = bootstrap.Toast.getOrCreateInstance(toast.querySelector('.toast'), { delay: 5000 });
+        bsToast.show();
+        toast.querySelector('.toast').addEventListener('hidden.bs.toast', () => toast.remove());
     }
 
     async loadNotifications() {

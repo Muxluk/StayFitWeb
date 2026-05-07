@@ -1,0 +1,374 @@
+@model AdminEmailViewModel
+@{
+    ViewData["Title"] = "Розсилка email";
+}
+
+<div class="container-fluid mt-4">
+    <h2 class="mb-4">Розсилка email</h2>
+
+    <div class="row g-4 mb-4">
+        @* ── Форма розсилки (ліва сторона) ── *@
+        <div class="col-12 col-lg-6">
+            <div class="card sf-card">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Новий лист</h5>
+
+                    <form id="broadcastForm">
+                        @* Тема листа *@
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">Тема листа</label>
+                            <input 
+                                type="text" 
+                                id="subject" 
+                                class="form-control form-control-lg" 
+                                placeholder="Введіть тему листа..."
+                                maxlength="200"
+                                required />
+                            <div class="d-flex justify-content-between mt-2">
+                                <small class="text-muted">Максимум 200 символів</small>
+                                <small class="text-muted" id="subjectCount">0 / 200</small>
+                            </div>
+                            <div class="progress mt-2" style="height: 4px;">
+                                <div 
+                                    id="subjectProgress" 
+                                    class="progress-bar bg-info" 
+                                    role="progressbar" 
+                                    style="width: 0%" 
+                                    aria-valuenow="0" 
+                                    aria-valuemin="0" 
+                                    aria-valuemax="200">
+                                </div>
+                            </div>
+                        </div>
+
+                        @* Текст листа *@
+                        <div class="mb-3">
+                            <label for="htmlBody" class="form-label">Текст листа (HTML)</label>
+                            <textarea 
+                                id="htmlBody" 
+                                class="form-control" 
+                                rows="8" 
+                                placeholder="Введіть текст листа (можна використовувати HTML)..."
+                                maxlength="5000"
+                                required></textarea>
+                            <div class="d-flex justify-content-between mt-2">
+                                <small class="text-muted">Максимум 5000 символів</small>
+                                <small class="text-muted" id="bodyCount">0 / 5000</small>
+                            </div>
+                            <div class="progress mt-2" style="height: 4px;">
+                                <div 
+                                    id="bodyProgress" 
+                                    class="progress-bar bg-info" 
+                                    role="progressbar" 
+                                    style="width: 0%" 
+                                    aria-valuenow="0" 
+                                    aria-valuemin="0" 
+                                    aria-valuemax="5000">
+                                </div>
+                            </div>
+                        </div>
+
+                        @* Інформація про розсилку *@
+                        <div class="alert alert-info" role="alert">
+                            <div>
+                                <strong>Отримувачі:</strong> @Model.TotalUsers користувачів<br />
+                                <small class="text-muted">Лист буде відправлений всім активним користувачам системи</small>
+                            </div>
+                        </div>
+
+                        @* Кнопки дій *@
+                        <div class="d-grid gap-2 d-sm-flex">
+                            <button 
+                                type="button" 
+                                class="btn btn-secondary btn-lg flex-grow-1" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#previewModal">
+                                Переглянути
+                            </button>
+                            <button 
+                                type="submit" 
+                                class="btn btn-primary btn-lg flex-grow-1"
+                                id="sendBtn">
+                                Відправити
+                            </button>
+                        </div>
+
+                        <div id="formMessage" class="alert mt-3" style="display: none;"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        @* ── Посилання на розширений редактор (права сторона) ── *@
+        <div class="col-12 col-lg-6">
+            <div class="card sf-card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Поради</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <strong>Структура листа:</strong>
+                            <small class="d-block text-muted mt-1">
+                                Почніть з привітання, потім основна інформація, закінчете закликом до дії.
+                            </small>
+                        </li>
+                        <li class="mb-3">
+                            <strong>HTML-форматування:</strong>
+                            <small class="d-block text-muted mt-1">
+                                Використовуйте &lt;b&gt;, &lt;i&gt;, &lt;p&gt;, &lt;a href=""&gt; для форматування.
+                            </small>
+                        </li>
+                        <li class="mb-3">
+                            <strong>Часові поєднання:</strong>
+                            <small class="d-block text-muted mt-1">
+                                Краще відправляти листи в робочі дні з 9:00 до 18:00.
+                            </small>
+                        </li>
+                        <li class="mb-3">
+                            <strong>Перевірка:</strong>
+                            <small class="d-block text-muted mt-1">
+                                Завжди використовуйте функцію "Переглянути" перед відправленням.
+                            </small>
+                        </li>
+                    </ul>
+
+                    <hr />
+
+                    <h5 class="card-title mt-4 mb-3">Шаблони</h5>
+                    <button type="button" class="btn btn-outline-secondary btn-sm w-100 mb-2" onclick="loadTemplate('welcome')">
+                        Привітання нових користувачів
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm w-100 mb-2" onclick="loadTemplate('update')">
+                        Оновлення системи
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm w-100" onclick="loadTemplate('maintenance')">
+                        Технічне обслуговування
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ── Історія розсилок ── *@
+    <div class="card sf-card">
+        <div class="card-body">
+            <h5 class="card-title mb-4">Історія розсилок</h5>
+
+            @if (Model.History.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Тема</th>
+                                <th class="text-center d-none d-md-table-cell">Отримувачів</th>
+                                <th class="text-center">Статус</th>
+                                <th class="text-end d-none d-sm-table-cell">Дата</th>
+                                <th class="text-center">Дія</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var broadcast in Model.History.Take(20))
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">@broadcast.Subject</div>
+                                        <small class="text-muted d-block text-truncate" style="max-width: 300px;">
+                                            @broadcast.HtmlBody.Substring(0, Math.Min(100, broadcast.HtmlBody.Length))...
+                                        </small>
+                                    </td>
+                                    <td class="text-center d-none d-md-table-cell">
+                                        <span class="badge bg-light text-dark">@broadcast.RecipientCount</span>
+                                    </td>
+                                    <td class="text-center">
+                                        @if (broadcast.Status == "Sent")
+                                        {
+                                            <span class="badge bg-success">Успішно</span>
+                                        }
+                                        else if (broadcast.Status == "PartiallyFailed")
+                                        {
+                                            <span class="badge bg-warning">Частково</span>
+                                        }
+                                        else if (broadcast.Status == "Pending")
+                                        {
+                                            <span class="badge bg-secondary">Обробка</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Помилка</span>
+                                        }
+                                    </td>
+                                    <td class="text-end d-none d-sm-table-cell">
+                                        <small class="text-muted">
+                                            @broadcast.SentAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss")
+                                        </small>
+                                    </td>
+                                    <td class="text-center">
+                                        <button 
+                                            type="button" 
+                                            class="btn btn-sm btn-outline-info"
+                                            onclick="viewBroadcast('@broadcast.Subject', '@Uri.EscapeDataString(broadcast.HtmlBody)')"
+                                            title="Переглянути деталі">
+                                            Переглянути
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted text-center my-4">
+                    Розсилок поки не було. Створіть першу розсилку за допомогою форми зліва.
+                </p>
+            }
+        </div>
+    </div>
+</div>
+
+@* ── Modal: Переглянути лист ── *@
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Переглянути лист</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="card" style="border: 1px solid #dee2e6; border-radius: 8px; overflow: hidden;">
+                    <div class="card-header" style="background-color: #f8f9fa; padding: 1.5rem;">
+                        <h6 class="mb-0" id="previewSubject">Тема листа</h6>
+                        <small class="text-muted">Для: @string.Join(", ", Model.History.Take(3).Select(x => "користувач")) + "...</small>
+                    </div>
+                    <div class="card-body" style="background-color: #fff;">
+                        <div id="previewBody" style="line-height: 1.6; color: #333;">
+                            Тут буде показаний текст листа...
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрити</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+const MAX_SUBJECT = 200;
+const MAX_BODY = 5000;
+
+const emailTemplates = {
+    welcome: {
+        subject: 'Добро пожалувати до StayFit!',
+        body: '<p>Привіт!</p><p>Благодарим за реєстрацію в <b>StayFit</b> — програмі для контролю харчування та здорового способу життя.</p><p>Почніть з встановлення своїх цілей харчування і слідкуйте за прогресом кожного дня.</p><p><a href="https://stayfit.com/nutrition-goal" style="color: #007bff; text-decoration: none;">Встановити цілі</a></p>'
+    },
+    update: {
+        subject: 'Нове оновлення системи',
+        body: '<p>Привіт!</p><p>Ми щойно оновили <b>StayFit</b> з новими функціями:</p><ul><li>Новий інтерфейс відстеження води</li><li>Покращена статистика</li><li>Виправлення помилок</li></ul><p>Дякуємо за використання нашого сервісу!</p>'
+    },
+    maintenance: {
+        subject: 'Планове технічне обслуговування',
+        body: '<p>Привіт!</p><p>20 травня 2026 року з 22:00 до 23:00 (UTC) буде проведено планове технічне обслуговування серверів.</p><p>Під час цього часу сервіс може бути недоступний.</p><p>Вибачаємо за незручності!</p>'
+    }
+};
+
+document.getElementById('subject').addEventListener('input', function(e) {
+    const count = e.target.value.length;
+    document.getElementById('subjectCount').textContent = count + ' / ' + MAX_SUBJECT;
+    document.getElementById('subjectProgress').style.width = (count / MAX_SUBJECT * 100) + '%';
+});
+
+document.getElementById('htmlBody').addEventListener('input', function(e) {
+    const count = e.target.value.length;
+    document.getElementById('bodyCount').textContent = count + ' / ' + MAX_BODY;
+    document.getElementById('bodyProgress').style.width = (count / MAX_BODY * 100) + '%';
+});
+
+document.getElementById('broadcastForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const subject = document.getElementById('subject').value.trim();
+    const htmlBody = document.getElementById('htmlBody').value.trim();
+
+    if (!subject || !htmlBody) {
+        showMessage('Заповніть усі поля', 'warning');
+        return;
+    }
+
+    const sendBtn = document.getElementById('sendBtn');
+    sendBtn.disabled = true;
+    sendBtn.innerHTML = 'Відправлення...';
+
+    try {
+        const response = await fetch('/admin/email/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ subject, htmlBody })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            showMessage(data.message, 'success');
+            document.getElementById('broadcastForm').reset();
+            document.getElementById('subjectCount').textContent = '0 / 200';
+            document.getElementById('bodyCount').textContent = '0 / 5000';
+            document.getElementById('subjectProgress').style.width = '0%';
+            document.getElementById('bodyProgress').style.width = '0%';
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            showMessage(data.message, 'danger');
+        }
+    } catch (error) {
+        showMessage('Помилка: ' + error.message, 'danger');
+    } finally {
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = 'Відправити';
+    }
+});
+
+function showMessage(message, type) {
+    const msgDiv = document.getElementById('formMessage');
+    msgDiv.className = 'alert alert-' + type;
+    msgDiv.textContent = message;
+    msgDiv.style.display = 'block';
+}
+
+function loadTemplate(templateName) {
+    const template = emailTemplates[templateName];
+    if (template) {
+        document.getElementById('subject').value = template.subject;
+        document.getElementById('htmlBody').value = template.body;
+        document.getElementById('subject').dispatchEvent(new Event('input'));
+        document.getElementById('htmlBody').dispatchEvent(new Event('input'));
+        showMessage('Шаблон завантажено', 'info');
+    }
+}
+
+function viewBroadcast(subject, htmlBody) {
+    document.getElementById('previewSubject').textContent = subject;
+    document.getElementById('previewBody').innerHTML = decodeURIComponent(htmlBody);
+    const modal = new bootstrap.Modal(document.getElementById('previewModal'));
+    modal.show();
+}
+
+// Preview toggle
+document.querySelector('[data-bs-target="#previewModal"]').addEventListener('click', function() {
+    const subject = document.getElementById('subject').value.trim();
+    const htmlBody = document.getElementById('htmlBody').value.trim();
+    
+    if (!subject || !htmlBody) {
+        showMessage('Заповніть тему та текст листа для перегляду', 'warning');
+        return false;
+    }
+    
+    document.getElementById('previewSubject').textContent = subject;
+    document.getElementById('previewBody').innerHTML = htmlBody;
+});
+</script>
+}

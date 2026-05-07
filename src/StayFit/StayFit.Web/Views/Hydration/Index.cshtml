@@ -1,0 +1,282 @@
+@{
+    ViewData["Title"] = "Водний баланс";
+}
+
+<div class="container mt-4">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h2>Водний баланс</h2>
+        <button class="btn btn-outline-secondary btn-sm" id="waterResetBtn" title="Скинути лічильник">
+            ↺ Скинути
+        </button>
+    </div>
+
+    @* ── Основна картка з прогресом ── *@
+    <div class="row mb-4">
+        <div class="col-12 col-lg-8">
+            <div class="card sf-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-baseline justify-content-between mb-3">
+                        <div>
+                            <h5 class="card-title mb-1">Сьогоднішня норма</h5>
+                            <p class="text-muted small mb-0">Рекомендується <strong>8 склянок</strong> води на день</p>
+                        </div>
+                        <div class="text-end">
+                            <div class="sf-card-value" id="waterIntake">0</div>
+                            <small class="text-muted">/ <span id="waterGoal">8</span> склянок</small>
+                        </div>
+                    </div>
+                    
+                    @* ── Прогрес бар через partial ── *@
+                    <div id="progressContainer">
+                        @await Html.PartialAsync("_ProgressBar", null, new ViewDataDictionary(ViewData)
+                        {
+                            ["Actual"] = 0.0,
+                            ["Target"] = 8.0,
+                            ["Color"] = "info",
+                            ["ShowLabel"] = true
+                        })
+                    </div>
+
+                    @* ── Рівень в'язкості (мікрокопія) ── *@
+                    <div id="waterDrops" class="sf-water-drops mt-3"></div>
+
+                    <small class="text-muted d-block mt-2">
+                        Натисніть на крапельку щоб відзначити склянку або використайте кнопки нижче
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        @* ── Інформація ── *@
+        <div class="col-12 col-lg-4">
+            <div class="card sf-card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Поради</h5>
+                    <ul class="small list-unstyled">
+                        <li class="mb-2">
+                            <span class="badge bg-info-subtle text-info">1</span>
+                            Пийте воду перед, під час і після тренувань
+                        </li>
+                        <li class="mb-2">
+                            <span class="badge bg-info-subtle text-info">2</span>
+                            Розподіліть споживання води протягом дня
+                        </li>
+                        <li class="mb-2">
+                            <span class="badge bg-info-subtle text-info">3</span>
+                            Гарячі напої теж рахуються!
+                        </li>
+                        <li class="mb-2">
+                            <span class="badge bg-info-subtle text-info">4</span>
+                            Прислухайтеся до сигналів своїх потреб
+                        </li>
+                        <li class="mb-0">
+                            <span class="badge bg-info-subtle text-info">5</span>
+                            Норма варіює залежно від активності
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ── Кнопки швидкого додавання ── *@
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card sf-card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Швидке додавання</h5>
+                    <div class="d-grid gap-2 d-sm-flex flex-wrap">
+                        <button class="btn btn-lg btn-outline-info water-btn" data-glasses="1" title="Додати 1 склянку">
+                            1 склянка
+                        </button>
+                        <button class="btn btn-lg btn-outline-info water-btn" data-glasses="2" title="Додати 2 склянки">
+                            2 склянки
+                        </button>
+                        <button class="btn btn-lg btn-outline-info water-btn" data-glasses="3" title="Додати 3 склянки">
+                            3 склянки
+                        </button>
+                        <button class="btn btn-lg btn-info water-btn" data-glasses="4" title="Додати половину норми">
+                            Половина (4)
+                        </button>
+                        <button class="btn btn-lg btn-success water-btn" data-glasses="8" title="Заповнити всю норму">
+                            Вся норма (8)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ── Історія сьогодні (розширена версія з часами) ── *@
+    <div class="card sf-card">
+        <div class="card-body">
+            <h5 class="card-title mb-3">Історія водовживання</h5>
+            <div id="waterHistory" class="sf-scrollable list-group list-group-flush">
+                <div class="list-group-item text-muted text-center py-4">
+                    Поки немає записів. Почніть додавати воду!
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(function () {
+    const STORAGE_KEY = 'sf_water_' + new Date().toISOString().slice(0, 10);
+    const HISTORY_KEY = 'sf_water_history_' + new Date().toISOString().slice(0, 10);
+    const GOAL = 8;
+
+    function load() {
+        return parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10);
+    }
+
+    function save(val) {
+        localStorage.setItem(STORAGE_KEY, Math.max(0, val));
+    }
+
+    function getHistory() {
+        try {
+            return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+        } catch {
+            return [];
+        }
+    }
+
+    function saveHistory(entries) {
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(entries));
+    }
+
+    function addToHistory(glasses) {
+        const history = getHistory();
+        history.push({
+            time: new Date().toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }),
+            glasses: glasses
+        });
+        saveHistory(history);
+    }
+
+    function render(count) {
+        const intake = document.getElementById('waterIntake');
+        const goal = document.getElementById('waterGoal');
+        const drops = document.getElementById('waterDrops');
+        const progressBar = document.querySelector('.sf-progress-bar');
+
+        if (intake) intake.textContent = count;
+        if (!drops) return;
+
+        // Анімація прогрес бару
+        if (progressBar) {
+            progressBar.classList.add('pulse');
+            setTimeout(() => progressBar.classList.remove('pulse'), 800);
+        }
+
+        // Крапельки
+        drops.innerHTML = '';
+        for (let i = 1; i <= GOAL; i++) {
+            const span = document.createElement('span');
+            span.className = 'sf-drop' + (i <= count ? ' active' : '');
+            span.textContent = '💧';
+            span.title = i + ' склянка';
+            span.style.cursor = 'pointer';
+            span.addEventListener('click', function () {
+                const cur = load();
+                const newVal = (i <= cur && i === cur) ? cur - 1 : i;
+                const final = Math.max(0, newVal);
+                const diff = final - cur;
+                save(final);
+                if (diff > 0) addToHistory(diff);
+                render(final);
+                updateHistory();
+                updateProgressBar(final);
+            });
+            drops.appendChild(span);
+        }
+    }
+
+    function updateProgressBar(count) {
+        const pct = Math.min(count / GOAL * 100, 100);
+        const bar = document.querySelector('.sf-progress-bar');
+        if (bar) {
+            bar.style.width = pct + '%';
+            bar.className = 'sf-progress-bar bg-info';
+        }
+        const label = document.querySelector('.sf-progress-pct');
+        if (label) label.textContent = pct.toFixed(0) + '%';
+    }
+
+    function updateHistory() {
+        const history = getHistory();
+        const container = document.getElementById('waterHistory');
+        
+        if (history.length === 0) {
+            container.innerHTML = '<div class="list-group-item text-muted text-center py-4">Поки немає записів. Почніть додавати воду!</div>';
+            return;
+        }
+
+        container.innerHTML = history.map((entry, idx) => `
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="fw-semibold">${entry.time}</span>
+                    <span class="badge bg-info ms-2">${entry.glasses} ${entry.glasses === 1 ? 'склянка' : 'склянок'}</span>
+                </div>
+                <button class="btn btn-sm btn-outline-danger" data-idx="${idx}" onclick="removeHistoryEntry(${idx})">
+                    ✕
+                </button>
+            </div>
+        `).join('');
+    }
+
+    window.removeHistoryEntry = function(idx) {
+        const history = getHistory();
+        history.splice(idx, 1);
+        saveHistory(history);
+        updateHistory();
+        // Перерахувати загальну кількість
+        const total = history.reduce((sum, e) => sum + e.glasses, 0);
+        save(total);
+        render(total);
+        updateProgressBar(total);
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const count = load();
+        render(count);
+        updateHistory();
+        updateProgressBar(count);
+
+        // Кнопки швидкого додавання
+        document.querySelectorAll('.water-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const glasses = parseInt(this.dataset.glasses, 10);
+                const cur = load();
+                const newVal = cur + glasses;
+                save(newVal);
+                addToHistory(glasses);
+                render(newVal);
+                updateHistory();
+                updateProgressBar(newVal);
+                
+                // Візуальна гідратація
+                this.classList.add('active');
+                setTimeout(() => this.classList.remove('active'), 200);
+            });
+        });
+
+        // Кнопка скидання
+        const resetBtn = document.getElementById('waterResetBtn');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function () {
+                if (confirm('Ви впевнені? Це скине всі записи на сьогодні.')) {
+                    save(0);
+                    localStorage.removeItem(HISTORY_KEY);
+                    render(0);
+                    updateHistory();
+                    updateProgressBar(0);
+                }
+            });
+        }
+    });
+})();
+</script>
+}

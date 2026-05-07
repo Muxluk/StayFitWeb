@@ -4,8 +4,8 @@
 }
 
 <div class="container mt-4">
-    <h2>📊 Дашборд</h2>
-    
+    <h2 class="mb-4">Дашборд</h2>
+
     @if (!ViewData.ModelState.IsValid)
     {
         <div class="alert alert-danger">
@@ -18,107 +18,217 @@
 
     @if (Model != null)
     {
-        <div class="row mt-4">
-            <!-- Калорії -->
-            <div class="col-md-6 mb-4">
-                <div class="card">
+        @* ── КБЖВ картки (4 cols ≥md, 2 cols xs/sm) ── *@
+        <div class="sf-macro-grid mb-4">
+
+            @* Калорії *@
+            <div>
+                <div class="card sf-card">
                     <div class="card-body">
-                        <h5 class="card-title">🔥 Калорії</h5>
-                        <div class="mb-3">
-                            <p class="mb-1"><strong>Спожито:</strong> <span class="text-primary">@Model.ActualCalories.ToString("F1")</span> ккал</p>
-                            <p class="mb-1"><strong>Ціль:</strong> <span class="text-success">@Model.TargetCalories.ToString("F1")</span> ккал</p>
-                            <p class="mt-2">
-                                <small class="text-muted">
-                                    @{
-                                        var calPercent = Model.TargetCalories > 0 ? (Model.ActualCalories / Model.TargetCalories * 100) : 0;
-                                    }
-                                    Виконано: @calPercent.ToString("F1")%
-                                </small>
-                            </p>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="sf-card-label">Калорії</span>
                         </div>
+                        <div class="d-flex align-items-baseline gap-1">
+                            <span class="sf-card-value">@Model.ActualCalories.ToString("F0")</span>
+                            <span class="text-muted small">/ @Model.TargetCalories.ToString("F0") ккал</span>
+                        </div>
+                        @await Html.PartialAsync("_ProgressBar", null, new ViewDataDictionary(ViewData)
+                        {
+                            ["Actual"] = (double)Model.ActualCalories,
+                            ["Target"] = (double)Model.TargetCalories
+                        })
                     </div>
                 </div>
             </div>
 
-            <!-- Білки -->
-            <div class="col-md-6 mb-4">
-                <div class="card">
+            @* Білки *@
+            <div>
+                <div class="card sf-card">
                     <div class="card-body">
-                        <h5 class="card-title">💪 Білки</h5>
-                        <div class="mb-3">
-                            <p class="mb-1"><strong>Спожито:</strong> <span class="text-primary">@Model.ActualProtein.ToString("F1")</span> г</p>
-                            <p class="mb-1"><strong>Ціль:</strong> <span class="text-success">@Model.TargetProtein.ToString("F1")</span> г</p>
-                            <p class="mt-2">
-                                <small class="text-muted">
-                                    @{
-                                        var proteinPercent = Model.TargetProtein > 0 ? (Model.ActualProtein / Model.TargetProtein * 100) : 0;
-                                    }
-                                    Виконано: @proteinPercent.ToString("F1")%
-                                </small>
-                            </p>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="sf-card-label">Білки</span>
                         </div>
+                        <div class="d-flex align-items-baseline gap-1">
+                            <span class="sf-card-value">@Model.ActualProtein.ToString("F1")</span>
+                            <span class="text-muted small">/ @Model.TargetProtein.ToString("F0") г</span>
+                        </div>
+                        @await Html.PartialAsync("_ProgressBar", null, new ViewDataDictionary(ViewData)
+                        {
+                            ["Actual"] = (double)Model.ActualProtein,
+                            ["Target"] = (double)Model.TargetProtein,
+                            ["Color"]  = "info"
+                        })
                     </div>
                 </div>
             </div>
 
-            <!-- Жири -->
-            <div class="col-md-6 mb-4">
-                <div class="card">
+            @* Жири *@
+            <div>
+                <div class="card sf-card">
                     <div class="card-body">
-                        <h5 class="card-title">🧈 Жири</h5>
-                        <div class="mb-3">
-                            <p class="mb-1"><strong>Спожито:</strong> <span class="text-primary">@Model.ActualFat.ToString("F1")</span> г</p>
-                            <p class="mb-1"><strong>Ціль:</strong> <span class="text-success">@Model.TargetFat.ToString("F1")</span> г</p>
-                            <p class="mt-2">
-                                <small class="text-muted">
-                                    @{
-                                        var fatPercent = Model.TargetFat > 0 ? (Model.ActualFat / Model.TargetFat * 100) : 0;
-                                    }
-                                    Виконано: @fatPercent.ToString("F1")%
-                                </small>
-                            </p>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="sf-card-label">Жири</span>
                         </div>
+                        <div class="d-flex align-items-baseline gap-1">
+                            <span class="sf-card-value">@Model.ActualFat.ToString("F1")</span>
+                            <span class="text-muted small">/ @Model.TargetFat.ToString("F0") г</span>
+                        </div>
+                        @await Html.PartialAsync("_ProgressBar", null, new ViewDataDictionary(ViewData)
+                        {
+                            ["Actual"] = (double)Model.ActualFat,
+                            ["Target"] = (double)Model.TargetFat,
+                            ["Color"]  = "warning"
+                        })
                     </div>
                 </div>
             </div>
 
-            <!-- Вуглеводи -->
-            <div class="col-md-6 mb-4">
-                <div class="card">
+            @* Вуглеводи *@
+            <div>
+                <div class="card sf-card">
                     <div class="card-body">
-                        <h5 class="card-title">🍞 Вуглеводи</h5>
-                        <div class="mb-3">
-                            <p class="mb-1"><strong>Спожито:</strong> <span class="text-primary">@Model.ActualCarbs.ToString("F1")</span> г</p>
-                            <p class="mb-1"><strong>Ціль:</strong> <span class="text-success">@Model.TargetCarbs.ToString("F1")</span> г</p>
-                            <p class="mt-2">
-                                <small class="text-muted">
-                                    @{
-                                        var carbsPercent = Model.TargetCarbs > 0 ? (Model.ActualCarbs / Model.TargetCarbs * 100) : 0;
-                                    }
-                                    Виконано: @carbsPercent.ToString("F1")%
-                                </small>
-                            </p>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="sf-card-label">Вуглеводи</span>
                         </div>
+                        <div class="d-flex align-items-baseline gap-1">
+                            <span class="sf-card-value">@Model.ActualCarbs.ToString("F1")</span>
+                            <span class="text-muted small">/ @Model.TargetCarbs.ToString("F0") г</span>
+                        </div>
+                        @await Html.PartialAsync("_ProgressBar", null, new ViewDataDictionary(ViewData)
+                        {
+                            ["Actual"] = (double)Model.ActualCarbs,
+                            ["Target"] = (double)Model.TargetCarbs,
+                            ["Color"]  = "primary"
+                        })
                     </div>
                 </div>
             </div>
         </div>
+
+        @* ── Картка водного балансу ── *@
+        <div class="row mb-4">
+            <div class="col-12 col-md-6">
+                <div class="card sf-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <span class="sf-card-label">Водний баланс</span>
+                                </div>
+                                <div class="d-flex align-items-baseline gap-1">
+                                    <span class="sf-card-value" id="waterIntake">0</span>
+                                    <span class="text-muted small">/ <span id="waterGoal">8</span> склянок</span>
+                                </div>
+                                <div id="waterDrops" class="sf-water-drops mt-2"></div>
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary" id="waterResetBtn" title="Скинути">↺</button>
+                        </div>
+                        @await Html.PartialAsync("_ProgressBar", null, new ViewDataDictionary(ViewData)
+                        {
+                            ["Actual"] = 0.0,
+                            ["Target"] = 8.0,
+                            ["Color"]  = "info",
+                            ["ShowLabel"] = false
+                        })
+                        <small class="text-muted d-block mt-1">Натисніть крапельку щоб відзначити склянку</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* ── Останні записи щоденника ── *@
+        @if (Model.RecentDiaryEntries.Any())
+        {
+            <div class="card sf-card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Останні записи</h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Продукт</th>
+                                    <th class="text-end">г</th>
+                                    <th class="text-end">ккал</th>
+                                    <th class="text-end d-none d-sm-table-cell">Б</th>
+                                    <th class="text-end d-none d-sm-table-cell">Ж</th>
+                                    <th class="text-end d-none d-sm-table-cell">В</th>
+                                    <th class="text-end text-muted">Час</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var entry in Model.RecentDiaryEntries)
+                                {
+                                    <tr>
+                                        <td>@entry.FoodName</td>
+                                        <td class="text-end">@entry.AmountGrams.ToString("F0")</td>
+                                        <td class="text-end fw-semibold">@entry.Calories.ToString("F0")</td>
+                                        <td class="text-end d-none d-sm-table-cell text-info">@entry.Protein.ToString("F1")</td>
+                                        <td class="text-end d-none d-sm-table-cell text-warning">@entry.Fat.ToString("F1")</td>
+                                        <td class="text-end d-none d-sm-table-cell text-primary">@entry.Carbs.ToString("F1")</td>
+                                        <td class="text-end text-muted small">@entry.LoggedAt.ToLocalTime().ToString("HH:mm")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <strong>Цілі харчування не встановлені.</strong>
+            <a asp-controller="NutritionGoal" asp-action="Index" class="alert-link">Встановити цілі →</a>
+        </div>
     }
 </div>
 
-<style>
-    .card {
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        transition: transform 0.2s;
+@section Scripts {
+<script>
+(function () {
+    const STORAGE_KEY = 'sf_water_' + new Date().toISOString().slice(0, 10);
+    const GOAL = 8;
+
+    function load() {
+        return parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10);
     }
 
-    .card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    function save(val) {
+        localStorage.setItem(STORAGE_KEY, val);
     }
 
-    .card-body {
-        padding: 1.5rem;
+    function render(count) {
+        const intake = document.getElementById('waterIntake');
+        const drops  = document.getElementById('waterDrops');
+        const bar    = document.querySelector('#waterDrops').closest('.card').querySelector('.sf-progress-bar');
+        if (intake) intake.textContent = count;
+        if (bar)    bar.style.width = Math.min(count / GOAL * 100, 100) + '%';
+        if (!drops) return;
+        drops.innerHTML = '';
+        for (let i = 1; i <= GOAL; i++) {
+            const span = document.createElement('span');
+            span.className = 'sf-drop' + (i <= count ? ' active' : '');
+            span.textContent = '○';
+            span.title = i + ' склянка';
+            span.addEventListener('click', function () {
+                const cur = load();
+                const newVal = (i <= cur && i === cur) ? cur - 1 : i;
+                save(newVal < 0 ? 0 : newVal);
+                render(load());
+            });
+            drops.appendChild(span);
+        }
     }
-</style>
+
+    document.addEventListener('DOMContentLoaded', function () {
+        render(load());
+        const resetBtn = document.getElementById('waterResetBtn');
+        if (resetBtn) resetBtn.addEventListener('click', function () {
+            save(0); render(0);
+        });
+    });
+})();
+</script>
+}
+

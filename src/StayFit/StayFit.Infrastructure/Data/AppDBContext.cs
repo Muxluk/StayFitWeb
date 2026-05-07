@@ -22,6 +22,8 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
     public DbSet<FoodCategoryEntity> FoodCategories => Set<FoodCategoryEntity>();
     public DbSet<UserSession> UserSessions => Set<UserSession>();
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<SupportMessage> SupportMessages => Set<SupportMessage>();
+    public DbSet<EmailBroadcast> EmailBroadcasts => Set<EmailBroadcast>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -93,6 +95,24 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
             entity.Property(n => n.Type).IsRequired().HasMaxLength(50);
             entity.HasIndex(n => n.UserId);
             entity.HasIndex(n => new { n.UserId, n.IsRead });
+        });
+
+        modelBuilder.Entity<SupportMessage>(entity =>
+        {
+            entity.HasKey(sm => sm.Id);
+            entity.Property(sm => sm.Subject).IsRequired().HasMaxLength(200);
+            entity.Property(sm => sm.Message).IsRequired().HasMaxLength(2000);
+            entity.HasIndex(sm => sm.IsAdminNotified);
+        });
+
+        modelBuilder.Entity<EmailBroadcast>(entity =>
+        {
+            entity.HasKey(eb => eb.Id);
+            entity.Property(eb => eb.Subject).IsRequired().HasMaxLength(200);
+            entity.Property(eb => eb.HtmlBody).IsRequired();
+            entity.Property(eb => eb.Status).IsRequired().HasMaxLength(50);
+            entity.HasIndex(eb => eb.AdminUserId);
+            entity.HasIndex(eb => eb.SentAt);
         });
     }
 }

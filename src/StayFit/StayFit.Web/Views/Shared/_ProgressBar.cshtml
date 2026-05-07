@@ -1,0 +1,39 @@
+@* _ProgressBar.cshtml
+   Parameters (ViewData):
+     Actual      – double/float actual value
+     Target      – double/float target value
+     Color       – Bootstrap color name: "success" | "warning" | "danger" | "info" | "primary"
+     ShowLabel   – bool, show "Виконано X%" text (default true)
+*@
+@{
+    var actualRaw   = ViewData["Actual"];
+    var targetRaw   = ViewData["Target"];
+    var color       = ViewData["Color"]?.ToString() ?? "success";
+    var showLabel   = ViewData["ShowLabel"] is bool sl ? sl : true;
+
+    double actual = actualRaw != null ? Convert.ToDouble(actualRaw) : 0;
+    double target = targetRaw != null ? Convert.ToDouble(targetRaw) : 0;
+
+    double pct    = target > 0 ? Math.Min(actual / target * 100.0, 100.0) : 0;
+    string pctStr = pct.ToString("F1");
+
+    // Pick color based on percentage if none set explicitly
+    if (string.IsNullOrEmpty(ViewData["Color"]?.ToString()))
+    {
+        color = pct >= 100 ? "danger" : pct >= 80 ? "warning" : "success";
+    }
+    else
+    {
+        color = pct >= 100 ? "danger" : color;
+    }
+}
+
+<div class="d-flex align-items-center gap-2 mt-1">
+    <div class="sf-progress flex-grow-1">
+        <div class="sf-progress-bar bg-@color" style="width: @pctStr%"></div>
+    </div>
+    @if (showLabel)
+    {
+        <span class="sf-progress-pct">@pctStr%</span>
+    }
+</div>

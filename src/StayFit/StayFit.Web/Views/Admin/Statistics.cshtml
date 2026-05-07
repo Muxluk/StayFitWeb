@@ -1,0 +1,192 @@
+@model AdminStatisticsViewModel
+@{
+    ViewData["Title"] = "Статистика системи";
+}
+
+<div class="container-fluid mt-4">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h2>Статистика системи</h2>
+        <small class="text-muted">
+            Оновлено: <span id="lastUpdate">@Model.LastUpdated.ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss")</span>
+        </small>
+    </div>
+
+    @* ── Секція: Користувачі ── *@
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card sf-card">
+                <div class="card-body text-center">
+                    <div class="sf-card-icon" style="font-size: 2.5rem;">👥</div>
+                    <div class="sf-card-value">@Model.TotalUsers</div>
+                    <div class="sf-card-label">Всього користувачів</div>
+                    <a href="/admin/user" class="btn btn-sm btn-outline-primary mt-2">Перегляд</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ── Секція: Продукти ── *@
+    <div class="mb-4">
+        <h5 class="mb-3">Керування продуктами</h5>
+        <div class="row g-3">
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="card sf-card">
+                    <div class="card-body text-center">
+
+                        <div class="sf-card-value">@Model.TotalProducts</div>
+                        <div class="sf-card-label">Всього продуктів</div>
+                        <a href="/admin/product" class="btn btn-sm btn-outline-secondary mt-2">Переглянути</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="card sf-card @(Model.PendingProductsCount > 0 ? "border-danger" : "")">
+                    <div class="card-body text-center">
+
+                        <div class="sf-card-value @(Model.PendingProductsCount > 0 ? "text-danger" : "")">
+                            @Model.PendingProductsCount
+                        </div>
+                        <div class="sf-card-label">На модерацію</div>
+                        @if (Model.PendingProductsCount > 0)
+                        {
+                            <a href="/admin/product" class="btn btn-sm btn-danger mt-2">Переглянути</a>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success mt-2">Всі перевірені</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="card sf-card">
+                    <div class="card-body text-center">
+                        <div class="sf-card-value">@(Model.TotalProducts - Model.PendingProductsCount)</div>
+                        <div class="sf-card-label">Затверджено</div>
+                        <small class="text-muted d-block mt-2">
+                            @{
+                                var percentage = Model.TotalProducts > 0 
+                                    ? ((Model.TotalProducts - Model.PendingProductsCount) / (double)Model.TotalProducts * 100)
+                                    : 0;
+                            }
+                            @percentage.ToString("F1")% затвердження
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ── Секція: Техпідтримка ── *@
+    <div class="mb-4">
+        <h5 class="mb-3">Техпідтримка</h5>
+        <div class="row g-3">
+            <div class="col-12 col-sm-6">
+                <div class="card sf-card @(Model.SupportMessagesCount > 0 ? "border-warning" : "")">
+                    <div class="card-body text-center">
+                        <div class="sf-card-value @(Model.SupportMessagesCount > 0 ? "text-warning" : "")">
+                            @Model.SupportMessagesCount
+                        </div>
+                        <div class="sf-card-label">Непрочитаних повідомлень</div>
+                        @if (Model.SupportMessagesCount > 0)
+                        {
+                            <a href="/admin/support" class="btn btn-sm btn-warning mt-2">Відповісти</a>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success mt-2">Всі оброблені</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ── Секція: Система ── *@
+    <div class="mb-4">
+        <h5 class="mb-3">Стан системи</h5>
+        <div class="row g-3">
+            <div class="col-12">
+                <div class="card sf-card">
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6 col-sm-3">
+                                <div class="fw-semibold">Статус</div>
+                                <span class="badge bg-success">Активна</span>
+                            </div>
+                            <div class="col-6 col-sm-3">
+                                <div class="fw-semibold">Дата оновлення</div>
+                                <small class="text-muted d-block mt-1">
+                                    @Model.LastUpdated.ToLocalTime().ToString("HH:mm:ss")
+                                </small>
+                            </div>
+                            <div class="col-6 col-sm-3">
+                                <div class="fw-semibold">Резервна копія</div>
+                                <small class="text-muted d-block mt-1">Регулярні</small>
+                            </div>
+                            <div class="col-6 col-sm-3">
+                                <div class="fw-semibold">SSL</div>
+                                <small class="text-success d-block mt-1">Ввімкнено</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ── Дії ── *@
+    <div class="row g-3 mb-4">
+        <div class="col-12">
+            <div class="card sf-card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Швидкі дії</h5>
+                    <div class="d-grid gap-2 d-sm-flex flex-wrap">
+                        <a href="/admin/user" class="btn btn-outline-primary">
+                            Керування користувачами
+                        </a>
+                        <a href="/admin/product" class="btn btn-outline-primary">
+                            Модерація продуктів
+                        </a>
+                        <a href="/admin/category" class="btn btn-outline-secondary">
+                            Категорії
+                        </a>
+                        <button class="btn btn-outline-info" id="refreshBtn" title="Оновити статистику">
+                            Оновити
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const refreshBtn = document.getElementById('refreshBtn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function() {
+            location.reload();
+        });
+    }
+
+    // Auto-refresh кожні 5 хвилин
+    setInterval(function() {
+        fetch(window.location.href)
+            .then(r => r.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const newDoc = parser.parseFromString(html, 'text/html');
+                const newUpdate = newDoc.querySelector('#lastUpdate');
+                if (newUpdate) {
+                    document.querySelector('#lastUpdate').textContent = newUpdate.textContent;
+                }
+            })
+            .catch(e => console.log('Auto-refresh failed:', e));
+    }, 5 * 60 * 1000);
+});
+</script>
+}

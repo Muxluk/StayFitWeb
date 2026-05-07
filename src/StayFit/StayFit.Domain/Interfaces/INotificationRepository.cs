@@ -46,4 +46,9 @@ public interface INotificationRepository
     /// Видалити сповіщення за ID
     /// </summary>
     Task DeleteAsync(int id);
+
+    /// <summary>
+    /// Перевіряє, чи вже існує CalorieThreshold-сповіщення для користувача за сьогодні
+    /// </summary>
+    Task<bool> HasCalorieThresholdNotificationTodayAsync(int userId);
 }
