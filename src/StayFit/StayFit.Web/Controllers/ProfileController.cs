@@ -52,6 +52,7 @@ public class ProfileController : BaseController
             Gender = profile?.Gender,
             Weight = profile?.Weight,
             Height = profile?.Height,
+            ActivityLevel = profile?.ActivityLevel,
         };
 
         // Завантажити активні сесії для вкладки Безпека
@@ -86,6 +87,32 @@ public class ProfileController : BaseController
         _logger.LogInformation("Профіль {UserId} успішно збережено", userId);
         TempData["SuccessMessage"] = "Профіль успішно збережено!";
         return RedirectToAction(nameof(View));
+    }
+
+    /// <summary>
+    /// Автоматичне фонове збереження профілю
+    /// POST: /profile/auto-save
+    /// </summary>
+    [HttpPost("auto-save")]
+    public async Task<IActionResult> AutoSave([FromBody] UpdateUserProfileDto dto)
+    {
+        var userId = GetRequiredCurrentUserId();
+
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(new { success = false, errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage) });
+        }
+
+        try
+        {
+            await _userProfileService.UpdateProfileAsync(userId, dto);
+            return Ok(new { success = true });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Помилка автозбереження профілю для користувача {UserId}", userId);
+            return StatusCode(500, new { success = false, message = "Внутрішня помилка при збереженні" });
+        }
     }
 
     /// <summary>

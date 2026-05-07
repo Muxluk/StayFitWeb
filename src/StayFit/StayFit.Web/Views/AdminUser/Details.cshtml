@@ -4,31 +4,31 @@
     ViewData["Title"] = "Керування акаунтом";
 }
 
-<div class="container mt-4">
-    <div class="d-flex align-items-center justify-content-between mb-3">
-        <h2 class="mb-0">Керування акаунтом</h2>
-        <a asp-action="Index" asp-controller="AdminUser" class="btn btn-outline-secondary">Назад до списку</a>
+<div class="container py-4">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h2 class="fw-bold mb-0 text-dark"><i class="bi bi-person-lines-fill me-2 text-primary"></i>Деталі користувача</h2>
+        <a asp-action="Index" asp-controller="AdminUser" class="btn btn-light border rounded-3"><i class="bi bi-arrow-left me-2"></i>Назад до списку</a>
     </div>
 
     @if (TempData["Success"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["Success"]
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
 
     @if (TempData["Error"] != null)
     {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @TempData["Error"]
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["Error"]
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
 
     @if (!ViewData.ModelState.IsValid)
     {
-        <div class="alert alert-danger">
+        <div class="alert alert-danger border-0 shadow-sm rounded-4">
             <ul class="mb-0">
                 @foreach (var modelState in ViewData.ModelState.Values)
                 {
@@ -43,148 +43,151 @@
 
     @if (Model.User == null)
     {
-        <div class="alert alert-warning">Користувача не знайдено.</div>
+        <div class="alert alert-warning border-0 shadow-sm rounded-4">Користувача не знайдено.</div>
     }
     else
     {
         <div class="row g-4">
-            <div class="col-lg-6">
-                <div class="card shadow-sm h-100">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0">Інформація про користувача</h5>
+            <!-- Left Column: Info & Profile -->
+            <div class="col-lg-8">
+                <!-- General Info Card -->
+                <div class="card shadow-sm border-0 rounded-4 mb-4">
+                    <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                        <h5 class="fw-bold text-dark"><i class="bi bi-shield-lock text-primary me-2"></i>Дані акаунта</h5>
                     </div>
                     <div class="card-body">
-                        <dl class="row mb-0">
-                            <dt class="col-sm-4">ID</dt>
-                            <dd class="col-sm-8">@Model.User.UserId</dd>
+                        <div class="row">
+                            <div class="col-sm-6 mb-3">
+                                <div class="text-muted small mb-1">ID Користувача</div>
+                                <div class="fw-medium">@Model.User.UserId</div>
+                            </div>
+                            <div class="col-sm-6 mb-3">
+                                <div class="text-muted small mb-1">Статус</div>
+                                <div>
+                                    @if (Model.User.IsLocked)
+                                    {
+                                        <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill"><i class="bi bi-lock-fill me-1"></i> Заблокований</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill"><i class="bi bi-check-circle-fill me-1"></i> Активний</span>
+                                    }
+                                </div>
+                            </div>
+                            <div class="col-sm-6 mb-3">
+                                <div class="text-muted small mb-1">Логін (UserName)</div>
+                                <div class="fw-medium">@Model.User.UserName</div>
+                            </div>
+                            <div class="col-sm-6 mb-3">
+                                <div class="text-muted small mb-1">Електронна пошта</div>
+                                <div class="fw-medium">@Model.User.Email</div>
+                            </div>
+                            <div class="col-sm-6 mb-3">
+                                <div class="text-muted small mb-1">Невдалих спроб входу</div>
+                                <div class="fw-medium">@Model.User.AccessFailedCount</div>
+                            </div>
+                            <div class="col-sm-6 mb-3">
+                                <div class="text-muted small mb-1">Блокування до</div>
+                                <div class="fw-medium">@(Model.User.LockoutEnd?.ToLocalTime().ToString("dd.MM.yyyy HH:mm") ?? "—")</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                            <dt class="col-sm-4">Логін</dt>
-                            <dd class="col-sm-8">@Model.User.UserName</dd>
-
-                            <dt class="col-sm-4">Email</dt>
-                            <dd class="col-sm-8">@Model.User.Email</dd>
-
-                            <dt class="col-sm-4">Статус</dt>
-                            <dd class="col-sm-8">
-                                @if (Model.User.IsLocked)
-                                {
-                                    <span class="badge bg-danger">Заблокований</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-success">Активний</span>
-                                }
-                            </dd>
-
-                            <dt class="col-sm-4">Lockout End</dt>
-                            <dd class="col-sm-8">@(Model.User.LockoutEnd?.ToLocalTime().ToString("dd.MM.yyyy HH:mm") ?? "-")</dd>
-
-                            <dt class="col-sm-4">AccessFailed</dt>
-                            <dd class="col-sm-8">@Model.User.AccessFailedCount</dd>
-
-                            <dt class="col-sm-4">Повне ім'я</dt>
-                            <dd class="col-sm-8">@(Model.User.Profile?.FullName ?? "-")</dd>
-
-                            <dt class="col-sm-4">Дата народження</dt>
-                            <dd class="col-sm-8">@(Model.User.Profile?.DateOfBirth?.ToString("dd.MM.yyyy") ?? "-")</dd>
-
-                            <dt class="col-sm-4">Стать</dt>
-                            <dd class="col-sm-8">@(Model.User.Profile?.Gender ?? "-")</dd>
-
-                            <dt class="col-sm-4">Вага</dt>
-                            <dd class="col-sm-8">@(Model.User.Profile?.Weight?.ToString("0.##") ?? "-")</dd>
-
-                            <dt class="col-sm-4">Зріст</dt>
-                            <dd class="col-sm-8">@(Model.User.Profile?.Height?.ToString("0.##") ?? "-")</dd>
-                        </dl>
+                <!-- Profile Card -->
+                <div class="card shadow-sm border-0 rounded-4">
+                    <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                        <h5 class="fw-bold text-dark"><i class="bi bi-person-vcard text-primary me-2"></i>Особистий профіль</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-sm-4 mb-3">
+                                <div class="text-muted small mb-1">Повне ім'я</div>
+                                <div class="fw-medium">@(string.IsNullOrWhiteSpace(Model.User.Profile?.FullName) ? "—" : Model.User.Profile.FullName)</div>
+                            </div>
+                            <div class="col-sm-4 mb-3">
+                                <div class="text-muted small mb-1">Дата народження</div>
+                                <div class="fw-medium">@(Model.User.Profile?.DateOfBirth?.ToString("dd.MM.yyyy") ?? "—")</div>
+                            </div>
+                            <div class="col-sm-4 mb-3">
+                                <div class="text-muted small mb-1">Стать</div>
+                                <div class="fw-medium">@(string.IsNullOrWhiteSpace(Model.User.Profile?.Gender) ? "—" : Model.User.Profile.Gender)</div>
+                            </div>
+                            <div class="col-sm-4 mb-3">
+                                <div class="text-muted small mb-1">Вага</div>
+                                <div class="fw-medium">@(Model.User.Profile?.Weight != null ? $"{Model.User.Profile.Weight:0.##} кг" : "—")</div>
+                            </div>
+                            <div class="col-sm-4 mb-3">
+                                <div class="text-muted small mb-1">Зріст</div>
+                                <div class="fw-medium">@(Model.User.Profile?.Height != null ? $"{Model.User.Profile.Height:0.##} см" : "—")</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="col-lg-6">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-danger-subtle">
-                        <h5 class="mb-0">Ручне скидання пароля</h5>
-                    </div>
-                    <div class="card-body">
-                        <form method="post" asp-action="ResetPassword" asp-controller="AdminUser" asp-route-userId="@Model.User.UserId">
-                            @Html.AntiForgeryToken()
-
-                            <div class="mb-3">
-                                <label for="NewPassword" class="form-label">Новий пароль</label>
-                                <input type="password" id="NewPassword" name="NewPassword" class="form-control"
-                                       value="@Model.ResetPassword.NewPassword" minlength="8" required />
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="ConfirmPassword" class="form-label">Підтвердження пароля</label>
-                                <input type="password" id="ConfirmPassword" name="ConfirmPassword" class="form-control"
-                                       value="@Model.ResetPassword.ConfirmPassword" minlength="8" required />
-                            </div>
-
-                            <button type="submit" class="btn btn-danger"
-                                    data-confirm-title="Скинути пароль"
-                                    data-confirm-message="Скинути пароль для цього користувача?"
-                                    data-confirm-button-text="Скинути"
-                                    data-confirm-button-class="btn-danger">
-                                Скинути пароль
-                            </button>
-                        </form>
-                    </div>
-                </div>
-
-                <div class="card shadow-sm mt-3">
-                    <div class="card-header bg-warning-subtle">
-                        <h5 class="mb-0">Дії над акаунтом</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="d-grid gap-2">
+            <!-- Right Column: Actions -->
+            <div class="col-lg-4">
+                <!-- Action Buttons -->
+                <div class="card shadow-sm border-0 rounded-4 mb-4 bg-light">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold text-dark text-uppercase mb-3">Дії над акаунтом</h6>
+                        <div class="d-grid gap-3">
                             <a asp-action="Edit" asp-controller="AdminUser" asp-route-userId="@Model.User.UserId" 
-                               class="btn btn-outline-primary">
-                                <i class="bi bi-pencil"></i> Редагувати
+                               class="btn btn-primary rounded-3 py-2">
+                                <i class="bi bi-pencil-square me-2"></i> Редагувати дані
                             </a>
 
                             @if (Model.User.IsLocked)
                             {
-                                                                        <form method="post" asp-action="UnblockUser" asp-controller="AdminUser" 
-                                                                            asp-route-userId="@Model.User.UserId" class="mb-0">
+                                <form method="post" asp-action="UnblockUser" asp-controller="AdminUser" asp-route-userId="@Model.User.UserId" class="m-0">
                                     @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-success w-100"
-                                            data-confirm-title="Розблокувати користувача"
-                                            data-confirm-message="Розблокувати цього користувача?"
-                                            data-confirm-button-text="Розблокувати"
-                                            data-confirm-button-class="btn-success">
-                                        <i class="bi bi-unlock"></i> Розблокувати
+                                    <button type="submit" class="btn btn-success w-100 rounded-3 py-2" onclick="return confirm('Ви впевнені, що хочете розблокувати користувача?');">
+                                        <i class="bi bi-unlock-fill me-2"></i> Розблокувати акаунт
                                     </button>
                                 </form>
                             }
                             else
                             {
-                                  <form method="post" asp-action="BlockUser" asp-controller="AdminUser"
-                                      asp-route-userId="@Model.User.UserId" class="mb-0">
+                                <form method="post" asp-action="BlockUser" asp-controller="AdminUser" asp-route-userId="@Model.User.UserId" class="m-0">
                                     @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-warning w-100"
-                                            data-confirm-title="Заблокувати користувача"
-                                            data-confirm-message="Заблокувати цього користувача?"
-                                            data-confirm-button-text="Заблокувати"
-                                            data-confirm-button-class="btn-warning">
-                                        <i class="bi bi-lock"></i> Заблокувати
+                                    <button type="submit" class="btn btn-warning w-100 rounded-3 py-2 text-white" onclick="return confirm('Ви впевнені, що хочете заблокувати користувача?');">
+                                        <i class="bi bi-lock-fill me-2"></i> Заблокувати акаунт
                                     </button>
                                 </form>
                             }
 
-                                <form method="post" asp-action="DeleteUser" asp-controller="AdminUser"
-                                    asp-route-userId="@Model.User.UserId" class="mb-0">
+                            <form method="post" asp-action="DeleteUser" asp-controller="AdminUser" asp-route-userId="@Model.User.UserId" class="m-0">
                                 @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-danger w-100"
-                                        data-confirm-title="Видалити користувача"
-                                        data-confirm-message="УВАГА! Видалити цього користувача? Цю дію не можна скасувати!"
-                                        data-confirm-button-text="Видалити"
-                                        data-confirm-button-class="btn-danger">
-                                    <i class="bi bi-trash"></i> Видалити
+                                <button type="submit" class="btn btn-outline-danger w-100 rounded-3 py-2" onclick="return confirm('УВАГА! Видалити цього користувача? Цю дію не можна скасувати!');">
+                                    <i class="bi bi-trash-fill me-2"></i> Видалити акаунт
                                 </button>
                             </form>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Reset Password -->
+                <div class="card shadow-sm border-0 rounded-4 border-top border-danger border-3">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold text-danger mb-3"><i class="bi bi-key-fill me-2"></i>Примусове скидання пароля</h6>
+                        <form method="post" asp-action="ResetPassword" asp-controller="AdminUser" asp-route-userId="@Model.User.UserId">
+                            @Html.AntiForgeryToken()
+                            
+                            <div class="mb-3">
+                                <label for="NewPassword" class="form-label text-muted small">Новий пароль</label>
+                                <input type="password" id="NewPassword" name="NewPassword" class="form-control rounded-3" value="@Model.ResetPassword.NewPassword" required minlength="8" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="ConfirmPassword" class="form-label text-muted small">Підтвердження пароля</label>
+                                <input type="password" id="ConfirmPassword" name="ConfirmPassword" class="form-control rounded-3" value="@Model.ResetPassword.ConfirmPassword" required minlength="8" />
+                            </div>
+
+                            <button type="submit" class="btn btn-danger w-100 rounded-3" onclick="return confirm('Встановити цей новий пароль?');">
+                                Змінити пароль
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -193,5 +196,5 @@
 </div>
 
 @section Scripts {
-    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <partial name="_ValidationScriptsPartial" />
 }

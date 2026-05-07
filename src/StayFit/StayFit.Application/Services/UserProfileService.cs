@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using StayFit.Application.DTOs;
@@ -80,20 +80,37 @@ public class UserProfileService : IUserProfileService
 
         if (profile == null)
         {
-            _logger.LogWarning("Профіль для оновлення користувача {UserId} не знайдено", userId);
-            throw new NotFoundException("Профіль користувача", userId);
+            _logger.LogInformation("Профіль для користувача {UserId} не знайдено, створюємо новий", userId);
+            profile = new UserProfile
+            {
+                UserId = userId,
+                FullName = dto.FullName,
+                DateOfBirth = dto.DateOfBirth,
+                Gender = dto.Gender,
+                Weight = dto.Weight,
+                Height = dto.Height,
+                ActivityLevel = dto.ActivityLevel,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            await _repository.AddAsync(profile);
+        }
+        else
+        {
+            profile.FullName = dto.FullName;
+            profile.DateOfBirth = dto.DateOfBirth;
+            profile.Gender = dto.Gender;
+            profile.Weight = dto.Weight;
+            profile.Height = dto.Height;
+            profile.ActivityLevel = dto.ActivityLevel;
+            profile.UpdatedAt = DateTime.UtcNow;
+
+            await _repository.UpdateAsync(profile);
         }
 
-        profile.FullName = dto.FullName;
-        profile.DateOfBirth = dto.DateOfBirth;
-        profile.Gender = dto.Gender;
-        profile.Weight = dto.Weight;
-        profile.Height = dto.Height;
-        profile.UpdatedAt = DateTime.UtcNow;
-
-        await _repository.UpdateAsync(profile);
         InvalidateProfilePhotoCache(userId);
-        _logger.LogInformation("Профіль користувача {UserId} успішно оновлено", userId);
+        _logger.LogInformation("Профіль користувача {UserId} успішно оновлено/створено", userId);
 
         return true;
     }
@@ -118,6 +135,7 @@ public class UserProfileService : IUserProfileService
             Gender = dto.Gender,
             Weight = dto.Weight,
             Height = dto.Height,
+            ActivityLevel = dto.ActivityLevel,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
         };
@@ -167,6 +185,7 @@ public class UserProfileService : IUserProfileService
             Gender = profile.Gender,
             Weight = profile.Weight,
             Height = profile.Height,
+            ActivityLevel = profile.ActivityLevel,
             ProfilePhotoPath = profile.ProfilePhotoPath,
             CreatedAt = profile.CreatedAt,
             UpdatedAt = profile.UpdatedAt,

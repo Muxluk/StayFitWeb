@@ -25,7 +25,7 @@ public sealed class RegistrationServiceTests
         userRepositoryMock.Setup(r => r.AddAsync(It.IsAny<User>())).Returns(Task.CompletedTask);
 
         var loggerMock = new Mock<ILogger<RegistrationService>>();
-        var sut = new RegistrationService(userManagerMock.Object, userRepositoryMock.Object, loggerMock.Object);
+        var sut = new RegistrationService(userManagerMock.Object, userRepositoryMock.Object, new Mock<IUserProfileRepository>().Object, loggerMock.Object);
 
         var request = new RegisterUserRequestDto
         {
@@ -53,7 +53,7 @@ public sealed class RegistrationServiceTests
 
         var userRepositoryMock = new Mock<IUserRepository>();
         var loggerMock = new Mock<ILogger<RegistrationService>>();
-        var sut = new RegistrationService(userManagerMock.Object, userRepositoryMock.Object, loggerMock.Object);
+        var sut = new RegistrationService(userManagerMock.Object, userRepositoryMock.Object, new Mock<IUserProfileRepository>().Object, loggerMock.Object);
 
         var request = new RegisterUserRequestDto
         {
@@ -92,7 +92,7 @@ public sealed class RegistrationServiceTests
         userRepositoryMock.Setup(r => r.AddAsync(It.IsAny<User>())).Returns(Task.CompletedTask);
 
         var loggerMock = new Mock<ILogger<RegistrationService>>();
-        var sut = new RegistrationService(userManagerMock.Object, userRepositoryMock.Object, loggerMock.Object);
+        var sut = new RegistrationService(userManagerMock.Object, userRepositoryMock.Object, new Mock<IUserProfileRepository>().Object, loggerMock.Object);
 
         var request = new RegisterUserRequestDto
         {
@@ -131,7 +131,7 @@ public sealed class RegistrationServiceTests
 
         var userRepositoryMock = new Mock<IUserRepository>();
         var loggerMock = new Mock<ILogger<RegistrationService>>();
-        var sut = new RegistrationService(userManagerMock.Object, userRepositoryMock.Object, loggerMock.Object);
+        var sut = new RegistrationService(userManagerMock.Object, userRepositoryMock.Object, new Mock<IUserProfileRepository>().Object, loggerMock.Object);
 
         var request = new RegisterUserRequestDto
         {
@@ -160,7 +160,7 @@ public sealed class RegistrationServiceTests
 
         var userRepositoryMock = new Mock<IUserRepository>();
         var loggerMock = new Mock<ILogger<RegistrationService>>();
-        var sut = new RegistrationService(userManagerMock.Object, userRepositoryMock.Object, loggerMock.Object);
+        var sut = new RegistrationService(userManagerMock.Object, userRepositoryMock.Object, new Mock<IUserProfileRepository>().Object, loggerMock.Object);
 
         var request = new RegisterUserRequestDto
         {

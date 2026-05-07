@@ -43,6 +43,11 @@ public class UserProfile
     public string? ProfilePhotoPath { get; set; }
 
     /// <summary>
+    /// Рівень фізичної активності (Low, Medium, High тощо)
+    /// </summary>
+    public string? ActivityLevel { get; set; }
+
+    /// <summary>
     /// Дата створення профілю
     /// </summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

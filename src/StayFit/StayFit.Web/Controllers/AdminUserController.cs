@@ -49,6 +49,30 @@ public class AdminUserController : BaseController
         return View(model);
     }
 
+    [HttpGet("autocomplete")]
+    public async Task<IActionResult> Autocomplete([FromQuery] string q)
+    {
+        if (string.IsNullOrWhiteSpace(q) || q.Length < 2)
+        {
+            return Json(new string[] { });
+        }
+
+        var result = await _adminUserService.SearchUsersAsync(new AdminUserSearchRequestDto
+        {
+            Email = q,
+            PageNumber = 1,
+            PageSize = 10
+        });
+
+        if (result.IsFailure || result.Value == null)
+        {
+            return Json(new string[] { });
+        }
+
+        var emails = result.Value.Items.Select(u => u.Email).ToList();
+        return Json(emails);
+    }
+
     [HttpGet("{userId:int}")]
     public async Task<IActionResult> Details(int userId)
     {
