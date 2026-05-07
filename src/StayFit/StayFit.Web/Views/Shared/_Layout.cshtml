@@ -58,9 +58,6 @@
                             <a class="nav-link text-dark" asp-controller="NutritionGoal" asp-action="Index">Мої цілі</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Hydration" asp-action="Index">Вода</a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Export" asp-action="Index">Експорт</a>
                         </li>
                         @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
@@ -79,7 +76,7 @@
                                 </a>
                             </li>
                             <li class="nav-item d-flex align-items-center me-2">
-                                <a asp-controller="AdminEmail" asp-action="Create" class="btn btn-sm btn-outline-primary">
+                                <a asp-controller="AdminEmail" asp-action="Index" class="btn btn-sm btn-outline-primary">
                                     Email-розсилка
                                 </a>
                             </li>

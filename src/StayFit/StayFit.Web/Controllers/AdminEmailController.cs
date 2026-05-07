@@ -50,7 +50,22 @@ public class AdminEmailController : Controller
         return View("Index", viewModel);
     }
 
+    [HttpGet("create")]
+    [HttpGet("~/AdminEmail/Create")]
+    public IActionResult Create()
+    {
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet("history")]
+    [HttpGet("~/AdminEmail/History")]
+    public IActionResult History()
+    {
+        return RedirectToAction(nameof(Index));
+    }
+
     [HttpPost("send")]
+    [HttpPost("~/AdminEmail/Send")]
     public async Task<IActionResult> SendBroadcast([FromBody] SendEmailBroadcastDto request)
     {
         if (!ModelState.IsValid)
