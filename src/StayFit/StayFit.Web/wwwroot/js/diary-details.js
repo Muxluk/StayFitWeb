@@ -1,19 +1,23 @@
 (function () {
     // Character counter for notes
-    document.querySelectorAll('.meal-note').forEach(textarea => {
-        textarea.addEventListener('input', function() {
-            const mealId = this.getAttribute('data-meal-id');
-            const counter = document.getElementById(`charcount_${mealId}`);
+    var textareas = document.querySelectorAll('.meal-note');
+    for (var i = 0; i < textareas.length; i++) {
+        textareas[i].addEventListener('input', function() {
+            var mealId = this.getAttribute('data-meal-id');
+            var counter = document.getElementById('charcount_' + mealId);
             if (counter) counter.textContent = this.value.length;
         });
-    });
+    }
 
     // Update note button handler
-    document.querySelectorAll('.update-note-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const mealId = this.getAttribute('data-meal-id');
-            const noteText = document.getElementById(`note_${mealId}`).value;
-            const actionUrl = this.getAttribute('data-action-url');
+    var buttons = document.querySelectorAll('.update-note-btn');
+    for (var j = 0; j < buttons.length; j++) {
+        buttons[j].addEventListener('click', function() {
+            var self = this;
+            var mealId = self.getAttribute('data-meal-id');
+            var noteInput = document.getElementById('note_' + mealId);
+            var noteText = noteInput ? noteInput.value : '';
+            var actionUrl = self.getAttribute('data-action-url');
 
             if (!actionUrl) {
                 console.error('Action URL not found on button');
@@ -25,20 +29,20 @@
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: `mealId=${mealId}&note=${encodeURIComponent(noteText)}`
+                body: 'mealId=' + encodeURIComponent(mealId) + '&note=' + encodeURIComponent(noteText)
             })
-            .then(response => response.json())
-            .then(data => {
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
                 if (data.success) {
                     alert('Нотатка збережена!');
                 } else {
                     alert(data.error || 'Помилка при збереженні нотатки');
                 }
             })
-            .catch(error => {
+            ['catch'](function(error) {
                 console.error('Error:', error);
                 alert('Помилка при збереженні нотатки');
             });
         });
-    });
+    }
 })();

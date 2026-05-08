@@ -1,21 +1,29 @@
 (function () {
-    const form     = document.getElementById('sf-fi-form');
-    const skeleton = document.getElementById('sf-fi-skeleton');
-    const results  = document.getElementById('sf-fi-results');
-    const btn      = document.getElementById('sf-fi-btn');
-    const btnText  = document.getElementById('sf-fi-btn-text');
-    const btnSpin  = document.getElementById('sf-fi-btn-spinner');
+    var form     = document.getElementById('sf-fi-form');
+    var skeleton = document.getElementById('sf-fi-skeleton');
+    var results  = document.getElementById('sf-fi-results');
+    var btn      = document.getElementById('sf-fi-btn');
+    var btnText  = document.getElementById('sf-fi-btn-text');
+    var btnSpin  = document.getElementById('sf-fi-btn-spinner');
 
     if (!form) return;
 
     form.addEventListener('submit', function (e) {
         e.preventDefault();
 
-        const url = new URL(form.action || location.href, location.origin);
-        new FormData(form).forEach((v, k) => {
+        var action = form.getAttribute('action') || location.href;
+        var url = new URL(action, location.origin);
+        var formData = new FormData(form);
+        
+        var entries = formData.entries();
+        var entry = entries.next();
+        while (!entry.done) {
+            var k = entry.value[0];
+            var v = entry.value[1];
             if (v) url.searchParams.set(k, v);
             else   url.searchParams.delete(k);
-        });
+            entry = entries.next();
+        }
 
         if (results) results.classList.add('d-none');
         if (skeleton) skeleton.classList.remove('d-none');
@@ -26,14 +34,15 @@
         history.pushState(null, '', url.toString());
 
         fetch(url.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-            .then(r => r.text())
-            .then(html => {
-                const doc   = new DOMParser().parseFromString(html, 'text/html');
-                const fresh = doc.getElementById('sf-fi-results');
+            .then(function(r) { return r.text(); })
+            .then(function(html) {
+                var parser = new DOMParser();
+                var doc   = parser.parseFromString(html, 'text/html');
+                var fresh = doc.getElementById('sf-fi-results');
                 if (fresh && results) results.innerHTML = fresh.innerHTML;
             })
-            .catch(() => { location.href = url.toString(); })
-            .finally(() => {
+            ['catch'](function() { location.href = url.toString(); })
+            ['finally'](function() {
                 if (skeleton) skeleton.classList.add('d-none');
                 if (results) results.classList.remove('d-none');
                 if (btn) btn.disabled = false;

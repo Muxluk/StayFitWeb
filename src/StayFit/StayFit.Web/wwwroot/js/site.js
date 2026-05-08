@@ -15,6 +15,8 @@
         var modalEl = document.getElementById('modalConfirm');
         if (!modalEl) return;
 
+        if (!window.bootstrap || !window.bootstrap.Modal) return;
+
         var bsModal = new bootstrap.Modal(modalEl);
         var confirmBtn = modalEl.querySelector('.modal-confirm-btn');
         var titleEl = modalEl.querySelector('.modal-title');
@@ -23,30 +25,35 @@
         var pendingHref = null;
 
         document.addEventListener('click', function (e) {
-            var trigger = e.target.closest('[data-confirm-title]');
-            if (!trigger) return;
+            var target = e.target;
+            while (target && target !== document.body) {
+                if (target.hasAttribute('data-confirm-title')) {
+                    var trigger = target;
+                    e.preventDefault();
+                    e.stopPropagation();
 
-            e.preventDefault();
-            e.stopPropagation();
+                    var title = trigger.getAttribute('data-confirm-title') || 'Підтвердження';
+                    var message = trigger.getAttribute('data-confirm-message') || 'Ви впевнені?';
+                    var btnText = trigger.getAttribute('data-confirm-btn') || 'Підтвердити';
 
-            var title = trigger.getAttribute('data-confirm-title') || 'Підтвердження';
-            var message = trigger.getAttribute('data-confirm-message') || 'Ви впевнені?';
-            var btnText = trigger.getAttribute('data-confirm-btn') || 'Підтвердити';
+                    if (titleEl) titleEl.textContent = title;
+                    if (bodyEl) bodyEl.textContent = message;
+                    if (confirmBtn) confirmBtn.textContent = btnText;
 
-            if (titleEl) titleEl.textContent = title;
-            if (bodyEl) bodyEl.textContent = message;
-            if (confirmBtn) confirmBtn.textContent = btnText;
+                    var form = trigger.closest('form');
+                    if (trigger.tagName === 'A' && trigger.href) {
+                        pendingHref = trigger.href;
+                        pendingForm = null;
+                    } else if (form) {
+                        pendingForm = form;
+                        pendingHref = null;
+                    }
 
-            var form = trigger.closest('form');
-            if (trigger.tagName === 'A' && trigger.href) {
-                pendingHref = trigger.href;
-                pendingForm = null;
-            } else if (form) {
-                pendingForm = form;
-                pendingHref = null;
+                    bsModal.show();
+                    return;
+                }
+                target = target.parentNode;
             }
-
-            bsModal.show();
         });
 
         if (confirmBtn) {
@@ -62,12 +69,13 @@
 
     // --- Auto Submit ---
     function initAutoSubmit() {
-        document.querySelectorAll('select[data-auto-submit]').forEach(function (select) {
-            select.addEventListener('change', function () {
+        var selects = document.querySelectorAll('select[data-auto-submit]');
+        for (var i = 0; i < selects.length; i++) {
+            selects[i].addEventListener('change', function () {
                 var form = this.closest('form');
                 if (form) form.submit();
             });
-        });
+        }
     }
 
     // --- SignalR Notifications ---
@@ -85,19 +93,17 @@
             showToast(notification);
         });
 
-        connection.start().catch(function (err) {
+        connection.start()['catch'](function (err) {
             console.error("SignalR Connection Error: ", err.toString());
         });
 
-        // Initial fetch
         fetchNotifications();
 
-        // Event listeners for actions
         var markAllBtn = document.getElementById('markAllReadBtn');
         if (markAllBtn) {
             markAllBtn.addEventListener('click', function() {
                 fetch('/notifications/mark-all-as-read', { method: 'POST' })
-                    .then(r => r.ok && fetchNotifications());
+                    .then(function(r) { if (r.ok) fetchNotifications(); });
             });
         }
 
@@ -105,15 +111,15 @@
         if (clearAllBtn) {
             clearAllBtn.addEventListener('click', function() {
                 fetch('/notifications/clear-all', { method: 'POST' })
-                    .then(r => r.ok && fetchNotifications());
+                    .then(function(r) { if (r.ok) fetchNotifications(); });
             });
         }
     }
 
     function fetchNotifications() {
         fetch('/notifications/unread')
-            .then(response => response.json())
-            .then(data => {
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
                 var list = document.getElementById('notificationList');
                 if (!list) return;
 
@@ -123,7 +129,9 @@
                     updateBadge(0, true);
                     toggleActionButtons(false);
                 } else {
-                    data.forEach(n => addNotificationToList(n));
+                    for (var i = 0; i < data.length; i++) {
+                        addNotificationToList(data[i]);
+                    }
                     updateBadge(data.length, true);
                     toggleActionButtons(true);
                 }
@@ -134,20 +142,18 @@
         var list = document.getElementById('notificationList');
         if (!list) return;
 
-        // Remove empty message if present
         var emptyMsg = list.querySelector('.text-muted');
         if (emptyMsg) emptyMsg.remove();
 
         var item = document.createElement('div');
         item.className = 'notification-item mb-2 p-2 border-bottom';
-        item.innerHTML = `
-            <div class="d-flex justify-content-between">
-                <strong class="small">${n.title}</strong>
-                <span class="text-muted smaller">${new Date(n.createdAt).toLocaleTimeString()}</span>
-            </div>
-            <div class="smaller">${n.message}</div>
-        `;
-        list.prepend(item);
+        item.innerHTML = '<div class="d-flex justify-content-between">' +
+                '<strong class="small">' + n.title + '</strong>' +
+                '<span class="text-muted smaller">' + new Date(n.createdAt).toLocaleTimeString() + '</span>' +
+            '</div>' +
+            '<div class="smaller">' + n.message + '</div>';
+        
+        list.insertBefore(item, list.firstChild);
         toggleActionButtons(true);
     }
 
@@ -169,17 +175,16 @@
 
     function toggleActionButtons(show) {
         var btns = ['markAllReadBtn', 'clearAllBtn'];
-        btns.forEach(id => {
-            var el = document.getElementById(id);
+        for (var i = 0; i < btns.length; i++) {
+            var el = document.getElementById(btns[i]);
             if (el) {
                 if (show) el.classList.remove('d-none');
                 else el.classList.add('d-none');
             }
-        });
+        }
     }
 
     function showToast(n) {
-        // Simple console log for now, or use a library like toastr if available
         console.log("New Notification:", n.title, n.message);
     }
 })();

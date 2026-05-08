@@ -5,12 +5,15 @@ document.addEventListener('DOMContentLoaded', function () {
     var ctx = canvas.getContext('2d');
     
     try {
-        var labels = JSON.parse(canvas.dataset.labels || '[]');
-        var caloriesData = JSON.parse(canvas.dataset.calories || '[]');
-        var goalValue = parseFloat(canvas.dataset.goal || '0');
-        var totalDays = parseInt(canvas.dataset.days || '0');
+        var labels = JSON.parse(canvas.getAttribute('data-labels') || '[]');
+        var caloriesData = JSON.parse(canvas.getAttribute('data-calories') || '[]');
+        var goalValue = parseFloat(canvas.getAttribute('data-goal') || '0');
+        var totalDays = parseInt(canvas.getAttribute('data-days') || '0');
         
-        var goalLine = Array(totalDays).fill(goalValue);
+        var goalLine = [];
+        for (var i = 0; i < labels.length; i++) {
+            goalLine.push(goalValue);
+        }
 
         new Chart(ctx, {
             type: 'bar',

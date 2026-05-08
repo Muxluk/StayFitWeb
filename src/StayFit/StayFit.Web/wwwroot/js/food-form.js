@@ -1,37 +1,40 @@
 (function () {
     // ── Категорія ─────────────────────────────────────────────────────────
-    const catInput = document.getElementById('categoryInput');
+    var catInput = document.getElementById('categoryInput');
     if (catInput) {
-        document.querySelectorAll('.sf-cat-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
-                document.querySelectorAll('.sf-cat-btn').forEach(b => b.classList.remove('active'));
+        var catBtns = document.querySelectorAll('.sf-cat-btn');
+        for (var i = 0; i < catBtns.length; i++) {
+            catBtns[i].addEventListener('click', function () {
+                for (var j = 0; j < catBtns.length; j++) {
+                    catBtns[j].classList.remove('active');
+                }
                 this.classList.add('active');
-                catInput.value = this.dataset.value;
+                catInput.value = this.getAttribute('data-value');
             });
-        });
+        }
     }
 
     // ── Попередній перегляд порції ────────────────────────────────────────
-    const inpCal  = document.getElementById('inp_cal');
-    const inpProt = document.getElementById('inp_prot');
-    const inpFat  = document.getElementById('inp_fat');
-    const inpCarb = document.getElementById('inp_carb');
-    const inpG    = document.getElementById('previewGrams');
+    var inpCal  = document.getElementById('inp_cal');
+    var inpProt = document.getElementById('inp_prot');
+    var inpFat  = document.getElementById('inp_fat');
+    var inpCarb = document.getElementById('inp_carb');
+    var inpG    = document.getElementById('previewGrams');
 
-    const prevCal  = document.getElementById('prev_cal');
-    const prevProt = document.getElementById('prev_prot');
-    const prevFat  = document.getElementById('prev_fat');
-    const prevCarb = document.getElementById('prev_carb');
+    var prevCal  = document.getElementById('prev_cal');
+    var prevProt = document.getElementById('prev_prot');
+    var prevFat  = document.getElementById('prev_fat');
+    var prevCarb = document.getElementById('prev_carb');
 
     function calcPreview() {
         if (!inpG || !prevCal) return;
         
-        const g    = parseFloat(inpG.value)    || 0;
-        const cal  = parseFloat(inpCal?.value)  || 0;
-        const prot = parseFloat(inpProt?.value) || 0;
-        const fat  = parseFloat(inpFat?.value)  || 0;
-        const carb = parseFloat(inpCarb?.value) || 0;
-        const k = g / 100;
+        var g    = parseFloat(inpG.value)    || 0;
+        var cal  = parseFloat(inpCal ? inpCal.value : 0)  || 0;
+        var prot = parseFloat(inpProt ? inpProt.value : 0) || 0;
+        var fat  = parseFloat(inpFat ? inpFat.value : 0)  || 0;
+        var carb = parseFloat(inpCarb ? inpCarb.value : 0) || 0;
+        var k = g / 100;
         
         if (prevCal) prevCal.textContent  = g ? (cal  * k).toFixed(0) : '–';
         if (prevProt) prevProt.textContent = g ? (prot * k).toFixed(1) : '–';
@@ -40,9 +43,10 @@
     }
 
     if (inpG) {
-        [inpCal, inpProt, inpFat, inpCarb, inpG].forEach(el => {
-            if (el) el.addEventListener('input', calcPreview);
-        });
+        var els = [inpCal, inpProt, inpFat, inpCarb, inpG];
+        for (var k = 0; k < els.length; k++) {
+            if (els[k]) els[k].addEventListener('input', calcPreview);
+        }
         calcPreview();
     }
 })();

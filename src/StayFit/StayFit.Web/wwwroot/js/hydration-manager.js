@@ -1,7 +1,7 @@
 (function () {
-    const STORAGE_KEY = 'sf_water_' + new Date().toISOString().slice(0, 10);
-    const HISTORY_KEY = 'sf_water_history_' + new Date().toISOString().slice(0, 10);
-    const GOAL = 8;
+    var STORAGE_KEY = 'sf_water_' + new Date().toISOString().slice(0, 10);
+    var HISTORY_KEY = 'sf_water_history_' + new Date().toISOString().slice(0, 10);
+    var GOAL = 8;
 
     function load() {
         return parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10);
@@ -14,7 +14,7 @@
     function getHistory() {
         try {
             return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
-        } catch {
+        } catch(e) {
             return [];
         }
     }
@@ -24,7 +24,7 @@
     }
 
     function addToHistory(glasses) {
-        const history = getHistory();
+        var history = getHistory();
         history.push({
             time: new Date().toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }),
             glasses: glasses
@@ -33,39 +33,39 @@
     }
 
     function render(count) {
-        const intake = document.getElementById('waterIntake');
-        const drops = document.getElementById('waterDrops');
-        const progressBar = document.querySelector('.sf-progress-bar');
+        var intake = document.getElementById('waterIntake');
+        var drops = document.getElementById('waterDrops');
+        var progressBar = document.querySelector('.sf-progress-bar');
 
         if (intake) intake.textContent = count;
         if (!drops) return;
 
-        // Анімація прогрес бару
         if (progressBar) {
             progressBar.classList.add('pulse');
-            setTimeout(() => progressBar.classList.remove('pulse'), 800);
+            setTimeout(function() { progressBar.classList.remove('pulse'); }, 800);
         }
 
-        // Крапельки
         drops.innerHTML = '';
-        for (let i = 1; i <= GOAL; i++) {
-            const span = document.createElement('span');
-            span.className = 'sf-drop' + (i <= count ? ' active' : '');
-            span.textContent = '💧';
-            span.title = i + ' склянка';
-            span.style.cursor = 'pointer';
-            span.addEventListener('click', function () {
-                const cur = load();
-                const newVal = (i <= cur && i === cur) ? cur - 1 : i;
-                const final = Math.max(0, newVal);
-                const diff = final - cur;
-                save(final);
-                if (diff > 0) addToHistory(diff);
-                render(final);
-                updateHistory();
-                updateProgressBar(final);
-            });
-            drops.appendChild(span);
+        for (var i = 1; i <= GOAL; i++) {
+            (function(idx) {
+                var span = document.createElement('span');
+                span.className = 'sf-drop' + (idx <= count ? ' active' : '');
+                span.textContent = '💧';
+                span.title = idx + ' склянка';
+                span.style.cursor = 'pointer';
+                span.addEventListener('click', function () {
+                    var cur = load();
+                    var newVal = (idx <= cur && idx === cur) ? cur - 1 : idx;
+                    var finalValue = Math.max(0, newVal);
+                    var diff = finalValue - cur;
+                    save(finalValue);
+                    if (diff > 0) addToHistory(diff);
+                    render(finalValue);
+                    updateHistory();
+                    updateProgressBar(finalValue);
+                });
+                drops.appendChild(span);
+            })(i);
         }
     }
 
@@ -84,8 +84,8 @@
     }
 
     function updateHistory() {
-        const history = getHistory();
-        const container = document.getElementById('waterHistory');
+        var history = getHistory();
+        var container = document.getElementById('waterHistory');
         if (!container) return;
         
         if (history.length === 0) {
@@ -93,26 +93,33 @@
             return;
         }
 
-        container.innerHTML = history.map((entry, idx) => `
-            <div class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <span class="fw-semibold">${entry.time}</span>
-                    <span class="badge bg-info ms-2">${entry.glasses} ${entry.glasses === 1 ? 'склянка' : 'склянок'}</span>
-                </div>
-                <button class="btn btn-sm btn-outline-danger" data-idx="${idx}" onclick="removeHistoryEntry(${idx})">
-                    ✕
-                </button>
-            </div>
-        `).join('');
+        var html = '';
+        for (var i = 0; i < history.length; i++) {
+            var entry = history[i];
+            var label = entry.glasses === 1 ? 'склянка' : 'склянок';
+            html += '<div class="list-group-item d-flex justify-content-between align-items-center">' +
+                '<div>' +
+                    '<span class="fw-semibold">' + entry.time + '</span>' +
+                    '<span class="badge bg-info ms-2">' + entry.glasses + ' ' + label + '</span>' +
+                '</div>' +
+                '<button class="btn btn-sm btn-outline-danger" onclick="removeHistoryEntry(' + i + ')">' +
+                    '✕' +
+                '</button>' +
+            '</div>';
+        }
+        container.innerHTML = html;
     }
 
     window.removeHistoryEntry = function(idx) {
-        const history = getHistory();
+        var history = getHistory();
         if (idx < 0 || idx >= history.length) return;
         history.splice(idx, 1);
         saveHistory(history);
         updateHistory();
-        const total = history.reduce((sum, e) => sum + e.glasses, 0);
+        var total = 0;
+        for (var i = 0; i < history.length; i++) {
+            total += history[i].glasses;
+        }
         save(total);
         render(total);
         updateProgressBar(total);
@@ -121,28 +128,30 @@
     document.addEventListener('DOMContentLoaded', function () {
         if (!document.getElementById('waterHistory')) return;
 
-        const count = load();
+        var count = load();
         render(count);
         updateHistory();
         updateProgressBar(count);
 
-        document.querySelectorAll('.water-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
-                const glasses = parseInt(this.dataset.glasses, 10);
-                const cur = load();
-                const newVal = cur + glasses;
+        var buttons = document.querySelectorAll('.water-btn');
+        for (var i = 0; i < buttons.length; i++) {
+            buttons[i].addEventListener('click', function () {
+                var self = this;
+                var glasses = parseInt(self.getAttribute('data-glasses'), 10);
+                var cur = load();
+                var newVal = cur + glasses;
                 save(newVal);
                 addToHistory(glasses);
                 render(newVal);
                 updateHistory();
                 updateProgressBar(newVal);
                 
-                this.classList.add('active');
-                setTimeout(() => this.classList.remove('active'), 200);
+                self.classList.add('active');
+                setTimeout(function() { self.classList.remove('active'); }, 200);
             });
-        });
+        }
 
-        const resetBtn = document.getElementById('waterResetBtn');
+        var resetBtn = document.getElementById('waterResetBtn');
         if (resetBtn) {
             resetBtn.addEventListener('click', function () {
                 if (confirm('Ви впевнені? Це скине всі записи на сьогодні.')) {

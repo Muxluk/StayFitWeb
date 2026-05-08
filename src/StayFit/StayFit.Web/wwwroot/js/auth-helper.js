@@ -1,24 +1,26 @@
 (function () {
     // --- LOGIN FORM ---
-    const loginForm = document.getElementById('loginForm');
+    var loginForm = document.getElementById('loginForm');
     if (loginForm) {
-        const emailInput = document.getElementById('emailInput');
-        const passwordInput = document.getElementById('passwordInput');
-        const submitBtn = document.getElementById('submitBtn');
-        const submitText = document.getElementById('submitText');
-        const submitSpinner = document.getElementById('submitSpinner');
-        const loginAlert = document.getElementById('loginAlert');
-        const loginAlertText = document.getElementById('loginAlertText');
-        const retryBtn = document.getElementById('retryBtn');
+        var emailInput = document.getElementById('emailInput');
+        var passwordInput = document.getElementById('passwordInput');
+        var submitBtn = document.getElementById('submitBtn');
+        var submitText = document.getElementById('submitText');
+        var submitSpinner = document.getElementById('submitSpinner');
+        var loginAlert = document.getElementById('loginAlert');
+        var loginAlertText = document.getElementById('loginAlertText');
+        var retryBtn = document.getElementById('retryBtn');
 
-        const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        var validateEmail = function(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        };
 
-        const checkValidity = (element, validator) => {
+        var checkValidity = function(element, validator) {
             if (element.value.trim() === '') {
                 element.classList.remove('is-invalid', 'is-valid');
                 return false;
             }
-            const isValid = validator(element.value);
+            var isValid = validator(element.value);
             if (isValid) {
                 element.classList.remove('is-invalid');
                 element.classList.add('is-valid');
@@ -29,35 +31,31 @@
             return isValid;
         };
 
-        if (emailInput) emailInput.addEventListener('input', () => checkValidity(emailInput, validateEmail));
-        if (passwordInput) passwordInput.addEventListener('input', () => checkValidity(passwordInput, val => val.length >= 8));
+        if (emailInput) {
+            emailInput.addEventListener('input', function() {
+                checkValidity(emailInput, validateEmail);
+            });
+        }
+        if (passwordInput) {
+            passwordInput.addEventListener('input', function() {
+                checkValidity(passwordInput, function(val) { return val.length >= 8; });
+            });
+        }
 
-        loginForm.addEventListener('submit', async function (e) {
-            e.preventDefault();
-            const isEmailValid = checkValidity(emailInput, validateEmail);
-            const isPasswordValid = checkValidity(passwordInput, val => val.length >= 8);
-            if (!isEmailValid || !isPasswordValid) return;
-            submitLoginForm();
-        });
-
-        if (retryBtn) retryBtn.addEventListener('click', () => {
-            loginAlert.classList.add('d-none');
-            submitLoginForm();
-        });
-
-        async function submitLoginForm() {
+        var submitLoginForm = function() {
             submitBtn.disabled = true;
             if (submitText) submitText.classList.add('opacity-0');
             if (submitSpinner) submitSpinner.classList.remove('d-none');
             if (loginAlert) loginAlert.classList.add('d-none');
 
-            try {
-                const response = await fetch(loginForm.action, {
-                    method: 'POST',
-                    body: new FormData(loginForm),
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                });
+            var formData = new FormData(loginForm);
 
+            fetch(loginForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(function(response) {
                 if (response.redirected) {
                     submitBtn.classList.replace('btn-primary', 'btn-success');
                     if (submitSpinner) submitSpinner.classList.add('d-none');
@@ -65,122 +63,148 @@
                         submitText.innerHTML = '<i class="bi bi-check2-circle me-2"></i>Успішно';
                         submitText.classList.remove('opacity-0');
                     }
-                    setTimeout(() => window.location.href = response.url, 500);
+                    setTimeout(function() { window.location.href = response.url; }, 500);
                     return;
                 }
 
-                const html = await response.text();
-                const doc = new DOMParser().parseFromString(html, 'text/html');
-                const errors = doc.querySelector('.validation-summary-errors');
-                if (errors) {
-                    if (loginAlertText) loginAlertText.textContent = errors.textContent.trim();
-                    if (loginAlert) loginAlert.classList.remove('d-none');
-                    emailInput.classList.add('is-invalid');
-                    passwordInput.classList.add('is-invalid');
-                } else {
-                    window.location.reload();
-                }
-            } catch (error) {
+                return response.text().then(function(html) {
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(html, 'text/html');
+                    var errors = doc.querySelector('.validation-summary-errors');
+                    if (errors) {
+                        if (loginAlertText) loginAlertText.textContent = errors.textContent.trim();
+                        if (loginAlert) loginAlert.classList.remove('d-none');
+                        emailInput.classList.add('is-invalid');
+                        passwordInput.classList.add('is-invalid');
+                    } else {
+                        window.location.reload();
+                    }
+                });
+            })
+            ['catch'](function(error) {
                 if (loginAlertText) loginAlertText.textContent = 'Помилка з\'єднання. Перевірте інтернет.';
                 if (loginAlert) loginAlert.classList.remove('d-none');
-            } finally {
+            })
+            ['finally'](function() {
                 submitBtn.disabled = false;
                 if (submitText) submitText.classList.remove('opacity-0');
                 if (submitSpinner) submitSpinner.classList.add('d-none');
-            }
+            });
+        };
+
+        loginForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var isEmailValid = checkValidity(emailInput, validateEmail);
+            var isPasswordValid = checkValidity(passwordInput, function(val) { return val.length >= 8; });
+            if (!isEmailValid || !isPasswordValid) return;
+            submitLoginForm();
+        });
+
+        if (retryBtn) {
+            retryBtn.addEventListener('click', function() {
+                loginAlert.classList.add('d-none');
+                submitLoginForm();
+            });
         }
     }
 
     // --- REGISTER FORM ---
-    const regForm = document.getElementById('registerForm');
+    var regForm = document.getElementById('registerForm');
     if (regForm) {
-        const password = document.getElementById('password');
-        const confirmPassword = document.getElementById('confirmPassword');
-        const confirmError = document.getElementById('confirmPasswordError');
+        var passwordReg = document.getElementById('password');
+        var confirmPasswordReg = document.getElementById('confirmPassword');
+        var confirmErrorReg = document.getElementById('confirmPasswordError');
 
-        const checkPasswords = () => {
-            if (confirmPassword.value && password.value !== confirmPassword.value) {
-                confirmPassword.classList.add('is-invalid');
-                confirmError.textContent = "Паролі не співпадають";
+        var checkPasswordsReg = function() {
+            if (confirmPasswordReg.value && passwordReg.value !== confirmPasswordReg.value) {
+                confirmPasswordReg.classList.add('is-invalid');
+                confirmErrorReg.textContent = "Паролі не співпадають";
                 return false;
-            } else if (confirmPassword.value) {
-                confirmPassword.classList.replace('is-invalid', 'is-valid');
-                confirmError.textContent = "";
+            } else if (confirmPasswordReg.value) {
+                confirmPasswordReg.classList.replace('is-invalid', 'is-valid');
+                confirmErrorReg.textContent = "";
                 return true;
             }
             return true;
         };
 
-        if (password) password.addEventListener('input', checkPasswords);
-        if (confirmPassword) confirmPassword.addEventListener('input', checkPasswords);
+        if (passwordReg) passwordReg.addEventListener('input', checkPasswordsReg);
+        if (confirmPasswordReg) confirmPasswordReg.addEventListener('input', checkPasswordsReg);
 
         regForm.addEventListener('submit', function (e) {
-            if (!regForm.checkValidity() || !checkPasswords()) {
+            if (!regForm.checkValidity() || !checkPasswordsReg()) {
                 e.preventDefault();
                 e.stopPropagation();
-                Array.from(regForm.elements).forEach(input => {
-                    if (!input.checkValidity()) input.classList.add('is-invalid');
-                });
+                var elements = regForm.elements;
+                for (var i = 0; i < elements.length; i++) {
+                    if (!elements[i].checkValidity()) elements[i].classList.add('is-invalid');
+                }
             } else {
-                const btn = document.getElementById('submitBtn');
-                if (btn) btn.disabled = true;
-                const txt = document.getElementById('submitText');
-                if (txt) txt.classList.add('opacity-0');
-                const spn = document.getElementById('submitSpinner');
-                if (spn) spn.classList.remove('d-none');
+                var btnReg = document.getElementById('submitBtn');
+                if (btnReg) btnReg.disabled = true;
+                var txtReg = document.getElementById('submitText');
+                if (txtReg) txtReg.classList.add('opacity-0');
+                var spnReg = document.getElementById('submitSpinner');
+                if (spnReg) spnReg.classList.remove('d-none');
             }
             regForm.classList.add('was-validated');
         });
     }
 
     // --- FORGOT PASSWORD ---
-    const forgotForm = document.getElementById('forgotForm');
+    var forgotForm = document.getElementById('forgotForm');
     if (forgotForm) {
-        const emailInput = document.getElementById('emailInput');
-        const submitBtn = document.getElementById('submitBtn');
-        const resendBtn = document.getElementById('resendBtn');
+        var emailInputForgot = document.getElementById('emailInput');
+        var submitBtnForgot = document.getElementById('submitBtn');
+        var resendBtnForgot = document.getElementById('resendBtn');
         
-        forgotForm.addEventListener('submit', e => {
-            e.preventDefault();
-            if (!emailInput.value.trim() || !emailInput.checkValidity()) {
-                emailInput.classList.add('is-invalid');
-                return;
-            }
-            submitForgot();
-        });
-
-        if (resendBtn) resendBtn.addEventListener('click', submitForgot);
-
-        async function submitForgot() {
-            submitBtn.disabled = true;
-            const alertMsg = document.getElementById('alertMsg');
+        var submitForgot = function() {
+            submitBtnForgot.disabled = true;
+            var alertMsg = document.getElementById('alertMsg');
             if (alertMsg) alertMsg.classList.add('d-none');
 
-            try {
-                const response = await fetch(forgotForm.action, {
-                    method: 'POST',
-                    body: new FormData(forgotForm),
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                });
+            var formDataForgot = new FormData(forgotForm);
 
+            fetch(forgotForm.action, {
+                method: 'POST',
+                body: formDataForgot,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(function(response) {
                 if (response.ok || response.redirected) {
-                    document.getElementById('step1')?.classList.add('d-none');
-                    document.getElementById('step2')?.classList.remove('d-none');
-                    document.getElementById('sentEmail').textContent = emailInput.value;
+                    var step1 = document.getElementById('step1');
+                    var step2 = document.getElementById('step2');
+                    var sentEmail = document.getElementById('sentEmail');
+                    if (step1) step1.classList.add('d-none');
+                    if (step2) step2.classList.remove('d-none');
+                    if (sentEmail) sentEmail.textContent = emailInputForgot.value;
                 } else {
                     if (alertMsg) {
                         alertMsg.textContent = 'Не вдалося надіслати запит.';
                         alertMsg.classList.remove('d-none');
                     }
                 }
-            } catch (err) {
+            })
+            ['catch'](function(err) {
                 if (alertMsg) {
                     alertMsg.textContent = 'Помилка мережі.';
                     alertMsg.classList.remove('d-none');
                 }
-            } finally {
-                submitBtn.disabled = false;
+            })
+            ['finally'](function() {
+                submitBtnForgot.disabled = false;
+            });
+        };
+
+        forgotForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!emailInputForgot.value.trim() || !emailInputForgot.checkValidity()) {
+                emailInputForgot.classList.add('is-invalid');
+                return;
             }
-        }
+            submitForgot();
+        });
+
+        if (resendBtnForgot) resendBtnForgot.addEventListener('click', submitForgot);
     }
 })();

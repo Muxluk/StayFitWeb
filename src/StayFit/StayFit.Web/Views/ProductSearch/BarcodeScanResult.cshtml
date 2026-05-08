@@ -194,18 +194,4 @@
 </div>
 
 @section Scripts {
-<script>
-(function () {
-    const form = document.getElementById('sf-bc-form');
-    const btn = document.getElementById('sf-bc-btn');
-    const btnText = document.getElementById('sf-bc-btn-text');
-    const btnSpin = document.getElementById('sf-bc-btn-spin');
-    if (!form) return;
-    form.addEventListener('submit', function () {
-        btn.disabled = true;
-        btnText.classList.add('d-none');
-        btnSpin.classList.remove('d-none');
-    });
-})();
-</script>
 }

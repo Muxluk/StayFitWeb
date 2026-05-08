@@ -1,444 +1,240 @@
-@using StayFit.Domain.Entities
-@model StayFit.Application.DTOs.UpdateUserProfileDto
+@model StayFit.Application.DTOs.UserProfileDto
+@using StayFit.Domain.Enums
 
 @{
-    ViewData["Title"] = "Редагування профілю";
-    var activeTab = TempData["ActiveTab"]?.ToString();
-    var isSecurityTabActive = string.Equals(activeTab, "Security", StringComparison.OrdinalIgnoreCase);
-    var profilePhotoPath = ViewBag.ProfilePhotoPath as string;
+    ViewData["Title"] = "Редагувати профіль";
+    var isSecurityTabActive = (bool)(ViewData["ShowSecurityTab"] ?? false);
 }
 
-<div class="container py-4" data-profile-security-active="@isSecurityTabActive.ToString().ToLower()">
+<div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-10">
-            <!-- Успіх / Помилка повідомлення -->
-            @if (TempData["Success"] != null)
-            {
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="bi bi-check-circle"></i> @TempData["Success"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            }
-            @if (TempData["Error"] != null)
-            {
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-circle"></i> @TempData["Error"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            }
-            @if (TempData["SuccessMessage"] != null)
-            {
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            }
-            @if (TempData["ErrorMessage"] != null)
-            {
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-circle"></i> @TempData["ErrorMessage"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            }
-
-            <!-- TABS для переключення між Профілем та Безпекою -->
-            <ul class="nav nav-tabs mb-4 profile-tabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link @(isSecurityTabActive ? "" : "active")" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane">
-                        <i class="bi bi-person-circle"></i> Мій профіль
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link @(isSecurityTabActive ? "active" : "")" id="security-tab" data-bs-toggle="tab" data-bs-target="#security-tab-pane" type="button" role="tab" aria-controls="security-tab-pane">
-                        <i class="bi bi-lock-fill"></i> Безпека акаунту
-                    </button>
-                </li>
-            </ul>
-
-            <div class="tab-content">
-                <!-- TAB 1: ПРОФІЛЬ -->
-                <div class="tab-pane fade @(isSecurityTabActive ? "" : "show active")" id="profile-tab-pane" role="tabpanel">
-                    <div class="card shadow profile-card">
-                        <div class="card-header profile-header">
-                            <h3 class="mb-0"><i class="bi bi-person-fill"></i> Мій профіль</h3>
+        <div class="col-lg-10">
+            <div class="card profile-card shadow-lg mb-4">
+                <div class="card-header profile-header p-4">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-white rounded-circle p-2 me-3 shadow-sm">
+                                <i class="bi bi-person-circle fs-1 text-secondary"></i>
+                            </div>
+                            <div class="text-white">
+                                <h2 class="fw-bold mb-0">Мій профіль</h2>
+                                <p class="mb-0 opacity-75">Керуйте своїми персональними даними та безпекою</p>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <div class="row mb-4">
-                                <div class="col-lg-6">
-                                    <div class="border rounded p-3 h-100 bg-light-subtle">
-                                        <h5 class="mb-3"><i class="bi bi-image"></i> Фото профілю</h5>
+                        <div id="auto-save-indicator" class="badge bg-success d-none py-2 px-3 shadow-sm">
+                            Збережено ✔️
+                        </div>
+                    </div>
+                </div>
 
-                                        @if (!string.IsNullOrWhiteSpace(profilePhotoPath))
-                                        {
-                                            <img src="@profilePhotoPath" alt="Фото профілю" class="img-fluid rounded shadow-sm mb-3 profile-photo-image" />
-                                        }
-                                        else
-                                        {
-                                            <div class="d-flex align-items-center justify-content-center rounded border bg-white mb-3 profile-photo-placeholder">
-                                                <div class="text-center">
-                                                    <i class="bi bi-person-square text-muted" style="font-size: 3rem;"></i>
-                                                    <div class="text-muted small">Фото ще не завантажено</div>
+                <div class="card-body p-0">
+                    <ul class="nav nav-tabs profile-tabs px-4 pt-3 bg-light" id="profileTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab">
+                                <i class="bi bi-person-vcard me-2"></i>Особисті дані
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab">
+                                <i class="bi bi-shield-lock me-2"></i>Безпека
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content p-4 p-md-5" id="profileTabsContent">
+                        <!-- Особисті дані -->
+                        <div class="tab-pane fade show active" id="personal" role="tabpanel">
+                            <form id="profileForm">
+                                @Html.AntiForgeryToken()
+                                <div class="row g-4">
+                                    <div class="col-md-7">
+                                        <h4 class="fw-bold mb-4 text-secondary border-bottom pb-2">Основна інформація</h4>
+                                        
+                                        <div class="form-floating mb-3 profile-focus">
+                                            <input asp-for="FullName" id="FullName" class="form-control" placeholder="Ім'я та Прізвище" />
+                                            <label asp-for="FullName">Повне ім'я</label>
+                                        </div>
+
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <div class="form-floating mb-3 profile-focus">
+                                                    <input asp-for="DateOfBirth" id="DateOfBirth" type="date" class="form-control" />
+                                                    <label asp-for="DateOfBirth">Дата народження</label>
                                                 </div>
                                             </div>
-                                        }
-
-                                        <form method="post" action="@Url.Action("UploadPhoto", "Profile")" enctype="multipart/form-data">
-                                            @Html.AntiForgeryToken()
-                                            <div class="mb-3">
-                                                <input class="form-control" type="file" name="photo" accept=".jpg,.png,image/jpeg,image/png" required />
-                                                <small class="text-muted">Дозволено: JPG, PNG | Макс. розмір: 5MB</small>
+                                            <div class="col-md-6">
+                                                <div class="form-floating mb-3 profile-focus">
+                                                    <select asp-for="Gender" id="Gender" class="form-select">
+                                                        <option value="Чоловік">Чоловік</option>
+                                                        <option value="Жінка">Жінка</option>
+                                                        <option value="Інше">Інше</option>
+                                                    </select>
+                                                    <label asp-for="Gender">Стать</label>
+                                                </div>
                                             </div>
-                                            <button type="submit" class="btn btn-outline-success w-100">
-                                                <i class="bi bi-upload"></i> Завантажити фото
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mt-3 mt-lg-0">
-                                    <div class="border rounded p-3 h-100 bg-light-subtle d-flex flex-column justify-content-center position-relative">
-                                        <h5 class="mb-3">📊 Ваші показники <span id="auto-save-indicator" class="badge bg-success float-end d-none" style="font-size: 0.6rem;">Збережено</span></h5>
-                                        <div class="d-flex justify-content-between mb-2 border-bottom pb-1">
-                                            <span class="text-muted">Індекс маси тіла (ІМТ):</span>
-                                            <strong id="calc-bmi" class="text-primary">-</strong>
                                         </div>
-                                        <div class="d-flex justify-content-between mb-2 border-bottom pb-1">
-                                            <span class="text-muted" title="Скільки калорій спалює тіло в стані спокою">Базовий метаболізм (BMR):</span>
-                                            <strong id="calc-bmr" class="text-success">- ккал</strong>
+
+                                        <h4 class="fw-bold mt-4 mb-4 text-secondary border-bottom pb-2">Фізичні параметри</h4>
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <div class="form-floating mb-3 profile-focus">
+                                                    <input asp-for="Weight" id="Weight" type="number" step="0.1" class="form-control" placeholder="0.0" />
+                                                    <label asp-for="Weight">Вага (кг)</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-floating mb-3 profile-focus">
+                                                    <input asp-for="Height" id="Height" type="number" step="0.1" class="form-control" placeholder="0.0" />
+                                                    <label asp-for="Height">Зріст (см)</label>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div class="d-flex justify-content-between">
-                                            <span class="text-muted" title="Ваша загальна потреба в енергії на день">Денна норма (TDEE):</span>
-                                            <strong id="calc-tdee" class="text-danger">- ккал</strong>
+
+                                        <div class="form-floating mb-3 profile-focus">
+                                            <select asp-for="ActivityLevel" id="ActivityLevel" class="form-select">
+                                                <option value="Sedentary">Малорухливий (сидяча робота)</option>
+                                                <option value="LightlyActive">Помірно активний (1-3 тренування)</option>
+                                                <option value="ModeratelyActive">Активний (3-5 тренувань)</option>
+                                                <option value="VeryActive">Дуже активний (щоденно)</option>
+                                                <option value="SuperActive">Екстремально активний (проф. спорт)</option>
+                                            </select>
+                                            <label asp-for="ActivityLevel">Рівень активності</label>
                                         </div>
-                                        <small class="text-muted mt-2 text-center" style="font-size: 0.75rem;">Розрахунок відбуваєтcя автоматично при зміні параметрів.</small>
                                     </div>
-                                </div>
-                            </div>
 
-                            @if (!ViewData.ModelState.IsValid)
-                            {
-                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                    <h5><i class="bi bi-exclamation-triangle"></i> Помилки у формі:</h5>
-                                    <ul class="mb-0 small">
-                                        @foreach (var modelState in ViewData.ModelState.Values)
-                                        {
-                                            @foreach (var error in modelState.Errors)
-                                            {
-                                                <li>@error.ErrorMessage</li>
-                                            }
-                                        }
-                                    </ul>
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
-                            }
-
-                            <form method="post" action="@Url.Action("Edit", "Profile")" novalidate>
-                                @Html.AntiForgeryToken()
-
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="FullName" class="form-label"><strong>Ім'я</strong> <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control @(ViewData.ModelState["FullName"]?.Errors.Count > 0 ? "is-invalid" : "")" 
-                                               id="FullName" name="FullName" value="@(Model?.FullName ?? "")" 
-                                               placeholder="Вашу повне ім'я" required>
-                                        @if (ViewData.ModelState["FullName"]?.Errors.Count > 0)
-                                        {
-                                            <div class="invalid-feedback d-block">
-                                                @foreach (var error in ViewData.ModelState["FullName"]!.Errors)
-                                                {
-                                                    @error.ErrorMessage
-                                                }
+                                    <div class="col-md-5">
+                                        <div class="card bg-light border-0 rounded-4 p-4 shadow-sm h-100">
+                                            <h4 class="fw-bold mb-4 text-secondary text-center">Аналітика здоров'я</h4>
+                                            
+                                            <div class="text-center mb-4">
+                                                <div class="bg-white d-inline-block rounded-circle p-4 shadow-sm mb-3">
+                                                    <div class="h2 fw-bold text-primary mb-0" id="calc-bmi">-</div>
+                                                    <div class="small text-muted">ІМТ</div>
+                                                </div>
                                             </div>
-                                        }
-                                    </div>
 
-                                    <div class="col-md-6 mb-3">
-                                        <label for="Gender" class="form-label"><strong>Стать</strong></label>
-                                        <select class="form-select @(ViewData.ModelState["Gender"]?.Errors.Count > 0 ? "is-invalid" : "")" 
-                                                id="Gender" name="Gender">
-                                            <option value="">-- Виберіть стать --</option>
-                                            @{
-                                                string[] genders = { "Чоловік", "Жінка", "Інше" };
-                                                foreach (var gender in genders)
-                                                {
-                                                    if (Model?.Gender == gender)
-                                                    {
-                                                        <option value="@gender" selected>@gender</option>
-                                                    }
-                                                    else
-                                                    {
-                                                        <option value="@gender">@gender</option>
-                                                    }
-                                                }
-                                            }
-                                        </select>
-                                        @if (ViewData.ModelState["Gender"]?.Errors.Count > 0)
-                                        {
-                                            <div class="invalid-feedback d-block">
-                                                @foreach (var error in ViewData.ModelState["Gender"]!.Errors)
-                                                {
-                                                    @error.ErrorMessage
-                                                }
+                                            <div class="list-group list-group-flush bg-transparent">
+                                                <div class="list-group-item bg-transparent d-flex justify-content-between align-items-center px-0">
+                                                    <span>Базовий метаболізм (BMR)</span>
+                                                    <span class="fw-bold text-primary" id="calc-bmr">- ккал</span>
+                                                </div>
+                                                <div class="list-group-item bg-transparent d-flex justify-content-between align-items-center px-0">
+                                                    <span>Витрати енергії (TDEE)</span>
+                                                    <span class="fw-bold text-success" id="calc-tdee">- ккал</span>
+                                                </div>
                                             </div>
-                                        }
-                                    </div>
-
-                                    <div class="col-md-6 mb-3">
-                                        <label for="Weight" class="form-label"><strong>Вага (кг)</strong></label>
-                                        <input type="number" class="form-control @(ViewData.ModelState["Weight"]?.Errors.Count > 0 ? "is-invalid" : "")" 
-                                               id="Weight" name="Weight" value="@(Model?.Weight?.ToString("F1") ?? "")" 
-                                               placeholder="60" step="0.1" min="20" max="500">
-                                        @if (ViewData.ModelState["Weight"]?.Errors.Count > 0)
-                                        {
-                                            <div class="invalid-feedback d-block">
-                                                @foreach (var error in ViewData.ModelState["Weight"]!.Errors)
-                                                {
-                                                    @error.ErrorMessage
-                                                }
+                                            
+                                            <div class="mt-4 p-3 bg-white rounded-3 small text-muted border">
+                                                <i class="bi bi-info-circle me-2"></i>
+                                                Ці дані розраховуються автоматично на основі ваших параметрів. Вони допомагають системі краще підбирати норму калорій.
                                             </div>
-                                        }
+                                        </div>
                                     </div>
-
-                                    <div class="col-md-6 mb-3">
-                                        <label for="Height" class="form-label"><strong>Зріст (см)</strong></label>
-                                        <input type="number" class="form-control @(ViewData.ModelState["Height"]?.Errors.Count > 0 ? "is-invalid" : "")" 
-                                               id="Height" name="Height" value="@(Model?.Height?.ToString("F0") ?? "")" 
-                                               placeholder="170" step="1" min="100" max="250">
-                                        @if (ViewData.ModelState["Height"]?.Errors.Count > 0)
-                                        {
-                                            <div class="invalid-feedback d-block">
-                                                @foreach (var error in ViewData.ModelState["Height"]!.Errors)
-                                                {
-                                                    @error.ErrorMessage
-                                                }
-                                            </div>
-                                        }
-                                    </div>
-
-                                    <div class="col-md-6 mb-3">
-                                        <label for="DateOfBirth" class="form-label"><strong>Дата народження</strong></label>
-                                        <input type="date" class="form-control @(ViewData.ModelState["DateOfBirth"]?.Errors.Count > 0 ? "is-invalid" : "")" 
-                                               id="DateOfBirth" name="DateOfBirth" 
-                                               value="@(Model?.DateOfBirth?.ToString("yyyy-MM-dd") ?? "")">
-                                        <small class="text-muted">Необов'язково</small>
-                                        @if (ViewData.ModelState["DateOfBirth"]?.Errors.Count > 0)
-                                        {
-                                            <div class="invalid-feedback d-block">
-                                                @foreach (var error in ViewData.ModelState["DateOfBirth"]!.Errors)
-                                                {
-                                                    @error.ErrorMessage
-                                                }
-                                            </div>
-                                        }
-                                    </div>
-                                    
-                                    <div class="col-md-6 mb-3">
-                                        <label for="ActivityLevel" class="form-label"><strong>Рівень активності</strong></label>
-                                        <select class="form-select @(ViewData.ModelState["ActivityLevel"]?.Errors.Count > 0 ? "is-invalid" : "")" 
-                                                id="ActivityLevel" name="ActivityLevel">
-                                            <option value="">-- Виберіть активність --</option>
-                                            <option value="Sedentary" selected="@(Model?.ActivityLevel == "Sedentary")">Сидячий (мало або немає вправ)</option>
-                                            <option value="LightlyActive" selected="@(Model?.ActivityLevel == "LightlyActive")">Легка активність (1-3 дні/тиж)</option>
-                                            <option value="ModeratelyActive" selected="@(Model?.ActivityLevel == "ModeratelyActive")">Помірна (3-5 днів/тиж)</option>
-                                            <option value="VeryActive" selected="@(Model?.ActivityLevel == "VeryActive")">Висока (6-7 днів/тиж)</option>
-                                            <option value="SuperActive" selected="@(Model?.ActivityLevel == "SuperActive")">Дуже висока (фіз. робота)</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <hr class="my-4">
-
-                                <div class="d-flex gap-2">
-                                    <a href="@Url.Action("View", "Profile")" class="btn btn-outline-secondary btn-lg">
-                                        <i class="bi bi-arrow-left"></i> Скасувати
-                                    </a>
-                                    <button type="submit" class="btn btn-success btn-lg">
-                                        <i class="bi bi-check-circle"></i> Зберегти профіль
-                                    </button>
                                 </div>
                             </form>
                         </div>
-                    </div>
-                </div>
 
-                <!-- Зовнішній вигляд -->
-                <div class="card shadow mt-4">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="bi bi-palette-fill me-2"></i>Зовнішній вигляд</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="d-flex align-items-center justify-content-between p-3 bg-body-secondary rounded">
-                            <div>
-                                <div class="fw-semibold"><i class="bi bi-moon-stars-fill me-2 text-primary"></i>Темна тема</div>
-                                <div class="text-muted small">Перемикає темний/світлий інтерфейс. Вибір зберігається в браузері.</div>
-                            </div>
-                            <div class="form-check form-switch mb-0 ms-4">
-                                <input class="form-check-input fs-5" type="checkbox" role="switch"
-                                       id="sf-profile-theme-switch"
-                                       onchange="sfToggleTheme()" />
-                                <label class="form-check-label visually-hidden" for="sf-profile-theme-switch">Темна тема</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- TAB 2: БЕЗПЕКА -->
-                <div class="tab-pane fade @(isSecurityTabActive ? "show active" : "")" id="security-tab-pane" role="tabpanel">
-                    <div class="card shadow mb-4">
-                        <div class="card-header security-header">
-                            <h5 class="mb-0"><i class="bi bi-key-fill"></i> Змінення пароля</h5>
-                        </div>
-                        <div class="card-body">
-                            <form method="post" action="/account-security/change-password">
-                                @Html.AntiForgeryToken()
-
-                                <div class="mb-3">
-                                    <label for="currentPassword" class="form-label">Поточний пароль</label>
-                                    <input type="password" class="form-control" name="CurrentPassword" id="currentPassword" placeholder="Введіть поточний пароль" required>
+                        <!-- Безпека -->
+                        <div class="tab-pane fade" id="security" role="tabpanel" data-active="@isSecurityTabActive">
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+                                        <div class="card-header security-header text-white py-3">
+                                            <h5 class="mb-0"><i class="bi bi-shield-lock-fill me-2"></i>Зміна пароля</h5>
+                                        </div>
+                                        <div class="card-body p-4">
+                                            <form method="post" action="/account-security/change-password">
+                                                @Html.AntiForgeryToken()
+                                                <div class="mb-3">
+                                                    <label class="form-label">Поточний пароль</label>
+                                                    <input type="password" name="OldPassword" class="form-control" required />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Новий пароль</label>
+                                                    <input type="password" id="newPassword" name="NewPassword" class="form-control" required />
+                                                </div>
+                                                <div class="mb-4">
+                                                    <label class="form-label">Підтвердіть новий пароль</label>
+                                                    <input type="password" id="confirmPassword" class="form-control" required />
+                                                </div>
+                                                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">Оновити пароль</button>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label for="newPassword" class="form-label">Новий пароль</label>
-                                    <input type="password" class="form-control" name="NewPassword" id="newPassword" placeholder="Мінімум 8 символів" required minlength="8">
-                                    <small class="form-text text-muted">Мінімум 8 символів, зі спеціальними символами</small>
+                                <div class="col-md-6">
+                                    <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+                                        <div class="card-header sessions-header text-white py-3">
+                                            <h5 class="mb-0"><i class="bi bi-laptop me-2"></i>Активні сеанси</h5>
+                                        </div>
+                                        <div class="card-body p-4">
+                                            <p class="text-muted small mb-4">Ви можете вийти з усіх пристроїв, окрім поточного, якщо помітили підозрілу активність.</p>
+                                            <form method="post" action="/account-security/terminate-other-sessions">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-outline-danger w-100 py-2 fw-bold">
+                                                    <i class="bi bi-box-arrow-right me-2"></i>Завершити інші сеанси
+                                                </button>
+                                            </form>
+                                            
+                                            <div class="mt-4 p-3 bg-light rounded-3 border">
+                                                <div class="d-flex align-items-center text-success mb-2">
+                                                    <i class="bi bi-check-circle-fill me-2"></i>
+                                                    <span class="fw-bold">Поточний сеанс активний</span>
+                                                </div>
+                                                <small class="text-muted">Останній вхід: @DateTime.Now.ToString("dd.MM.yyyy HH:mm")</small>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label for="confirmPassword" class="form-label">Підтвердження пароля</label>
-                                    <input type="password" class="form-control" name="ConfirmPassword" id="confirmPassword" placeholder="Повторіть новий пароль" required minlength="8">
+                                <div class="col-12 mt-4">
+                                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                                        <div class="card-header profile-security-history-header py-3 d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Останні події безпеки</h5>
+                                            <div class="d-flex gap-2">
+                                                <select id="securityEventTypeFilter" class="form-select form-select-sm bg-white border-0" style="width: auto;">
+                                                    <option value="">Всі типи</option>
+                                                    <option value="Login">Вхід</option>
+                                                    <option value="Logout">Вихід</option>
+                                                    <option value="PasswordChange">Зміна пароля</option>
+                                                    <option value="SessionTerminated">Завершення сеансу</option>
+                                                </select>
+                                                <button class="btn btn-sm btn-light border-0" onclick="loadSecurityLogs(1)" title="Оновити">
+                                                    <i class="bi bi-arrow-clockwise"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            <div id="securityLogs" class="p-4 text-center">
+                                                <div class="spinner-border text-primary" role="status">
+                                                    <span class="visually-hidden">Завантаження...</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <button type="submit" class="btn btn-success">
-                                    <i class="bi bi-check-lg"></i> Змінити пароль
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-
-                    <div class="card shadow mb-4">
-                        <div class="card-header sessions-header">
-                            <h5 class="mb-0"><i class="bi bi-lightning-fill"></i> Активні сеанси</h5>
-                        </div>
-                        <div class="card-body">
-                            @{
-                                var activeSessions = ViewBag.ActiveSessions as IList<StayFit.Domain.Entities.UserSession> ?? new List<StayFit.Domain.Entities.UserSession>();
-                                var currentSessionToken = ViewBag.CurrentSessionToken as string ?? string.Empty;
-                            }
-                            @if (!activeSessions.Any())
-                            {
-                                <p class="text-muted mb-0">Немає активних сеансів.</p>
-                            }
-                            else
-                            {
-                                <div class="table-responsive">
-                                    <table class="table table-sm table-hover align-middle mb-0">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>Пристрій</th>
-                                                <th>IP адреса</th>
-                                                <th>Час входу</th>
-                                                <th>Остання активність</th>
-                                                <th>Статус</th>
-                                                <th></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach (var session in activeSessions)
-                                            {
-                                                var isCurrent = session.SessionToken == currentSessionToken;
-                                                <tr class="@(isCurrent ? "table-success" : "")">
-                                                    <td>
-                                                        <i class="bi bi-laptop me-1"></i>
-                                                        @session.GetDeviceSummary()
-                                                    </td>
-                                                    <td>@(session.IpAddress ?? "—")</td>
-                                                    <td>@session.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
-                                                    <td>@(session.LastActivityAt.HasValue ? session.LastActivityAt.Value.ToLocalTime().ToString("dd.MM.yyyy HH:mm") : "—")</td>
-                                                    <td>
-                                                        @if (isCurrent)
-                                                        {
-                                                            <span class="badge bg-success">Поточний</span>
-                                                        }
-                                                        else
-                                                        {
-                                                            <span class="badge bg-secondary">Активний</span>
-                                                        }
-                                                    </td>
-                                                    <td>
-                                                        @if (!isCurrent)
-                                                        {
-                                                            <form method="post" action="/sessions/terminate" class="d-inline">
-                                                                @Html.AntiForgeryToken()
-                                                                <input type="hidden" name="sessionId" value="@session.Id" />
-                                                                <button type="submit" class="btn btn-outline-danger btn-sm"
-                                                                            data-confirm-title="Завершити сеанс"
-                                                                            data-confirm-message="Завершити цей сеанс?"
-                                                                            data-confirm-button-text="Завершити"
-                                                                            data-confirm-button-class="btn-danger">
-                                                                    <i class="bi bi-x-lg"></i>
-                                                                </button>
-                                                            </form>
-                                                        }
-                                                    </td>
-                                                </tr>
-                                            }
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                @if (activeSessions.Count(s => s.SessionToken != currentSessionToken) > 0)
-                                {
-                                    <form method="post" action="/sessions/terminate-all" class="d-inline mt-3">
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn btn-warning btn-sm"
-                                                data-confirm-title="Завершити всі інші сеанси"
-                                                data-confirm-message="Завершити всі інші сеанси?"
-                                                data-confirm-button-text="Завершити"
-                                                data-confirm-button-class="btn-warning">
-                                            <i class="bi bi-box-arrow-right me-1"></i> Вийти зі всіх інших сеансів
-                                        </button>
-                                    </form>
-                                }
-                            }
-                        </div>
-                    </div>
-
-                    <div class="card shadow mb-4">
-                        <div class="card-header profile-security-history-header">
-                            <h5 class="mb-0"><i class="bi bi-shield-check"></i> Історія безпеки акаунту</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-2 align-items-end mb-3">
-                                <div class="col-md-5 col-lg-4">
-                                    <label for="securityEventTypeFilter" class="form-label small">Фільтр за типом події</label>
-                                    <select id="securityEventTypeFilter" class="form-select form-select-sm">
-                                        <option value="">Всі події</option>
-                                        <option value="Login">Вхід</option>
-                                        <option value="Logout">Вихід</option>
-                                        <option value="PasswordChange">Зміна пароля</option>
-                                        <option value="SessionTerminated">Сеанс завершено</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div id="securityLogs">
-                                <div class="text-center text-muted py-3">
-                                    <div class="spinner-border spinner-border-sm" role="status">
-                                        <span class="visually-hidden">Завантаження...</span>
+                                <div class="col-12 mt-5">
+                                    <div class="card border-danger border-opacity-25 rounded-4 overflow-hidden">
+                                        <div class="card-header danger-header text-white py-3">
+                                            <h5 class="mb-0"><i class="bi bi-trash3-fill me-2"></i>Видалення акаунту</h5>
+                                        </div>
+                                        <div class="card-body p-4 bg-danger bg-opacity-10">
+                                            <div class="d-flex align-items-start gap-3">
+                                                <i class="bi bi-exclamation-triangle fs-2 text-danger"></i>
+                                                <div>
+                                                    <h6 class="fw-bold text-danger">Видалення акаунту є незворотним!</h6>
+                                                    <p class="text-muted small mb-3">Всі ваші дані, включаючи історію харчування, цілі та параметри, будуть назавжди видалені з системи.</p>
+                                                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                                                        Видалити мій акаунт
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-
-                    <div class="card shadow border-danger">
-                        <div class="card-header danger-header">
-                            <h5 class="mb-0"><i class="bi bi-exclamation-triangle-fill"></i> Видалення акаунту</h5>
-                        </div>
-                        <div class="card-body">
-                            <p class="text-danger mb-3"><strong><i class="bi bi-exclamation-circle"></i> Увага!</strong> Цю дію не можна відмінити. Усі ваші дані будуть видалені.</p>
-
-                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
-                                <i class="bi bi-trash"></i> Видалити акаунт
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -479,308 +275,4 @@
 </div>
 
 @section Scripts {
-<<<<<<< HEAD
-    <script src="~/js/profile-editor.js" asp-append-version="true"></script>
-=======
-    <script>
-        // Sync dark mode toggle switch with current theme
-        (function() {
-            var sw = document.getElementById('sf-profile-theme-switch');
-            if (sw) sw.checked = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-        })();
-
-        // Активуємо вкладку безпеки лише коли це явно запрошено контролером
-        @if (isSecurityTabActive)
-        {
-            <text>
-        document.addEventListener('DOMContentLoaded', function() {
-            const securityTab = document.getElementById('security-tab');
-            if (securityTab) {
-                const tab = new bootstrap.Tab(securityTab);
-                tab.show();
-            }
-        });
-            </text>
-        }
-
-        // Валідація пароля при зміні
-        const changePasswordForm = document.querySelector('form[action="/account-security/change-password"]');
-        if (changePasswordForm) {
-            changePasswordForm.addEventListener('submit', function (e) {
-                const newPassword = document.getElementById('newPassword').value;
-                const confirmPassword = document.getElementById('confirmPassword').value;
-
-                if (newPassword !== confirmPassword) {
-                    e.preventDefault();
-                    alert('Паролі не збігаються!');
-                    return false;
-                }
-            });
-        }
-
-        // Валідація токена видалення
-        const deleteForm = document.querySelector('form[action="/account-security/delete-account"]');
-        if (deleteForm) {
-            deleteForm.addEventListener('submit', function (e) {
-                const password = document.getElementById('deletePassword').value;
-                if (!password || password.trim() === '') {
-                    e.preventDefault();
-                    alert('Будь ласка, введіть пароль для підтвердження.');
-                    return false;
-                }
-                
-                if (!confirm('ОСТАННЄ ПОПЕРЕДЖЕННЯ! Ви дійсно хочете видалити акаунт назавжди?')) {
-                    e.preventDefault();
-                    return false;
-                }
-            });
-        }
-
-        // Завантаження журналу безпеки
-        async function loadSecurityLogs(page = 1) {
-            try {
-                const eventType = document.getElementById('securityEventTypeFilter')?.value || '';
-                let requestUrl = '/security-log/logs?page=' + page;
-
-                if (eventType) {
-                    requestUrl += '&eventType=' + encodeURIComponent(eventType);
-                }
-
-                const response = await fetch(requestUrl);
-                if (!response.ok) {
-                    let errorMessage = 'Помилка при завантаженні журналу';
-                    try {
-                        const errorPayload = await response.json();
-                        if (errorPayload?.message) {
-                            errorMessage = errorPayload.message;
-                        }
-                    } catch (_) {
-                        // Якщо бек повернув не-JSON, залишаємо дефолтний текст помилки.
-                    }
-
-                    throw new Error(errorMessage);
-                }
-                
-                const data = await response.json();
-                renderSecurityLogs(data);
-            } catch (error) {
-                console.error('Помилка завантаження логів:', error);
-                document.getElementById('securityLogs').innerHTML = 
-                    '<div class="alert alert-warning"><i class="bi bi-exclamation-triangle"></i> Не вдалося завантажити історію безпеки: ' + (error?.message || 'невідома помилка') + '</div>';
-            }
-        }
-
-        function renderSecurityLogs(pagedResult) {
-            const container = document.getElementById('securityLogs');
-            if (!pagedResult || typeof pagedResult !== 'object') {
-                container.innerHTML = '<div class="alert alert-warning"><i class="bi bi-exclamation-triangle"></i> Сервер повернув некоректні дані журналу безпеки.</div>';
-                return;
-            }
-
-            const items = pagedResult.items || pagedResult.Items || [];
-            const pageNumber = pagedResult.pageNumber || pagedResult.PageNumber || 1;
-            const totalPages = pagedResult.totalPages || pagedResult.TotalPages || 1;
-            const totalCount = pagedResult.totalCount || pagedResult.TotalCount || 0;
-            
-            if (!items.length) {
-                container.innerHTML = '<p class="text-muted">Немає записів у журналі безпеки.</p>';
-                return;
-            }
-
-            let html = '<div class="table-responsive">';
-            html += '<table class="table table-sm table-hover align-middle mb-0">';
-            html += '<thead class="table-light"><tr>';
-            html += '<th>Дата/Час</th><th>Тип івенту</th><th>Опис</th><th>Пристрій</th><th>IP адреса</th><th>Статус</th>';
-            html += '</tr></thead><tbody>';
-
-            items.forEach(log => {
-                const date = new Date(log.createdAt);
-                const formattedDate = date.toLocaleDateString('uk-UA') + ' ' + date.toLocaleTimeString('uk-UA');
-                const statusBadge = log.status === 'Success' 
-                    ? '<span class="badge bg-success"><i class="bi bi-check-lg"></i> Успіх</span>'
-                    : '<span class="badge bg-danger"><i class="bi bi-x-lg"></i> Помилка</span>';
-                
-                let eventBadge = '';
-                switch(log.eventType) {
-                    case 'Login': eventBadge = '<span class="badge bg-info"><i class="bi bi-box-arrow-in-right"></i> Вхід</span>'; break;
-                    case 'Logout': eventBadge = '<span class="badge bg-secondary"><i class="bi bi-box-arrow-right"></i> Вихід</span>'; break;
-                    case 'PasswordChange': eventBadge = '<span class="badge bg-warning"><i class="bi bi-key"></i> Зміна пароля</span>'; break;
-                    case 'SessionTerminated': eventBadge = '<span class="badge bg-danger"><i class="bi bi-stop-circle"></i> Сеанс завершено</span>'; break;
-                    default: eventBadge = '<span class="badge bg-dark">' + log.eventType + '</span>';
-                }
-                
-                html += '<tr>';
-                html += '<td>' + formattedDate + '</td>';
-                html += '<td>' + eventBadge + '</td>';
-                html += '<td>' + log.description + '</td>';
-                html += '<td>' + (log.deviceSummary || 'Unknown') + '</td>';
-                html += '<td>' + (log.ipAddress || '—') + '</td>';
-                html += '<td>' + statusBadge + '</td>';
-                html += '</tr>';
-            });
-
-            html += '</tbody></table></div>';
-            
-            // Додаємо пагінацію інформацію
-            if (totalPages > 1) {
-                html += '<p class="text-muted small mt-3">Сторінка ' + pageNumber + ' з ' + totalPages + 
-                        ' (' + totalCount + ' записів)</p>';
-            }
-            
-            container.innerHTML = html;
-        }
-
-        // Завантажуємо журнал при завантаженні сторінки
-        document.addEventListener('DOMContentLoaded', function() {
-            const eventTypeFilter = document.getElementById('securityEventTypeFilter');
-            if (eventTypeFilter) {
-                eventTypeFilter.addEventListener('change', function () {
-                    loadSecurityLogs(1);
-                });
-            }
-
-            loadSecurityLogs(1);
-        });
-
-        // --- ЛОГІКА РОЗРАХУНКІВ ТА АВТОЗБЕРЕЖЕННЯ ---
-        document.addEventListener('DOMContentLoaded', function() {
-            const inputs = ['Weight', 'Height', 'DateOfBirth', 'Gender', 'ActivityLevel', 'FullName'];
-            const elements = {};
-            inputs.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) elements[id] = el;
-            });
-
-            const bmiEl = document.getElementById('calc-bmi');
-            const bmrEl = document.getElementById('calc-bmr');
-            const tdeeEl = document.getElementById('calc-tdee');
-            const saveIndicator = document.getElementById('auto-save-indicator');
-
-            function calculateMetrics() {
-                const weight = parseFloat(elements.Weight?.value);
-                const height = parseFloat(elements.Height?.value);
-                const gender = elements.Gender?.value;
-                const dob = elements.DateOfBirth?.value;
-                const activity = elements.ActivityLevel?.value;
-
-                if (!weight || !height) {
-                    bmiEl.innerText = '-';
-                    bmrEl.innerText = '- ккал';
-                    tdeeEl.innerText = '- ккал';
-                    return;
-                }
-
-                // ІМТ
-                const heightM = height / 100;
-                const bmi = weight / (heightM * heightM);
-                bmiEl.innerText = bmi.toFixed(1);
-
-                // Вік
-                let age = 30; // дефолтний вік якщо не вказано
-                if (dob) {
-                    const birthDate = new Date(dob);
-                    const today = new Date();
-                    age = today.getFullYear() - birthDate.getFullYear();
-                    const m = today.getMonth() - birthDate.getMonth();
-                    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-                        age--;
-                    }
-                }
-
-                // BMR (Mifflin-St Jeor)
-                let bmr = 0;
-                if (gender === 'Чоловік') {
-                    bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
-                } else if (gender === 'Жінка') {
-                    bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
-                } else {
-                    // Середнє для "Інше" або не вказано
-                    bmr = (10 * weight) + (6.25 * height) - (5 * age) - 78;
-                }
-                bmrEl.innerText = Math.round(bmr) + ' ккал';
-
-                // TDEE
-                let activityMultiplier = 1.2; // Sedentary (default)
-                switch(activity) {
-                    case 'LightlyActive': activityMultiplier = 1.375; break;
-                    case 'ModeratelyActive': activityMultiplier = 1.55; break;
-                    case 'VeryActive': activityMultiplier = 1.725; break;
-                    case 'SuperActive': activityMultiplier = 1.9; break;
-                }
-
-                const tdee = bmr * activityMultiplier;
-                tdeeEl.innerText = Math.round(tdee) + ' ккал';
-            }
-
-            let saveTimeout = null;
-
-            async function autoSave() {
-                if (saveIndicator) {
-                    saveIndicator.innerText = "Зберігається...";
-                    saveIndicator.classList.remove('bg-success', 'd-none');
-                    saveIndicator.classList.add('bg-warning', 'text-dark');
-                }
-
-                const payload = {
-                    FullName: elements.FullName?.value || '',
-                    Weight: parseFloat(elements.Weight?.value) || null,
-                    Height: parseFloat(elements.Height?.value) || null,
-                    DateOfBirth: elements.DateOfBirth?.value || null,
-                    Gender: elements.Gender?.value || null,
-                    ActivityLevel: elements.ActivityLevel?.value || null
-                };
-
-                try {
-                    const response = await fetch('/profile/auto-save', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
-                        },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (response.ok) {
-                        if (saveIndicator) {
-                            saveIndicator.innerText = "Збережено ✔️";
-                            saveIndicator.classList.remove('bg-warning', 'text-dark');
-                            saveIndicator.classList.add('bg-success');
-                            
-                            setTimeout(() => {
-                                saveIndicator.classList.add('d-none');
-                            }, 3000);
-                        }
-                    } else {
-                        if (saveIndicator) {
-                            saveIndicator.innerText = "Помилка";
-                            saveIndicator.classList.remove('bg-warning', 'text-dark');
-                            saveIndicator.classList.add('bg-danger');
-                        }
-                    }
-                } catch (error) {
-                    console.error("Помилка автозбереження", error);
-                    if (saveIndicator) {
-                        saveIndicator.innerText = "Помилка";
-                        saveIndicator.classList.remove('bg-warning', 'text-dark');
-                        saveIndicator.classList.add('bg-danger');
-                    }
-                }
-            }
-
-            inputs.forEach(id => {
-                if (elements[id]) {
-                    elements[id].addEventListener('input', function() {
-                        calculateMetrics();
-                        
-                        clearTimeout(saveTimeout);
-                        saveTimeout = setTimeout(autoSave, 1500); // автозбереження через 1.5 секунди після вводу
-                    });
-                }
-            });
-
-            // Початковий розрахунок
-            calculateMetrics();
-        });
-    </script>
->>>>>>> 4fc65956a02eb07031bf6fe09fbb544262e422b9
 }

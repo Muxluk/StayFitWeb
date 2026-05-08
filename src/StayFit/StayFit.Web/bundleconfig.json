@@ -22,7 +22,12 @@
             "wwwroot/js/auth-helper.js",
             "wwwroot/js/diary-details.js",
             "wwwroot/js/food-import.js",
-            "wwwroot/js/food-form.js"
+            "wwwroot/js/food-form.js",
+            "wwwroot/js/add-to-log.js",
+            "wwwroot/js/barcode-scan.js",
+            "wwwroot/js/export-manager.js",
+            "wwwroot/js/admin-users.js",
+            "wwwroot/js/reset-password.js"
         ],
         "minify": {
             "enabled": true,

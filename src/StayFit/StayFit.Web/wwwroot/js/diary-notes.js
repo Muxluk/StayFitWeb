@@ -5,29 +5,32 @@
     'use strict';
 
     // Character counter for notes
-    document.querySelectorAll('.note-textarea').forEach(textarea => {
-        textarea.addEventListener('input', function() {
-            const logId = this.dataset.logId;
-            const charCount = document.getElementById(`charcount_${logId}`);
+    var textareas = document.querySelectorAll('.note-textarea');
+    for (var i = 0; i < textareas.length; i++) {
+        textareas[i].addEventListener('input', function() {
+            var logId = this.getAttribute('data-log-id');
+            var charCount = document.getElementById('charcount_' + logId);
             if (charCount) {
                 charCount.textContent = this.value.length;
             }
         });
-    });
+    }
 
     // Save note button handler
-    document.querySelectorAll('.save-note-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const logId = this.dataset.logId;
-            const textarea = document.getElementById(`note_${logId}`);
+    var buttons = document.querySelectorAll('.save-note-btn');
+    for (var j = 0; j < buttons.length; j++) {
+        buttons[j].addEventListener('click', function() {
+            var self = this;
+            var logId = self.getAttribute('data-log-id');
+            var textarea = document.getElementById('note_' + logId);
             if (!textarea) {
                 return;
             }
 
-            const noteText = textarea.value;
-            const originalButtonText = this.innerHTML;
-            this.disabled = true;
-            this.innerHTML = '<i class="bi bi-hourglass-split"></i> Збереження...';
+            var noteText = textarea.value;
+            var originalButtonText = self.innerHTML;
+            self.disabled = true;
+            self.innerHTML = '<i class="bi bi-hourglass-split"></i> Збереження...';
 
             fetch(window.diaryUpdateUrl || '/Diary/UpdateFoodLogNote', {
                 method: 'POST',
@@ -35,37 +38,37 @@
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'X-Requested-With': 'XMLHttpRequest'
                 },
-                body: `logId=${encodeURIComponent(logId)}&note=${encodeURIComponent(noteText)}`
+                body: 'logId=' + encodeURIComponent(logId) + '&note=' + encodeURIComponent(noteText)
             })
-            .then(response => {
+            .then(function(response) {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
                 return response.json();
             })
-            .then(data => {
+            .then(function(data) {
                 if (data.success) {
-                    this.innerHTML = '<i class="bi bi-check-circle"></i> Збережено!';
-                    setTimeout(() => {
-                        this.innerHTML = originalButtonText;
-                        this.disabled = false;
+                    self.innerHTML = '<i class="bi bi-check-circle"></i> Збережено!';
+                    setTimeout(function() {
+                        self.innerHTML = originalButtonText;
+                        self.disabled = false;
                     }, 2000);
                 } else {
                     throw new Error(data.error || 'Помилка при збереженні нотатки');
                 }
             })
-            .catch(error => {
+            .catch(function(error) {
                 console.error('Error saving note:', error);
-                this.innerHTML = '<i class="bi bi-exclamation-circle"></i> Помилка';
-                this.classList.add('btn-danger');
-                this.classList.remove('btn-outline-success');
-                setTimeout(() => {
-                    this.innerHTML = originalButtonText;
-                    this.classList.remove('btn-danger');
-                    this.classList.add('btn-outline-success');
-                    this.disabled = false;
+                self.innerHTML = '<i class="bi bi-exclamation-circle"></i> Помилка';
+                self.classList.add('btn-danger');
+                self.classList.remove('btn-outline-success');
+                setTimeout(function() {
+                    self.innerHTML = originalButtonText;
+                    self.classList.remove('btn-danger');
+                    self.classList.add('btn-outline-success');
+                    self.disabled = false;
                 }, 3000);
             });
         });
-    });
+    }
 })();
