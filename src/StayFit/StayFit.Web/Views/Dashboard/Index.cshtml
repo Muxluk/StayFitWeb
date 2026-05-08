@@ -185,50 +185,6 @@
 </div>
 
 @section Scripts {
-<script>
-(function () {
-    const STORAGE_KEY = 'sf_water_' + new Date().toISOString().slice(0, 10);
-    const GOAL = 8;
-
-    function load() {
-        return parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10);
-    }
-
-    function save(val) {
-        localStorage.setItem(STORAGE_KEY, val);
-    }
-
-    function render(count) {
-        const intake = document.getElementById('waterIntake');
-        const drops  = document.getElementById('waterDrops');
-        const bar    = document.querySelector('#waterDrops').closest('.card').querySelector('.sf-progress-bar');
-        if (intake) intake.textContent = count;
-        if (bar)    bar.style.width = Math.min(count / GOAL * 100, 100) + '%';
-        if (!drops) return;
-        drops.innerHTML = '';
-        for (let i = 1; i <= GOAL; i++) {
-            const span = document.createElement('span');
-            span.className = 'sf-drop' + (i <= count ? ' active' : '');
-            span.textContent = '○';
-            span.title = i + ' склянка';
-            span.addEventListener('click', function () {
-                const cur = load();
-                const newVal = (i <= cur && i === cur) ? cur - 1 : i;
-                save(newVal < 0 ? 0 : newVal);
-                render(load());
-            });
-            drops.appendChild(span);
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        render(load());
-        const resetBtn = document.getElementById('waterResetBtn');
-        if (resetBtn) resetBtn.addEventListener('click', function () {
-            save(0); render(0);
-        });
-    });
-})();
-</script>
+    <script src="~/js/water-tracker.js" asp-append-version="true"></script>
 }
 

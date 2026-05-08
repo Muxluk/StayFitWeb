@@ -19,7 +19,6 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - StayFit.Web</title>
-    <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/bundle.min.css" asp-append-version="true" />
 </head>
@@ -27,7 +26,7 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">StayFit.Web</a>
+                <a class="navbar-brand" asp-area="" asp-controller="Dashboard" asp-action="Index">StayFit.Web</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
                     aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -35,7 +34,7 @@
                 <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between" id="navbarSupportedContent">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Головна</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Dashboard" asp-action="Index">Головна</a>
                         </li>
                         <li class="nav-item">
                         <a class="nav-link text-dark" asp-area="" asp-controller="ProductSearch" asp-action="Index">Пошук продуктів</a>
@@ -75,11 +74,7 @@
                                     <span class="badge @environmentBadgeClass">ENV: @environmentName</span>
                                 </a>
                             </li>
-                            <li class="nav-item d-flex align-items-center me-2">
-                                <a asp-controller="AdminEmail" asp-action="Index" class="btn btn-sm btn-outline-primary">
-                                    Email-розсилка
-                                </a>
-                            </li>
+
                         }
                         @if (User.Identity?.IsAuthenticated == true)
                         {
@@ -201,7 +196,7 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/bundle.min.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

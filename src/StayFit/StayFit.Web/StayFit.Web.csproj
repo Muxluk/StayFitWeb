@@ -6,6 +6,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <UserSecretsId>StayFit.Web-1f312ad7-7ce3-4137-a9b3-7874b34126f8</UserSecretsId>
+    <StaticWebAssetFingerprintingEnabled>false</StaticWebAssetFingerprintingEnabled>
+    <!-- Виключаємо згенеровані файли з початкового сканування, щоб уникнути дублікатів -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);wwwroot/js/bundle.min.js;wwwroot/css/bundle.min.css</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>

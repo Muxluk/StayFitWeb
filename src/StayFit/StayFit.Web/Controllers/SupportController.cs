@@ -53,6 +53,7 @@ public class SupportController : Controller
     }
 
     [HttpPost("create")]
+    [ValidateAntiForgeryToken]
     [RateLimit(MaxRequests = 5, TimeWindowMinutes = 1)]
     public async Task<IActionResult> Create([FromForm] CreateSupportTicketRequestDto request)
     {
@@ -69,6 +70,30 @@ public class SupportController : Controller
         }
 
         return RedirectToAction("Index");
+    }
+
+    [HttpPost("reply")]
+    [ValidateAntiForgeryToken]
+    [RateLimit(MaxRequests = 5, TimeWindowMinutes = 1)]
+    public async Task<IActionResult> AddReply([FromForm] int ticketId, [FromForm] string message)
+    {
+        var userId = ResolveUserId();
+        if (userId == null)
+            return RedirectToAction("Login", "Account");
+
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            TempData["SupportError"] = "Коментар не може бути порожнім.";
+            return RedirectToAction("Details", new { id = ticketId });
+        }
+
+        var result = await _supportService.AddUserReplyAsync(userId.Value, ticketId, message);
+        if (result.IsFailure)
+        {
+            TempData["SupportError"] = string.Join("; ", result.Errors);
+        }
+
+        return RedirectToAction("Details", new { id = ticketId });
     }
 
     private int? ResolveUserId()

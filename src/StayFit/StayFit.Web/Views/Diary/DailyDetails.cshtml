@@ -98,7 +98,8 @@
                                   rows="2">@(meal.Note ?? "")</textarea>
                         <button class="btn btn-outline-secondary update-note-btn" 
                                 type="button" 
-                                data-meal-id="@meal.Id">
+                                data-meal-id="@meal.Id"
+                                data-action-url="@Url.Action("UpdateMealNote", "Diary")">
                             Зберегти
                         </button>
                     </div>
@@ -116,42 +117,5 @@
 </div>
 
 @section Scripts {
-    <script type="text/javascript">
-        // Character counter for notes
-        document.querySelectorAll('.meal-note').forEach(textarea => {
-            textarea.addEventListener('input', function() {
-                const mealId = this.getAttribute('data-meal-id');
-                document.getElementById(`charcount_${mealId}`).textContent = this.value.length;
-            });
-        });
-
-        // Update note button handler
-        document.querySelectorAll('.update-note-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const mealId = this.getAttribute('data-meal-id');
-                const noteText = document.getElementById(`note_${mealId}`).value;
-
-                fetch('@Url.Action("UpdateMealNote", "Diary")', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `mealId=${mealId}&note=${encodeURIComponent(noteText)}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Show success message
-                        alert('Нотатка збережена!');
-                    } else {
-                        alert(data.error || 'Помилка при збереженні нотатки');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Помилка при збереженні нотатки');
-                });
-            });
-        });
-    </script>
+    <script src="~/js/diary-details.js" asp-append-version="true"></script>
 }

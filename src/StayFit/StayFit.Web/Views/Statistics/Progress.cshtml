@@ -42,9 +42,16 @@
     
     <div class="col-12 col-lg-8">
         <div class="card h-100">
-            <div class="card-header fw-semibold">Фактичне споживання vs Ціль</div>
+            <div class="sf-card stats-section">
             <div class="card-body">
-                <canvas id="progressChart" class="stats-chart"></canvas>
+                <div class="stats-chart" style="height: 400px;">
+                    <canvas id="progressChart" 
+                            data-labels='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DailyProgress.Select(d => d.Date.ToString("dd.MM"))))'
+                            data-calories='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DailyProgress.Select(d => Math.Round(d.TotalCalories, 1))))'
+                            data-goal='@Model.CaloriesGoal'
+                            data-days='@Model.TotalDays'>
+                    </canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -96,48 +103,5 @@
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var ctx = document.getElementById('progressChart').getContext('2d');
-            
-            var labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DailyProgress.Select(d => d.Date.ToString("dd.MM"))));
-            var caloriesData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DailyProgress.Select(d => Math.Round(d.TotalCalories, 1))));
-            var goalLine = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Enumerable.Repeat(Model.CaloriesGoal, Model.TotalDays)));
-
-            var myChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Спожито калорій',
-                            data: caloriesData,
-                            backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                            borderColor: 'rgba(54, 162, 235, 1)',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Ціль калорій',
-                            data: goalLine,
-                            type: 'line',
-                            backgroundColor: 'rgba(255, 99, 132, 1)',
-                            borderColor: 'rgba(255, 99, 132, 1)',
-                            borderWidth: 2,
-                            fill: false,
-                            pointRadius: 0
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-        });
-    </script>
+    <script src="~/js/statistics-charts.js" asp-append-version="true"></script>
 }

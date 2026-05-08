@@ -5,6 +5,13 @@
 }
 
 <div class="container mt-4 mb-5">
+    @if (TempData["SupportError"] is string supportError && !string.IsNullOrWhiteSpace(supportError))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-circle"></i> @supportError
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
     <div class="row">
         <div class="col-lg-8 offset-lg-2">
             <!-- Header -->
@@ -133,7 +140,8 @@
                     <h5 class="modal-title" id="replyModalLabel"><i class="bi bi-pencil-square"></i> Додати коментар</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form method="post" action="@Url.Action("AddReply", "Support")">
+                <form method="post" action="/support/reply">
+                    @Html.AntiForgeryToken()
                     <div class="modal-body">
                         <input type="hidden" name="ticketId" value="@Model.Id" />
                         <div class="mb-3">

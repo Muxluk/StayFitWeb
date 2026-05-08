@@ -64,11 +64,11 @@ public class NutritionBackgroundService : BackgroundService
         var notificationRepo = scope.ServiceProvider.GetRequiredService<INotificationRepository>();
         var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
         var foodRepo = scope.ServiceProvider.GetRequiredService<IFoodRepository>();
-        var supportMessageRepo = scope.ServiceProvider.GetRequiredService<ISupportMessageRepository>();
+        var supportRepo = scope.ServiceProvider.GetRequiredService<ISupportRepository>();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
         await CheckCalorieThresholdAsync(nutritionGoalRepo, foodLogRepo, notificationRepo, notificationService, cancellationToken);
-        await CheckNewSupportMessagesAsync(supportMessageRepo, notificationRepo, userManager, cancellationToken);
+        await CheckNewSupportTicketsAsync(supportRepo, notificationRepo, userManager, cancellationToken);
         await CheckPendingProductsAsync(foodRepo, notificationRepo, userManager, cancellationToken);
     }
 
@@ -118,13 +118,16 @@ public class NutritionBackgroundService : BackgroundService
     }
 
     // ── Подія 2: Нове звернення техпідтримки → адміну ───────────────────────
-    private async Task CheckNewSupportMessagesAsync(
-        ISupportMessageRepository supportMessageRepo,
+    private async Task CheckNewSupportTicketsAsync(
+        ISupportRepository supportRepo,
         INotificationRepository notificationRepo,
         UserManager<ApplicationUser> userManager,
         CancellationToken cancellationToken)
     {
-        var unnotified = (await supportMessageRepo.GetUnnotifiedAsync()).ToList();
+        // Отримуємо нові тікети, про які ще не сповіщено адміна
+        var allNewTickets = await supportRepo.GetAllTicketsAsync(StayFit.Domain.Enums.SupportStatus.New, 0, 100);
+        var unnotified = allNewTickets.Where(t => !t.IsAdminNotified).ToList();
+        
         if (unnotified.Count == 0)
             return;
 
@@ -132,13 +135,13 @@ public class NutritionBackgroundService : BackgroundService
 
         foreach (var adminUser in adminUsers)
         {
-            foreach (var msg in unnotified)
+            foreach (var ticket in unnotified)
             {
                 var adminNotification = new Notification
                 {
                     UserId = adminUser.Id,
                     Title = "🆘 Нове звернення техпідтримки",
-                    Message = $"Тема: {msg.Subject}",
+                    Message = $"Тема: {ticket.Subject}",
                     Type = "SupportRequest",
                     IsRead = false,
                     CreatedAt = DateTime.UtcNow
@@ -158,7 +161,11 @@ public class NutritionBackgroundService : BackgroundService
             }
         }
 
-        await supportMessageRepo.MarkAsNotifiedAsync(unnotified.Select(m => m.Id));
+        foreach (var ticket in unnotified)
+        {
+            ticket.IsAdminNotified = true;
+            await supportRepo.UpdateTicketAsync(ticket);
+        }
 
         _logger.LogInformation(
             "Надіслано {Count} сповіщень про нові звернення техпідтримки адмінам",
@@ -175,7 +182,7 @@ public class NutritionBackgroundService : BackgroundService
         var pendingProducts = (await foodRepo.GetPendingProductsAsync()).ToList();
 
         var newProducts = pendingProducts
-            .Where(p => !_notifiedPendingProductIds.Contains(p.Id))
+            .Where(p => !p.IsAdminNotified)
             .ToList();
 
         if (newProducts.Count == 0)
@@ -213,7 +220,8 @@ public class NutritionBackgroundService : BackgroundService
 
         foreach (var product in newProducts)
         {
-            _notifiedPendingProductIds.Add(product.Id);
+            product.IsAdminNotified = true;
+            await foodRepo.UpdateAsync(product);
         }
 
         _logger.LogInformation(

@@ -27,10 +27,34 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
     public DbSet<HydrationGoal> HydrationGoals => Set<HydrationGoal>();
     public DbSet<WaterLog> WaterLogs => Set<WaterLog>();
     public DbSet<SecurityLogEntry> SecurityLogs => Set<SecurityLogEntry>();
+    public DbSet<SupportTicket> SupportTickets => Set<SupportTicket>();
+    public DbSet<SupportTicketReply> SupportTicketReplies => Set<SupportTicketReply>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<SupportTicket>(entity =>
+        {
+            entity.HasKey(t => t.Id);
+            entity.Property(t => t.Subject).IsRequired().HasMaxLength(200);
+            entity.Property(t => t.Message).IsRequired().HasMaxLength(2000);
+            entity.Property(t => t.Status).IsRequired().HasMaxLength(50);
+            entity.HasOne(t => t.User)
+                .WithMany()
+                .HasForeignKey(t => t.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<SupportTicketReply>(entity =>
+        {
+            entity.HasKey(r => r.Id);
+            entity.Property(r => r.Message).IsRequired().HasMaxLength(2000);
+            entity.HasOne(r => r.Ticket)
+                .WithMany(t => t.Replies)
+                .HasForeignKey(r => r.TicketId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
 
         modelBuilder.Entity<User>(entity =>
         {
