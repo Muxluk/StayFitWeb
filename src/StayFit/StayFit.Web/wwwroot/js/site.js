@@ -188,3 +188,23 @@
         console.log("New Notification:", n.title, n.message);
     }
 })();
+
+// --- Theme Toggle ---
+function sfToggleTheme() {
+    var html = document.documentElement;
+    var isDark = html.getAttribute('data-bs-theme') === 'dark';
+    var next = isDark ? 'light' : 'dark';
+    html.setAttribute('data-bs-theme', next);
+    localStorage.setItem('sf-theme', next);
+    var icon = document.getElementById('sf-theme-icon');
+    if (icon) {
+        icon.className = next === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+    }
+}
+
+// Sync icon on load
+(function () {
+    var t = document.documentElement.getAttribute('data-bs-theme');
+    var icon = document.getElementById('sf-theme-icon');
+    if (icon) icon.className = t === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+})();

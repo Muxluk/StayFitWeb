@@ -296,6 +296,15 @@ public class NotificationService : INotificationService
         {
             var threshold = _notificationSettings.Value.CalorieThresholdPercent;
 
+            // Не дублювати сповіщення — одне на день
+            var alreadySent = await _notificationRepository.HasCalorieThresholdNotificationTodayAsync(userId);
+            if (alreadySent)
+            {
+                _logger.LogInformation(
+                    "Сповіщення про перевищення калорій вже надіслано сьогодні для користувача {UserId}", userId);
+                return Result.Success();
+            }
+
             _logger.LogInformation(
                 "Створення сповіщення про перевищення калорій для користувача {UserId}. " +
                 "Поріг: {Threshold}%, перевищено на: {CalorieOverage} ккал",

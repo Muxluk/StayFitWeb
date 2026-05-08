@@ -30,8 +30,7 @@
             "wwwroot/js/reset-password.js"
         ],
         "minify": {
-            "enabled": true,
-            "commentMode": "all"
+            "enabled": false
         },
         "sourceMap": false
     }

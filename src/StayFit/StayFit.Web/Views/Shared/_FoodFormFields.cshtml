@@ -1,125 +1,150 @@
 @model StayFit.Domain.Entities.Food
 @using StayFit.Domain.Enums
+@*
+    Shared form fields for Food Create / Edit.
+    Caller must wrap this in <form> and provide hidden fields + submit button.
+*@
 
-<div class="row g-3">
-    @* Назва та бренд *@
-    <div class="col-md-6">
-        <div class="form-floating mb-3">
-            <input asp-for="Name" class="form-control" placeholder="Назва продукту" required />
-            <label asp-for="Name">Назва продукту</label>
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="form-floating mb-3">
-            <input asp-for="Brand" class="form-control" placeholder="Бренд (необов'язково)" />
-            <label asp-for="Brand">Бренд</label>
-        </div>
+@* ── Секція 1: Назва та категорія ── *@
+<div class="mb-4">
+    <h6 class="text-muted text-uppercase small fw-semibold mb-3">Основна інформація</h6>
+
+    <div class="mb-3">
+        <label asp-for="Name" class="form-label fw-semibold">Назва продукту</label>
+        <input asp-for="Name" class="form-control form-control-lg"
+               placeholder="Наприклад: Куряча грудка варена" autocomplete="off" />
+        <span asp-validation-for="Name" class="text-danger small"></span>
     </div>
 
-    @* Категорія (Візуальний вибір) *@
-    <div class="col-12 mb-3">
-        <label class="form-label d-block fw-bold mb-2">Категорія продукту</label>
+    <div class="mb-1">
+        <label class="form-label fw-semibold">Категорія</label>
         <input type="hidden" asp-for="Category" id="categoryInput" />
-        
-        <div class="sf-category-grid">
-            @foreach (FoodCategory cat in Enum.GetValues(typeof(FoodCategory)))
-            {
-                var icon = cat switch {
-                    FoodCategory.General => "bi-basket",
-                    FoodCategory.Vegetables => "bi-leaf",
-                    FoodCategory.Fruits => "bi-apple",
-                    FoodCategory.Meat => "bi-egg",
-                    FoodCategory.Dairy => "bi-cup-hot",
-                    FoodCategory.Sweets => "bi-cookie",
-                    FoodCategory.Drinks => "bi-droplet",
-                    _ => "bi-box"
+        <div class="sf-category-grid" id="categoryGrid">
+            @{
+                var cats = new[]
+                {
+                    ("General",    "🍽️", "Загальне",          "secondary"),
+                    ("Meat",       "🥩", "М'ясо",              "danger"),
+                    ("Fish",       "🐟", "Риба",               "info"),
+                    ("Dairy",      "🥛", "Молочне",            "primary"),
+                    ("Vegetables", "🥦", "Овочі",              "success"),
+                    ("Fruits",     "🍎", "Фрукти",             "warning"),
+                    ("Sweets",     "🍰", "Солодощі",           "pink"),
+                    ("Drinks",     "🥤", "Напої",              "cyan"),
                 };
-                
-                <div class="sf-cat-btn @(Model.Category == cat ? "active" : "")" 
-                     data-value="@cat" title="@cat">
-                    <i class="bi @icon sf-cat-icon"></i>
-                    <span class="sf-cat-label">@cat</span>
-                </div>
+                foreach (var (val, icon, label, color) in cats)
+                {
+                    var isSelected = (Model?.Category.ToString() ?? "General") == val;
+                    <button type="button"
+                            class="sf-cat-btn @(isSelected ? "active" : "")"
+                            data-value="@val"
+                            data-color="@color">
+                        <span class="sf-cat-icon">@icon</span>
+                        <span class="sf-cat-label">@label</span>
+                    </button>
+                }
             }
         </div>
+        <span asp-validation-for="Category" class="text-danger small"></span>
+    </div>
+</div>
+
+<hr class="my-4" />
+
+@* ── Секція 2: КБЖВ на 100 г ── *@
+<div class="mb-4">
+    <h6 class="text-muted text-uppercase small fw-semibold mb-1">Харчова цінність</h6>
+    <p class="text-muted small mb-3">Всі значення вказуються <strong>на 100 г</strong> продукту</p>
+
+    <div class="mb-3">
+        <label asp-for="CaloriesPer100g" class="form-label fw-semibold">Калорійність</label>
+        <div class="input-group">
+            <span class="input-group-text bg-warning-subtle text-warning fw-bold">🔥</span>
+            <input asp-for="CaloriesPer100g" id="inp_cal"
+                   class="form-control form-control-lg"
+                   type="number" step="0.1" min="0" placeholder="0" />
+            <span class="input-group-text">ккал / 100 г</span>
+        </div>
+        <span asp-validation-for="CaloriesPer100g" class="text-danger small"></span>
     </div>
 
-    @* КБЖВ на 100г *@
-    <div class="col-12">
-        <div class="card bg-light-subtle border-0 shadow-sm rounded-3">
-            <div class="card-body p-3">
-                <h6 class="fw-bold mb-3"><i class="bi bi-info-circle me-1"></i> Поживна цінність на 100г</h6>
-                <div class="row g-2">
-                    <div class="col-6 col-md-3">
-                        <div class="form-floating">
-                            <input asp-for="CaloriesPer100g" id="inp_cal" class="form-control" placeholder="0" type="number" step="0.1" required />
-                            <label asp-for="CaloriesPer100g">Калорії</label>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <div class="form-floating">
-                            <input asp-for="ProteinPer100g" id="inp_prot" class="form-control" placeholder="0" type="number" step="0.1" required />
-                            <label asp-for="ProteinPer100g">Білки</label>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <div class="form-floating">
-                            <input asp-for="FatPer100g" id="inp_fat" class="form-control" placeholder="0" type="number" step="0.1" required />
-                            <label asp-for="FatPer100g">Жири</label>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <div class="form-floating">
-                            <input asp-for="CarbsPer100g" id="inp_carb" class="form-control" placeholder="0" type="number" step="0.1" required />
-                            <label asp-for="CarbsPer100g">Вуглеводи</label>
-                        </div>
-                    </div>
-                </div>
+    <div class="row g-3 mb-1">
+        <div class="col-sm-4">
+            <label asp-for="ProteinPer100g" class="form-label fw-semibold">Білки</label>
+            <div class="input-group">
+                <span class="input-group-text bg-info-subtle text-info fw-bold">Б</span>
+                <input asp-for="ProteinPer100g" id="inp_prot"
+                       class="form-control" type="number" step="0.1" min="0" placeholder="0" />
+                <span class="input-group-text">г</span>
             </div>
+            <span asp-validation-for="ProteinPer100g" class="text-danger small"></span>
+        </div>
+        <div class="col-sm-4">
+            <label asp-for="FatPer100g" class="form-label fw-semibold">Жири</label>
+            <div class="input-group">
+                <span class="input-group-text bg-warning-subtle text-warning fw-bold">Ж</span>
+                <input asp-for="FatPer100g" id="inp_fat"
+                       class="form-control" type="number" step="0.1" min="0" placeholder="0" />
+                <span class="input-group-text">г</span>
+            </div>
+            <span asp-validation-for="FatPer100g" class="text-danger small"></span>
+        </div>
+        <div class="col-sm-4">
+            <label asp-for="CarbsPer100g" class="form-label fw-semibold">Вуглеводи</label>
+            <div class="input-group">
+                <span class="input-group-text bg-success-subtle text-success fw-bold">В</span>
+                <input asp-for="CarbsPer100g" id="inp_carb"
+                       class="form-control" type="number" step="0.1" min="0" placeholder="0" />
+                <span class="input-group-text">г</span>
+            </div>
+            <span asp-validation-for="CarbsPer100g" class="text-danger small"></span>
+        </div>
+    </div>
+    <div class="text-muted small mt-2">
+        Б + Ж + В не обов'язково дорівнюють 100 г — в продукті є вода, клітковина тощо
+    </div>
+</div>
+
+<hr class="my-4" />
+
+@* ── Секція 3: Попередній перегляд порції ── *@
+<div class="mb-4">
+    <h6 class="text-muted text-uppercase small fw-semibold mb-3">Перегляд для порції</h6>
+
+    <div class="d-flex align-items-center gap-3 mb-3">
+        <label class="form-label fw-semibold mb-0 text-nowrap">Розмір порції:</label>
+        <div class="input-group" style="max-width: 160px;">
+            <input type="number" id="previewGrams" class="form-control"
+                   value="100" min="1" max="9999" step="1" />
+            <span class="input-group-text">г</span>
         </div>
     </div>
 
-    @* Попередній перегляд порції (якщо додаємо зі щоденника) *@
-    @if (ViewBag.ShowPortionPreview == true)
-    {
-        <div class="col-12 mt-4">
-            <div class="card border-primary border-opacity-25 rounded-3">
-                <div class="card-body p-3">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="fw-bold mb-0">Розрахунок порції</h6>
-                        <div class="input-group input-group-sm" style="width: 140px;">
-                            <input type="number" id="previewGrams" class="form-control" value="100" />
-                            <span class="input-group-text">грам</span>
-                        </div>
-                    </div>
-                    <div class="row g-2 text-center">
-                        <div class="col-3">
-                            <div class="small text-muted mb-1">Калорії</div>
-                            <div class="fw-bold text-primary" id="prev_cal">@Model.CaloriesPer100g.ToString("F0")</div>
-                        </div>
-                        <div class="col-3">
-                            <div class="small text-muted mb-1">Білки</div>
-                            <div class="fw-bold text-info" id="prev_prot">@Model.ProteinPer100g.ToString("F1")</div>
-                        </div>
-                        <div class="col-3">
-                            <div class="small text-muted mb-1">Жири</div>
-                            <div class="fw-bold text-warning" id="prev_fat">@Model.FatPer100g.ToString("F1")</div>
-                        </div>
-                        <div class="col-3">
-                            <div class="small text-muted mb-1">Вуглеводи</div>
-                            <div class="fw-bold text-success" id="prev_carb">@Model.CarbsPer100g.ToString("F1")</div>
-                        </div>
-                    </div>
+    <div class="card border-0 bg-light">
+        <div class="card-body py-3">
+            <div class="row text-center g-0">
+                <div class="col-6 col-sm-3 border-end">
+                    <div class="text-warning fw-bold fs-5" id="prev_cal">–</div>
+                    <small class="text-muted">ккал</small>
+                </div>
+                <div class="col-6 col-sm-3 border-end">
+                    <div class="text-info fw-bold fs-5" id="prev_prot">–</div>
+                    <small class="text-muted">г білків</small>
+                </div>
+                <div class="col-6 col-sm-3 border-end mt-2 mt-sm-0">
+                    <div class="text-warning fw-bold fs-5" id="prev_fat">–</div>
+                    <small class="text-muted">г жирів</small>
+                </div>
+                <div class="col-6 col-sm-3 mt-2 mt-sm-0">
+                    <div class="text-success fw-bold fs-5" id="prev_carb">–</div>
+                    <small class="text-muted">г вуглев.</small>
                 </div>
             </div>
-        </div>
-    }
-
-    @* Зображення *@
-    <div class="col-12">
-        <div class="form-floating mb-3">
-            <input asp-for="ImageUrl" class="form-control" placeholder="URL зображення" />
-            <label asp-for="ImageUrl">URL зображення (необов'язково)</label>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="~/js/food-form.js" asp-append-version="true"></script>
+}
+

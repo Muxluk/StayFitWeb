@@ -288,7 +288,7 @@ public class FoodService : IFoodService
             _logger.LogInformation("👤 Користувач знайдено: {Email}", user.Email);
 
             // Отримати норму калорій користувача
-            var goal = await _nutritionGoalRepository.GetByUserIdAsync(user.Email);
+            var goal = await _nutritionGoalRepository.GetByUserIdAsync(user.Id.ToString());
             if (goal == null)
             {
                 _logger.LogWarning("⚠️ Норма калорій НЕ встановлена для користувача {UserId}. Сповіщення не пересилаються!", userId);

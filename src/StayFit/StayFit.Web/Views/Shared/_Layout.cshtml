@@ -202,25 +202,6 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="~/js/bundle.min.js" asp-append-version="true"></script>
-    <script>
-    function sfToggleTheme() {
-        var html = document.documentElement;
-        var isDark = html.getAttribute('data-bs-theme') === 'dark';
-        var next = isDark ? 'light' : 'dark';
-        html.setAttribute('data-bs-theme', next);
-        localStorage.setItem('sf-theme', next);
-        var icon = document.getElementById('sf-theme-icon');
-        if (icon) {
-            icon.className = next === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
-        }
-    }
-    // Sync icon on load
-    (function(){
-        var t = document.documentElement.getAttribute('data-bs-theme');
-        var icon = document.getElementById('sf-theme-icon');
-        if (icon) icon.className = t === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
-    })();
-    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

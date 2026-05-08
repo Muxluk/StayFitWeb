@@ -85,6 +85,7 @@ public class NutritionBackgroundService : BackgroundService
 
         foreach (var goal in allGoals)
         {
+            // NutritionGoal.UserId stores the domain integer ID as a string (e.g. "23")
             if (!int.TryParse(goal.UserId, out var userId))
                 continue;
 
