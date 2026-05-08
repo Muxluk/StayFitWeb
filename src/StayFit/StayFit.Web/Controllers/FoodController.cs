@@ -1,9 +1,13 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using StayFit.Application.Interfaces;
 using StayFit.Domain.Entities;
 using StayFit.Domain.Interfaces;
+using StayFit.Infrastructure.Identity;
+using StayFit.Web.Hubs;
 
 namespace StayFit.Web.Controllers;
 
@@ -12,12 +16,27 @@ public class FoodController : BaseController
 {
     private readonly IFoodService _foodService;
     private readonly IUserRepository _userRepository;
+    private readonly IFoodRepository _foodRepository;
+    private readonly INotificationRepository _notificationRepository;
+    private readonly IHubContext<NotificationHub> _hubContext;
+    private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<FoodController> _logger;
 
-    public FoodController(IFoodService foodService, IUserRepository userRepository, ILogger<FoodController> logger)
+    public FoodController(
+        IFoodService foodService,
+        IUserRepository userRepository,
+        IFoodRepository foodRepository,
+        INotificationRepository notificationRepository,
+        IHubContext<NotificationHub> hubContext,
+        UserManager<ApplicationUser> userManager,
+        ILogger<FoodController> logger)
     {
         _foodService = foodService;
         _userRepository = userRepository;
+        _foodRepository = foodRepository;
+        _notificationRepository = notificationRepository;
+        _hubContext = hubContext;
+        _userManager = userManager;
         _logger = logger;
     }
 
@@ -34,25 +53,91 @@ public class FoodController : BaseController
     // GET: Food/Create
     public IActionResult Create()
     {
-        return View();
+        return View(new Food { Category = StayFit.Domain.Enums.FoodCategory.General });
     }
 
-    // POST: Food/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(Food food)
     {
-        if (ModelState.IsValid)
+        _logger.LogInformation("📝 Спроба створення продукту: {FoodName}", food?.Name);
+        
+        if (!ModelState.IsValid)
         {
+            var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+            _logger.LogWarning("❌ ModelState невалідний: {Errors}", errors);
+            return View(food);
+        }
+
+        try
+        {
+            if (food == null) return BadRequest("Продукт не може бути порожнім");
+
             var userId = GetCurrentUserIdOrDefault();
             food.CreatedByEmail = User.Identity?.Name;
 
             await _foodService.AddFoodAsync(food, userId);
+            _logger.LogInformation("✅ Продукт збережено в БД з ID: {FoodId}", food.Id);
+
+            // ── Миттєве сповіщення адмінам через SignalR ──
+            try
+            {
+                var adminUsers = await _userManager.GetUsersInRoleAsync("Admin");
+                _logger.LogInformation("📢 Знайдено {Count} адміністраторів для сповіщення", adminUsers.Count);
+
+                foreach (var adminUser in adminUsers)
+                {
+                    var domainAdmin = await _userRepository.GetByEmailAsync(adminUser.Email ?? string.Empty);
+                    if (domainAdmin == null)
+                    {
+                        _logger.LogWarning("⚠️ Не знайдено доменного користувача для адміна {Email}", adminUser.Email);
+                        continue;
+                    }
+
+                    var notification = new Notification
+                    {
+                        UserId = domainAdmin.Id,
+                        Title = "Новий продукт на модерацію",
+                        Message = $"Продукт «{food.Name}» очікує перевірки",
+                        Type = "PendingProduct",
+                        IsRead = false,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    await _notificationRepository.AddAsync(notification);
+
+                    _logger.LogInformation("📤 Надсилання SignalR push для AdminId={AdminId} (IdentityId={IdentityId})", domainAdmin.Id, adminUser.Id);
+                    await _hubContext.Clients.User(adminUser.Id.ToString())
+                        .SendAsync("ReceiveNotification", new
+                        {
+                            title = notification.Title,
+                            message = notification.Message,
+                            type = notification.Type,
+                            createdAt = notification.CreatedAt
+                        });
+                }
+
+                // Отримуємо "свіжий" об'єкт з бази та позначаємо як сповіщений
+                var savedFood = await _foodRepository.GetByIdAsync(food.Id);
+                if (savedFood != null)
+                {
+                    savedFood.IsAdminNotified = true;
+                    await _foodRepository.UpdateAsync(savedFood);
+                    _logger.LogInformation("✅ Прапорець IsAdminNotified встановлено для FoodId={FoodId}", food.Id);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Помилка при обробці сповіщень адмінам");
+            }
 
             return RedirectToAction(nameof(Index));
         }
-
-        return View(food);
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "❌ Помилка при створенні продукту");
+            ModelState.AddModelError("", "Сталася помилка при збереженні продукту.");
+            return View(food);
+        }
     }
 
     // GET: Food/{id}/edit

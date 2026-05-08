@@ -201,6 +201,8 @@ public class NutritionBackgroundService : BackgroundService
             .Where(p => !p.IsAdminNotified)
             .ToList();
 
+        _logger.LogInformation("🔍 Фонова перевірка продуктів: знайдено {PendingCount} очікуючих, з них {NewCount} нових для сповіщення", pendingProducts.Count, newProducts.Count);
+
         if (newProducts.Count == 0)
             return;
 

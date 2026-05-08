@@ -1,10 +1,16 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using StayFit.Application.DTOs;
 using StayFit.Application.Interfaces;
 using StayFit.Application.Common;
+using StayFit.Domain.Entities;
+using StayFit.Domain.Interfaces;
+using StayFit.Infrastructure.Identity;
 using StayFit.Web.Filters;
+using StayFit.Web.Hubs;
 
 namespace StayFit.Web.Controllers;
 
@@ -13,10 +19,29 @@ namespace StayFit.Web.Controllers;
 public class SupportController : Controller
 {
     private readonly ISupportService _supportService;
+    private readonly ISupportRepository _supportRepository;
+    private readonly INotificationRepository _notificationRepository;
+    private readonly IUserRepository _userRepository;
+    private readonly IHubContext<NotificationHub> _hubContext;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly ILogger<SupportController> _logger;
 
-    public SupportController(ISupportService supportService)
+    public SupportController(
+        ISupportService supportService,
+        ISupportRepository supportRepository,
+        INotificationRepository notificationRepository,
+        IUserRepository userRepository,
+        IHubContext<NotificationHub> hubContext,
+        UserManager<ApplicationUser> userManager,
+        ILogger<SupportController> logger)
     {
         _supportService = supportService;
+        _supportRepository = supportRepository;
+        _notificationRepository = notificationRepository;
+        _userRepository = userRepository;
+        _hubContext = hubContext;
+        _userManager = userManager;
+        _logger = logger;
     }
 
     [HttpGet("")]
@@ -67,6 +92,52 @@ public class SupportController : Controller
         {
             TempData["SupportError"] = string.Join("; ", result.Errors);
             return RedirectToAction("Index");
+        }
+
+        // ── Миттєве сповіщення адмінам через SignalR ──
+        try
+        {
+            var adminUsers = await _userManager.GetUsersInRoleAsync("Admin");
+
+            foreach (var adminUser in adminUsers)
+            {
+                var domainAdmin = await _userRepository.GetByEmailAsync(adminUser.Email ?? string.Empty);
+                if (domainAdmin == null) continue;
+
+                var notification = new Notification
+                {
+                    UserId = domainAdmin.Id,
+                    Title = "🆘 Нове звернення техпідтримки",
+                    Message = $"Тема: {request.Subject}",
+                    Type = "SupportRequest",
+                    IsRead = false,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _notificationRepository.AddAsync(notification);
+
+                await _hubContext.Clients.User(adminUser.Id.ToString())
+                    .SendAsync("ReceiveNotification", new
+                    {
+                        title = notification.Title,
+                        message = notification.Message,
+                        type = notification.Type,
+                        createdAt = notification.CreatedAt
+                    });
+            }
+
+            // Отримуємо створений тікет та позначаємо як "сповіщено", щоб BackgroundService не дублював
+            var ticket = await _supportRepository.GetTicketWithRepliesByIdAsync(result.Value);
+            if (ticket != null)
+            {
+                ticket.IsAdminNotified = true;
+                await _supportRepository.UpdateTicketAsync(ticket);
+            }
+
+            _logger.LogInformation("📢 Сповіщення про нове звернення «{Subject}» надіслано адмінам", request.Subject);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Помилка при надсиланні сповіщення адмінам про нове звернення");
         }
 
         return RedirectToAction("Index");
