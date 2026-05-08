@@ -144,6 +144,54 @@
     </div>
 </div>
 
+<<<<<<< HEAD
 @section Scripts {
     <script src="~/js/food-form.js" asp-append-version="true"></script>
 }
+=======
+<script>
+(function () {
+    // ── Категорія ─────────────────────────────────────────────────────────
+    const catInput = document.getElementById('categoryInput');
+    document.querySelectorAll('.sf-cat-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.sf-cat-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            catInput.value = this.dataset.value;
+        });
+    });
+
+    // ── Попередній перегляд порції ────────────────────────────────────────
+    const inpCal  = document.getElementById('inp_cal');
+    const inpProt = document.getElementById('inp_prot');
+    const inpFat  = document.getElementById('inp_fat');
+    const inpCarb = document.getElementById('inp_carb');
+    const inpG    = document.getElementById('previewGrams');
+
+    const prevCal  = document.getElementById('prev_cal');
+    const prevProt = document.getElementById('prev_prot');
+    const prevFat  = document.getElementById('prev_fat');
+    const prevCarb = document.getElementById('prev_carb');
+
+    function calcPreview() {
+        const g    = parseFloat(inpG.value)    || 0;
+        const cal  = parseFloat(inpCal.value)  || 0;
+        const prot = parseFloat(inpProt.value) || 0;
+        const fat  = parseFloat(inpFat.value)  || 0;
+        const carb = parseFloat(inpCarb.value) || 0;
+        const k = g / 100;
+        prevCal.textContent  = g ? (cal  * k).toFixed(0) : '–';
+        prevProt.textContent = g ? (prot * k).toFixed(1) : '–';
+        prevFat.textContent  = g ? (fat  * k).toFixed(1) : '–';
+        prevCarb.textContent = g ? (carb * k).toFixed(1) : '–';
+    }
+
+    [inpCal, inpProt, inpFat, inpCarb, inpG].forEach(el => {
+        if (el) el.addEventListener('input', calcPreview);
+    });
+
+    // Початковий розрахунок (для Edit з існуючими значеннями)
+    calcPreview();
+})();
+</script>
+>>>>>>> 4fc65956a02eb07031bf6fe09fbb544262e422b9

@@ -143,7 +143,7 @@ public class FoodService : IFoodService
         return await _foodLogRepository!.GetByUserIdAndDateAsync(user.Id, date.Date);
     }
 
-    public async Task AddFoodToLogAsync(int foodId, double quantity, string userEmail)
+    public async Task AddFoodToLogAsync(int foodId, double quantity, string userEmail, DateTime? loggedAt = null)
     {
         EnsureFoodLogDependencies();
 
@@ -173,7 +173,7 @@ public class FoodService : IFoodService
             FoodId = foodId,
             AmountGrams = (float)quantity,
             Quantity = quantity,
-            LoggedAt = DateTime.UtcNow,
+            LoggedAt = loggedAt?.ToUniversalTime() ?? DateTime.UtcNow,
             UserEmail = userEmail,
         };
 

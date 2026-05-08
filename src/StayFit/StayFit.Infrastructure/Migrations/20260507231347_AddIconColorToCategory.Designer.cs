@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using StayFit.Infrastructure.Data;
@@ -11,9 +12,11 @@ using StayFit.Infrastructure.Data;
 namespace StayFit.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260507231347_AddIconColorToCategory")]
+    partial class AddIconColorToCategory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -228,9 +231,6 @@ namespace StayFit.Infrastructure.Migrations
 
                     b.Property<string>("ImageUrl")
                         .HasColumnType("text");
-
-                    b.Property<bool>("IsAdminNotified")
-                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsApproved")
                         .HasColumnType("boolean");
@@ -539,74 +539,6 @@ namespace StayFit.Infrastructure.Migrations
                     b.ToTable("SupportMessages");
                 });
 
-            modelBuilder.Entity("StayFit.Domain.Entities.SupportTicket", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsAdminNotified")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("Subject")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("SupportTickets");
-                });
-
-            modelBuilder.Entity("StayFit.Domain.Entities.SupportTicketReply", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsAdminReply")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
-
-                    b.Property<int>("TicketId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TicketId");
-
-                    b.ToTable("SupportTicketReplies");
-                });
-
             modelBuilder.Entity("StayFit.Domain.Entities.User", b =>
                 {
                     b.Property<int>("Id")
@@ -643,9 +575,6 @@ namespace StayFit.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ActivityLevel")
-                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -935,28 +864,6 @@ namespace StayFit.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("StayFit.Domain.Entities.SupportTicket", b =>
-                {
-                    b.HasOne("StayFit.Domain.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("StayFit.Domain.Entities.SupportTicketReply", b =>
-                {
-                    b.HasOne("StayFit.Domain.Entities.SupportTicket", "Ticket")
-                        .WithMany("Replies")
-                        .HasForeignKey("TicketId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Ticket");
-                });
-
             modelBuilder.Entity("StayFit.Domain.Entities.UserSession", b =>
                 {
                     b.HasOne("StayFit.Domain.Entities.User", "User")
@@ -992,11 +899,6 @@ namespace StayFit.Infrastructure.Migrations
             modelBuilder.Entity("StayFit.Domain.Entities.MealEntry", b =>
                 {
                     b.Navigation("FoodLogs");
-                });
-
-            modelBuilder.Entity("StayFit.Domain.Entities.SupportTicket", b =>
-                {
-                    b.Navigation("Replies");
                 });
 
             modelBuilder.Entity("StayFit.Domain.Entities.User", b =>

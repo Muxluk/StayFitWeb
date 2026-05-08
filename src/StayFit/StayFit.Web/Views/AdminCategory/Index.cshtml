@@ -72,12 +72,14 @@
                         @foreach (var category in Model)
                         {
                             var (icon, color) = CategoryStyle(category.Name);
+                            var dispIcon  = !string.IsNullOrEmpty(category.Icon)  ? category.Icon  : icon;
+                            var dispColor = !string.IsNullOrEmpty(category.ColorClass) ? category.ColorClass : color;
                             <tr>
                                 <td class="ps-3 text-muted small">#@category.Id</td>
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
-                                        <span class="badge bg-@color-subtle text-@color border border-@color-subtle fs-5 lh-1 px-2 py-1">
-                                            @icon
+                                        <span class="badge bg-@dispColor-subtle text-@dispColor border border-@dispColor-subtle fs-5 lh-1 px-2 py-1">
+                                            @dispIcon
                                         </span>
                                         <span class="fw-semibold">@category.Name</span>
                                     </div>

@@ -14,7 +14,7 @@
 }
 
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="uk" data-bs-theme="light">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -24,7 +24,7 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm bg-body-tertiary border-bottom box-shadow mb-3">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Dashboard" asp-action="Index">StayFit.Web</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
@@ -34,35 +34,39 @@
                 <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between" id="navbarSupportedContent">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
+<<<<<<< HEAD
                             <a class="nav-link text-dark" asp-area="" asp-controller="Dashboard" asp-action="Index">Головна</a>
+=======
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Головна</a>
+>>>>>>> 4fc65956a02eb07031bf6fe09fbb544262e422b9
                         </li>
                         <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="ProductSearch" asp-action="Index">Пошук продуктів</a>
+                        <a class="nav-link" asp-area="" asp-controller="ProductSearch" asp-action="Index">Пошук продуктів</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Food" asp-action="Index">Мої продукти</a>
+                            <a class="nav-link" asp-area="" asp-controller="Food" asp-action="Index">Мої продукти</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Diary" asp-action="Index">Мій щоденник</a>
+                            <a class="nav-link" asp-controller="Diary" asp-action="Index">Мій щоденник</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Hydration" asp-action="Index">
+                            <a class="nav-link" asp-controller="Hydration" asp-action="Index">
                                 <i class="bi bi-droplet-fill text-info"></i> Моя вода
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Statistics" asp-action="Daily">Статистика</a>
+                            <a class="nav-link" asp-controller="Statistics" asp-action="Daily">Статистика</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="NutritionGoal" asp-action="Index">Мої цілі</a>
+                            <a class="nav-link" asp-controller="NutritionGoal" asp-action="Index">Мої цілі</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Export" asp-action="Index">Експорт</a>
+                            <a class="nav-link" asp-controller="Export" asp-action="Index">Експорт</a>
                         </li>
                         @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Admin" asp-action="Index">Адміністрування</a>
+                                <a class="nav-link" asp-controller="Admin" asp-action="Index">Адміністрування</a>
                             </li>
                         }
                     </ul>
@@ -76,11 +80,16 @@
                             </li>
 
                         }
+                        <li class="nav-item d-flex align-items-center me-1">
+                            <button id="sf-theme-toggle" class="btn btn-link nav-link px-2" title="Перемкнути тему" onclick="sfToggleTheme()" type="button">
+                                <i class="bi bi-moon-fill" id="sf-theme-icon"></i>
+                            </button>
+                        </li>
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item d-flex align-items-center me-2">
                                 <div class="dropdown">
-                                    <button class="btn btn-link nav-link text-dark position-relative" type="button" id="notificationBell" data-bs-toggle="dropdown" aria-expanded="false" title="Сповіщення">
+                                    <button class="btn btn-link nav-link position-relative" type="button" id="notificationBell" data-bs-toggle="dropdown" aria-expanded="false" title="Сповіщення">
                                         🔔
                                         <span id="notificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">
                                             <span id="notificationCount">0</span>
@@ -105,22 +114,22 @@
                                 </div>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Profile" asp-action="Edit" title="Мій профіль">👤 @User.Identity.Name</a>
+                                <a class="nav-link" asp-area="" asp-controller="Profile" asp-action="Edit" title="Мій профіль">👤 @User.Identity.Name</a>
                             </li>
                             <li class="nav-item">
                                 <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
                                     @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-link nav-link text-dark">Вийти</button>
+                                    <button type="submit" class="btn btn-link nav-link">Вийти</button>
                                 </form>
                             </li>
                         }
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Вхід</a>
+                                <a class="nav-link" asp-controller="Account" asp-action="Login">Вхід</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Реєстрація</a>
+                                <a class="nav-link" asp-controller="Account" asp-action="Register">Реєстрація</a>
                             </li>
                         }
                     </ul>
@@ -196,7 +205,30 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<<<<<<< HEAD
     <script src="~/js/bundle.min.js" asp-append-version="true"></script>
+=======
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+    function sfToggleTheme() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-bs-theme') === 'dark';
+        var next = isDark ? 'light' : 'dark';
+        html.setAttribute('data-bs-theme', next);
+        localStorage.setItem('sf-theme', next);
+        var icon = document.getElementById('sf-theme-icon');
+        if (icon) {
+            icon.className = next === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+        }
+    }
+    // Sync icon on load
+    (function(){
+        var t = document.documentElement.getAttribute('data-bs-theme');
+        var icon = document.getElementById('sf-theme-icon');
+        if (icon) icon.className = t === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+    })();
+    </script>
+>>>>>>> 4fc65956a02eb07031bf6fe09fbb544262e422b9
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

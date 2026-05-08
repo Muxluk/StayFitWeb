@@ -6,6 +6,7 @@ using StayFit.Domain.Entities;
 namespace StayFit.Web.Controllers;
 
 [Authorize]
+[Route("food-import")]
 public class FoodImportController : BaseController
 {
     private readonly IFoodImportService _foodImportService;
@@ -15,7 +16,7 @@ public class FoodImportController : BaseController
         _foodImportService = foodImportService;
     }
 
-    [HttpGet]
+    [HttpGet("")]
     public async Task<IActionResult> Index(string? searchTerm)
     {
         ViewBag.SearchTerm = searchTerm;
@@ -36,16 +37,24 @@ public class FoodImportController : BaseController
         return View(results);
     }
 
-    [HttpPost]
+    [HttpPost("import")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Import(Food importedFood)
     {
         var userId = GetCurrentUserIdOrDefault();
         var userEmail = User.Identity?.Name ?? "Unknown";
-        
+
+        // Check if a product with this name already exists
+        var existing = await _foodImportService.GetExistingNamesAsync(new[] { importedFood.Name });
+        if (existing.Contains(importedFood.Name))
+        {
+            TempData["ImportWarning"] = $"Продукт «{importedFood.Name}» вже існує в локальній базі.";
+            return RedirectToAction(nameof(Index), new { searchTerm = importedFood.Name });
+        }
+
         await _foodImportService.ImportProductAsync(importedFood, userId, userEmail);
-        
-        // Redirect back to generic product search
+
+        TempData["ImportSuccess"] = $"Продукт «{importedFood.Name}» успішно імпортовано.";
         return RedirectToAction("Index", "ProductSearch", new { searchTerm = importedFood.Name });
     }
 }
