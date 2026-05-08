@@ -134,13 +134,27 @@ public class NutritionBackgroundService : BackgroundService
 
         var adminUsers = await userManager.GetUsersInRoleAsync("Admin");
 
+        // Отримуємо доменних юзерів для кожного адміна
+        await using var innerScope = _scopeFactory.CreateAsyncScope();
+        var userRepo = innerScope.ServiceProvider.GetRequiredService<IUserRepository>();
+
         foreach (var adminUser in adminUsers)
         {
+            // Знаходимо доменного User за email, щоб UserId в Notification
+            // збігався з тим, що повертає NotificationController
+            var domainUser = await userRepo.GetByEmailAsync(adminUser.Email ?? string.Empty);
+            if (domainUser == null)
+            {
+                _logger.LogWarning(
+                    "Не знайдено доменного користувача для адміна {AdminEmail}", adminUser.Email);
+                continue;
+            }
+
             foreach (var ticket in unnotified)
             {
                 var adminNotification = new Notification
                 {
-                    UserId = adminUser.Id,
+                    UserId = domainUser.Id, // Доменний User.Id для БД
                     Title = "🆘 Нове звернення техпідтримки",
                     Message = $"Тема: {ticket.Subject}",
                     Type = "SupportRequest",
@@ -157,6 +171,7 @@ public class NutritionBackgroundService : BackgroundService
                     createdAt = adminNotification.CreatedAt
                 };
 
+                // SignalR використовує Identity ID (NameIdentifier claim)
                 await _hubContext.Clients.User(adminUser.Id.ToString())
                     .SendAsync("ReceiveNotification", payload);
             }
@@ -191,13 +206,26 @@ public class NutritionBackgroundService : BackgroundService
 
         var adminUsers = await userManager.GetUsersInRoleAsync("Admin");
 
+        // Отримуємо доменних юзерів для кожного адміна
+        await using var innerScope2 = _scopeFactory.CreateAsyncScope();
+        var userRepo2 = innerScope2.ServiceProvider.GetRequiredService<IUserRepository>();
+
         foreach (var adminUser in adminUsers)
         {
+            // Знаходимо доменного User за email
+            var domainUser = await userRepo2.GetByEmailAsync(adminUser.Email ?? string.Empty);
+            if (domainUser == null)
+            {
+                _logger.LogWarning(
+                    "Не знайдено доменного користувача для адміна {AdminEmail}", adminUser.Email);
+                continue;
+            }
+
             foreach (var product in newProducts)
             {
                 var adminNotification = new Notification
                 {
-                    UserId = adminUser.Id,
+                    UserId = domainUser.Id, // Доменний User.Id для БД
                     Title = "🛒 Новий продукт на модерацію",
                     Message = $"Продукт «{product.Name}» очікує перевірки",
                     Type = "PendingProduct",
@@ -214,6 +242,7 @@ public class NutritionBackgroundService : BackgroundService
                     createdAt = adminNotification.CreatedAt
                 };
 
+                // SignalR використовує Identity ID (NameIdentifier claim)
                 await _hubContext.Clients.User(adminUser.Id.ToString())
                     .SendAsync("ReceiveNotification", payload);
             }

@@ -155,20 +155,28 @@ public class FoodController : BaseController
             return Challenge();
         }
 
-        // Map meal type to a specific hour of today so diary grouping works
-        var today = DateTime.Today;
-        DateTime? loggedAt = mealType?.ToLowerInvariant() switch
+        try
         {
-            "breakfast" => today.AddHours(8),
-            "lunch"     => today.AddHours(13),
-            "dinner"    => today.AddHours(19),
-            "snack"     => today.AddHours(23),
-            _           => null
-        };
+            // Map meal type to a specific hour of today so diary grouping works
+            var today = DateTime.Today;
+            DateTime? loggedAt = mealType?.ToLowerInvariant() switch
+            {
+                "breakfast" => today.AddHours(8),
+                "lunch"     => today.AddHours(13),
+                "dinner"    => today.AddHours(19),
+                "snack"     => today.AddHours(23),
+                _           => null
+            };
 
-        await _foodService.AddFoodToLogAsync(foodId, quantity, userEmail, loggedAt);
+            await _foodService.AddFoodToLogAsync(foodId, quantity, userEmail, loggedAt);
 
-        _logger.LogInformation("✅ AddToLog завершено FoodId={FoodId}, Email={Email}", foodId, userEmail);
+            _logger.LogInformation("✅ AddToLog завершено FoodId={FoodId}, Email={Email}", foodId, userEmail);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "❌ Помилка при додаванні продукту {FoodId} до щоденника", foodId);
+            TempData["ErrorMessage"] = "Помилка при додаванні продукту до щоденника.";
+        }
 
         return RedirectToAction("Index", "Diary");
     }

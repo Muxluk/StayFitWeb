@@ -84,20 +84,22 @@
                                             {
                                                 @* Редагувати *@
                                                 <a asp-action="Edit" asp-route-id="@item.Id"
-                                                   class="btn btn-sm btn-outline-warning" title="Редагувати">
+                                                   class="btn btn-sm btn-outline-warning d-flex align-items-center gap-1" title="Редагувати">
                                                     <i class="bi bi-pencil"></i>
+                                                    <span>Редагувати</span>
                                                 </a>
 
                                                 @* Видалити *@
                                                 <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline">
                                                     @Html.AntiForgeryToken()
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1"
                                                             title="Видалити"
                                                             data-confirm-title="Видалити продукт"
                                                             data-confirm-message="Видалити «@item.Name»? Цю дію неможливо скасувати."
                                                             data-confirm-button-text="Видалити"
                                                             data-confirm-button-class="btn-danger">
                                                         <i class="bi bi-trash"></i>
+                                                        <span>Видалити</span>
                                                     </button>
                                                 </form>
                                             }

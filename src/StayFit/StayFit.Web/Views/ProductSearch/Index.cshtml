@@ -26,8 +26,7 @@
 
     bool IsBrokenName(string? name)
     {
-        if (string.IsNullOrWhiteSpace(name)) return true;
-        return name.All(char.IsDigit);
+        return string.IsNullOrWhiteSpace(name);
     }
 }
 
@@ -164,9 +163,12 @@
                                 </div>
                             }
 
-                            <div class="card-body d-flex flex-column">
+                            <div class="card-body d-flex flex-column p-3">
                                 <div class="mb-auto">
-                                    <h5 class="sf-ps-title">@(IsBrokenName(item.Name) ? $"Продукт #{item.Id}" : item.Name)</h5>
+                                    <div class="d-flex justify-content-between align-items-start mb-1">
+                                        <h5 class="sf-ps-title mb-0">@item.Name</h5>
+                                        <span class="text-muted small ms-2" style="white-space: nowrap;">#@item.Id</span>
+                                    </div>
                                     @if (!string.IsNullOrEmpty(item.Brand))
                                     {
                                         <p class="sf-ps-brand">@item.Brand</p>

@@ -136,7 +136,10 @@
                                             <td class="text-end pe-3">
                                                 <div class="btn-group btn-group-sm" role="group">
                                                     <form asp-action="DeleteEntry" asp-route-id="@log.Id" method="post" class="d-inline">
-                                                        <button type="submit" class="btn btn-outline-danger" title="Видалити"><i class="bi bi-trash"></i></button>
+                                                        <button type="submit" class="btn btn-outline-danger d-flex align-items-center gap-2" title="Видалити">
+                                                            <i class="bi bi-trash"></i>
+                                                            <span>Видалити</span>
+                                                        </button>
                                                     </form>
                                                 </div>
                                             </td>
