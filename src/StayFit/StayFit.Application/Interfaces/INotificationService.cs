@@ -75,6 +75,19 @@ public interface INotificationService
     /// <param name="calorieGoal">Цільова кількість калорій</param>
     /// <returns>Результат операції</returns>
     Task<Result> CreateNutritionGoalSetNotificationAsync(int userId, int calorieGoal);
+
+    /// <summary>
+    /// Надіслати адміністраторам сповіщення про нове звернення до техпідтримки
+    /// </summary>
+    /// <param name="ticketId">ID нового тікету</param>
+    /// <param name="subject">Тема звернення</param>
+    Task<Result> NotifyAdminsNewSupportTicketAsync(int ticketId, string subject);
+
+    /// <summary>
+    /// Надіслати адміністраторам сповіщення про новий продукт на модерацію
+    /// </summary>
+    /// <param name="foodName">Назва продукту</param>
+    Task<Result> NotifyAdminsNewFoodModerationAsync(string foodName);
 }
 
 /// <summary>

@@ -14,15 +14,18 @@ namespace StayFit.Application.Services;
 public class NotificationService : INotificationService
 {
     private readonly INotificationRepository _notificationRepository;
+    private readonly IUserRepository _userRepository;
     private readonly IOptions<NotificationSettings> _notificationSettings;
     private readonly ILogger<NotificationService> _logger;
 
     public NotificationService(
         INotificationRepository notificationRepository,
+        IUserRepository userRepository,
         IOptions<NotificationSettings> notificationSettings,
         ILogger<NotificationService> logger)
     {
         _notificationRepository = notificationRepository;
+        _userRepository = userRepository;
         _notificationSettings = notificationSettings;
         _logger = logger;
     }
@@ -332,6 +335,70 @@ public class NotificationService : INotificationService
             _logger.LogError(ex,
                 "Помилка при створенні сповіщення про перевищення калорій для користувача {UserId}", userId);
             return Result.Failure("Помилка при створенні сповіщення");
+        }
+    }
+
+    /// <summary>
+    /// Надіслати адміністраторам сповіщення про нове звернення до техпідтримки
+    /// </summary>
+    public async Task<Result> NotifyAdminsNewSupportTicketAsync(int ticketId, string subject)
+    {
+        try
+        {
+            var admins = await _userRepository.GetByRoleAsync("Admin");
+            foreach (var admin in admins)
+            {
+                var notification = new Notification
+                {
+                    UserId = admin.Id,
+                    Title = "📩 Нове звернення до підтримки",
+                    Message = $"Надійшло нове звернення #{ticketId}: «{subject}»",
+                    Type = "NewSupportTicket",
+                    IsRead = false,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _notificationRepository.AddAsync(notification);
+            }
+
+            _logger.LogInformation("Надіслано сповіщення адмінам про нове звернення #{TicketId}", ticketId);
+            return Result.Success();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Помилка при надсиланні сповіщення адмінам про звернення #{TicketId}", ticketId);
+            return Result.Failure("Помилка при створенні сповіщення для адміна");
+        }
+    }
+
+    /// <summary>
+    /// Надіслати адміністраторам сповіщення про новий продукт на модерацію
+    /// </summary>
+    public async Task<Result> NotifyAdminsNewFoodModerationAsync(string foodName)
+    {
+        try
+        {
+            var admins = await _userRepository.GetByRoleAsync("Admin");
+            foreach (var admin in admins)
+            {
+                var notification = new Notification
+                {
+                    UserId = admin.Id,
+                    Title = "🍎 Новий продукт на модерацію",
+                    Message = $"Продукт «{foodName}» очікує на перевірку та затвердження",
+                    Type = "NewFoodModeration",
+                    IsRead = false,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _notificationRepository.AddAsync(notification);
+            }
+
+            _logger.LogInformation("Надіслано сповіщення адмінам про новий продукт «{FoodName}» на модерацію", foodName);
+            return Result.Success();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Помилка при надсиланні сповіщення адмінам про продукт «{FoodName}»", foodName);
+            return Result.Failure("Помилка при створенні сповіщення для адміна");
         }
     }
 

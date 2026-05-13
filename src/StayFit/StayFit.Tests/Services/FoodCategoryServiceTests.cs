@@ -20,7 +20,7 @@ public class FoodCategoryServiceTests
     [Fact]
     public async Task CreateAsync_WhenNameIsEmpty_ReturnsFailure_AndDoesNotCallAdd()
     {
-        var result = await _service.CreateAsync("   ", "test");
+        var result = await _service.CreateAsync("   ", "test", null, null);
 
         Assert.True(result.IsFailure);
         _repositoryMock.Verify(r => r.AddAsync(It.IsAny<FoodCategoryEntity>()), Times.Never);
@@ -33,7 +33,7 @@ public class FoodCategoryServiceTests
             .Setup(r => r.ExistsByNameAsync("Фрукти"))
             .ReturnsAsync(true);
 
-        var result = await _service.CreateAsync("Фрукти", "Свіжі продукти");
+        var result = await _service.CreateAsync("Фрукти", "Свіжі продукти", null, null);
 
         Assert.True(result.IsFailure);
         _repositoryMock.Verify(r => r.AddAsync(It.IsAny<FoodCategoryEntity>()), Times.Never);
@@ -46,7 +46,7 @@ public class FoodCategoryServiceTests
             .Setup(r => r.GetByIdAsync(999))
             .ReturnsAsync((FoodCategoryEntity?)null);
 
-        var result = await _service.UpdateAsync(999, "Овочі", "Опис", true);
+        var result = await _service.UpdateAsync(999, "Овочі", "Опис", true, null, null);
 
         Assert.True(result.IsFailure);
         _repositoryMock.Verify(r => r.UpdateAsync(It.IsAny<FoodCategoryEntity>()), Times.Never);
