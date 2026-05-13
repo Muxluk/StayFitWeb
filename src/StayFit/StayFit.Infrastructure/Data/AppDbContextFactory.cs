@@ -8,9 +8,8 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
     public AppDbContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-        // Design-time connection string (Neon PostgreSQL)
         optionsBuilder.UseNpgsql(
-            "Host=ep-ancient-tooth-an0wah2y-pooler.c-6.us-east-1.aws.neon.tech;Database=neondb;Username=neondb_owner;Password=npg_XJ8a3YzyAkhl;Ssl Mode=Require;");
+    "Host=stayfit-db.c3s4wm8qc1g8.eu-north-1.rds.amazonaws.com;Port=5432;Database=stayfit-db;Username=admin1;Password=Kip,N+h2c5D!kHf;Ssl Mode=Require;Trust Server Certificate=true;");
 
         return new AppDbContext(optionsBuilder.Options);
     }
