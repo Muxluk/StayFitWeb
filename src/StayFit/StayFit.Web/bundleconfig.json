@@ -3,8 +3,7 @@
         "outputFileName": "wwwroot/css/bundle.min.css",
         "inputFiles": ["wwwroot/css/site.css", "wwwroot/css/layout.css"],
         "minify": {
-            "enabled": true,
-            "commentMode": "all"
+            "enabled": true
         },
         "sourceMap": false
     },

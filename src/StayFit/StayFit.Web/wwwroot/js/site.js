@@ -220,14 +220,22 @@ function sfToggleTheme() {
     localStorage.setItem("sf-theme", next);
     var icon = document.getElementById("sf-theme-icon");
     if (icon) {
-        icon.className = next === "dark" ? "bi bi-sun-fill" : "bi bi-moon-fill";
+        icon.className = next === "dark" ? "bi bi-moon-fill" : "bi bi-sun-fill";
     }
 }
 
-// Sync icon on load
+// Restore theme on page load
 (function () {
-    var t = document.documentElement.getAttribute("data-bs-theme");
+    var html = document.documentElement;
+    var savedTheme = localStorage.getItem("sf-theme");
+    var systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    var theme = savedTheme || (systemDark ? "dark" : "light");
+
+    html.setAttribute("data-bs-theme", theme);
+
     var icon = document.getElementById("sf-theme-icon");
-    if (icon)
-        icon.className = t === "dark" ? "bi bi-sun-fill" : "bi bi-moon-fill";
+    if (icon) {
+        icon.className =
+            theme === "dark" ? "bi bi-moon-fill" : "bi bi-sun-fill";
+    }
 })();

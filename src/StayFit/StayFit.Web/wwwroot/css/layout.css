@@ -24,7 +24,6 @@ html {
 }
 
 body {
-    margin-bottom: 60px;
     background: linear-gradient(
         180deg,
         #e7f7e8 0%,
@@ -46,19 +45,20 @@ body {
 }
 
 .support-fab {
-    position: fixed;
-    right: 1.5rem;
-    bottom: 1.5rem;
-    z-index: 1050;
-    width: 3.5rem;
-    height: 3.5rem;
-    border-radius: 50%;
-    font-size: 1.5rem;
-    font-weight: 700;
-    line-height: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    position: fixed !important;
+    right: 1.5rem !important;
+    bottom: 1.5rem !important;
+    z-index: 1070 !important;
+    width: 3.5rem !important;
+    height: 3.5rem !important;
+    border-radius: 50% !important;
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
 }
 
 .form-floating > .form-control-plaintext::placeholder,
