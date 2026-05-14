@@ -1,0 +1,27 @@
+name: CI Pipeline
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore src/StayFit/StayFit.sln
+
+    - name: Build
+      run: dotnet build src/StayFit/StayFit.sln --no-restore
+
+    - name: Test
+      run: dotnet test src/StayFit/StayFit.sln --no-build --verbosity normal
