@@ -410,24 +410,11 @@ public class NotificationService : INotificationService
         return new NotificationDto
         {
             Id = notification.Id,
-            Title = NormalizeLegacyRussianText(notification.Title),
-            Message = NormalizeLegacyRussianText(notification.Message),
+            Title = notification.Title,
+            Message = notification.Message,
             Type = notification.Type,
             IsRead = notification.IsRead,
             CreatedAt = notification.CreatedAt
         };
-    }
-
-    private static string NormalizeLegacyRussianText(string text)
-    {
-        return text
-            .Replace("Продукт удален", "Продукт видалено")
-            .Replace("Продукт добавлен", "Продукт додано")
-            .Replace("Цель установлена", "Ціль встановлена")
-            .Replace("Вы добавили", "Ви додали")
-            .Replace("Вы установили", "Ви встановили")
-            .Replace("удален из дневника", "видалено зі щоденника")
-            .Replace("в дневник", "до щоденника")
-            .Replace("дневную цель", "денну ціль");
     }
 }

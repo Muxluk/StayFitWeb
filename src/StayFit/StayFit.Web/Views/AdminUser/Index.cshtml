@@ -29,8 +29,8 @@
                     <button type="submit" class="btn btn-primary flex-grow-1">
                         <i class="bi bi-search me-2"></i>Пошук
                     </button>
-                    <a asp-action="Index" class="btn btn-outline-secondary" title="Скинути">
-                        <i class="bi bi-arrow-counterclockwise"></i>
+                    <a asp-action="Index" class="btn btn-outline-secondary flex-grow-1">
+                        <i class="bi bi-arrow-counterclockwise me-2"></i>Скинути
                     </a>
                 </div>
             </form>
@@ -76,13 +76,14 @@
                                 </td>
                                 <td class="text-end pe-4">
                                     <div class="btn-group btn-group-sm">
-                                        <a asp-action="Details" asp-route-userId="@user.UserId" class="btn btn-outline-primary d-flex align-items-center gap-1" title="Деталі">
+                                        <a asp-action="Details" asp-route-userId="@user.UserId" class="btn btn-outline-primary d-flex align-items-center gap-1">
                                             <i class="bi bi-info-circle"></i>
                                             <span>Деталі</span>
                                         </a>
-                                        <button type="button" class="btn btn-outline-secondary" title="Логи безпеки">
+                                        <a asp-action="SecurityLogs" asp-route-userId="@user.UserId" class="btn btn-outline-secondary d-flex align-items-center gap-1">
                                             <i class="bi bi-shield-check"></i>
-                                        </button>
+                                            <span>Логи безпеки</span>
+                                        </a>
                                     </div>
                                 </td>
                             </tr>
@@ -99,8 +100,8 @@
         <nav class="mt-4">
             <ul class="pagination justify-content-center gap-2">
                 <li class="page-item @(Model.Users.PageNumber == 1 ? "disabled" : "")">
-                    <a class="page-link border-0 rounded-circle text-dark shadow-sm fs-5" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; line-height: 1;" asp-action="Index" asp-route-page="@(Model.Users.PageNumber - 1)" asp-route-userId="@Model.UserId" asp-route-email="@Model.Email">
-                        &laquo;
+                    <a class="page-link border-0 rounded-circle text-dark shadow-sm" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;" asp-action="Index" asp-route-page="@(Model.Users.PageNumber - 1)" asp-route-userId="@Model.UserId" asp-route-email="@Model.Email">
+                        <i class="bi bi-chevron-left"></i>
                     </a>
                 </li>
 
@@ -118,8 +119,8 @@
                 }
 
                 <li class="page-item @(Model.Users.PageNumber == Model.Users.TotalPages ? "disabled" : "")">
-                    <a class="page-link border-0 rounded-circle text-dark shadow-sm fs-5" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; line-height: 1;" asp-action="Index" asp-route-page="@(Model.Users.PageNumber + 1)" asp-route-userId="@Model.UserId" asp-route-email="@Model.Email">
-                        &raquo;
+                    <a class="page-link border-0 rounded-circle text-dark shadow-sm" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;" asp-action="Index" asp-route-page="@(Model.Users.PageNumber + 1)" asp-route-userId="@Model.UserId" asp-route-email="@Model.Email">
+                        <i class="bi bi-chevron-right"></i>
                     </a>
                 </li>
             </ul>

@@ -69,3 +69,12 @@ public sealed class AdminUserEditViewModel
     [Display(Name = "Зріст (см)")]
     public decimal? Height { get; set; }
 }
+
+public sealed class AdminUserSecurityLogsViewModel
+{
+    public int UserId { get; set; }
+    public string Email { get; set; } = string.Empty;
+    public int Page { get; set; } = 1;
+    public string? EventType { get; set; }
+    public PagedResult<SecurityLogDto> Logs { get; set; } = new();
+}
