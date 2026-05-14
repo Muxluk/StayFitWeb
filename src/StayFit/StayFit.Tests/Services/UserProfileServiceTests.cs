@@ -224,7 +224,7 @@ public class UserProfileServiceTests
     }
 
     [Fact]
-    public async Task UpdateProfileAsync_WithNonExistentProfile_ThrowsNotFoundException()
+    public async Task UpdateProfileAsync_WithNonExistentProfile_CreatesNewProfile()
     {
         // Arrange
         int userId = 999;
@@ -235,9 +235,14 @@ public class UserProfileServiceTests
         };
 
         _mockRepository.Setup(r => r.GetByUserIdAsync(userId)).ReturnsAsync((UserProfile?)null);
+        _mockRepository.Setup(r => r.AddAsync(It.IsAny<UserProfile>())).Returns(Task.CompletedTask);
 
-        // Act & Assert
-        await Assert.ThrowsAsync<NotFoundException>(() => _service.UpdateProfileAsync(userId, updateDto));
+        // Act
+        var result = await _service.UpdateProfileAsync(userId, updateDto);
+
+        // Assert
+        Assert.True(result);
+        _mockRepository.Verify(r => r.AddAsync(It.IsAny<UserProfile>()), Times.Once);
         _mockRepository.Verify(r => r.UpdateAsync(It.IsAny<UserProfile>()), Times.Never);
     }
 
