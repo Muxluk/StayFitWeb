@@ -17,6 +17,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="wwwroot\css\bundle.min.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="wwwroot\js\bundle.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -28,5 +39,17 @@
     <PackageReference Include="Serilog.Sinks.Seq" Version="6.0.0" />
     <PackageReference Include="BuildBundlerMinifier" Version="3.2.449" />
   </ItemGroup>
+
+  <Target Name="BundleAssetsBeforePublish" BeforeTargets="PrepareForPublish" DependsOnTargets="BundleMinify" />
+
+  <Target Name="CopyBundledAssetsToPublish" AfterTargets="Publish">
+    <MakeDir Directories="$(PublishDir)wwwroot\css;$(PublishDir)wwwroot\js" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\wwwroot\css\bundle.min.css"
+          DestinationFolder="$(PublishDir)wwwroot\css"
+          SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\wwwroot\js\bundle.min.js"
+          DestinationFolder="$(PublishDir)wwwroot\js"
+          SkipUnchangedFiles="true" />
+  </Target>
 
 </Project>
