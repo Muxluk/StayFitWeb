@@ -5,6 +5,7 @@ using StayFit.Application.Interfaces;
 using StayFit.Web.Models;
 using Microsoft.Extensions.Options;
 using StayFit.Application.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace StayFit.Web.Controllers;
 
@@ -14,12 +15,19 @@ public class AdminUserController : BaseController
 {
     private readonly IAdminUserService _adminUserService;
     private readonly PaginationSettings _paginationSettings;
+    private readonly ISecurityLogService _securityLogService;
+    private readonly ILogger<AdminUserController> _logger;
+
     public AdminUserController(
-        IAdminUserService adminUserService, 
-        IOptions<PaginationSettings> paginationSettings)
+        IAdminUserService adminUserService,
+        IOptions<PaginationSettings> paginationSettings,
+        ISecurityLogService securityLogService,
+        ILogger<AdminUserController> logger)
     {
         _adminUserService = adminUserService;
         _paginationSettings = paginationSettings.Value;
+        _securityLogService = securityLogService;
+        _logger = logger;
     }
 
     [HttpGet("")]
@@ -47,6 +55,30 @@ public class AdminUserController : BaseController
 
         model.Users = result.Value ?? new PagedResult<AdminUserListItemDto>();
         return View(model);
+    }
+
+    [HttpGet("autocomplete")]
+    public async Task<IActionResult> Autocomplete([FromQuery] string q)
+    {
+        if (string.IsNullOrWhiteSpace(q) || q.Length < 2)
+        {
+            return Json(new string[] { });
+        }
+
+        var result = await _adminUserService.SearchUsersAsync(new AdminUserSearchRequestDto
+        {
+            Email = q,
+            PageNumber = 1,
+            PageSize = 10
+        });
+
+        if (result.IsFailure || result.Value == null)
+        {
+            return Json(new string[] { });
+        }
+
+        var emails = result.Value.Items.Select(u => u.Email).ToList();
+        return Json(emails);
     }
 
     [HttpGet("{userId:int}")]
@@ -197,5 +229,35 @@ public class AdminUserController : BaseController
 
         TempData["Success"] = "Користувач успішно видалений";
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet("{userId:int}/security-logs")]
+    public async Task<IActionResult> SecurityLogs(int userId, int page = 1, string? eventType = null)
+    {
+        var userResult = await _adminUserService.GetUserDetailsAsync(userId);
+        if (userResult.IsFailure)
+            return NotFound();
+
+        var logsResult = await _securityLogService.GetUserSecurityLogsAsync(userId, page > 0 ? page : 1, eventType);
+
+        return logsResult.Match<IActionResult>(
+            success =>
+            {
+                var model = new AdminUserSecurityLogsViewModel
+                {
+                    UserId = userId,
+                    Email = userResult.Value!.Email,
+                    Page = page,
+                    EventType = eventType,
+                    Logs = success.Data ?? new PagedResult<SecurityLogDto>()
+                };
+                return View(model);
+            },
+            failure =>
+            {
+                _logger.LogWarning("Помилка при отриманні логів безпеки для userId={UserId}: {Error}", userId, failure.ErrorMessage);
+                TempData["Error"] = failure.ErrorMessage;
+                return RedirectToAction(nameof(Details), new { userId });
+            });
     }
 }

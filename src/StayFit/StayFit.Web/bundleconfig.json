@@ -1,0 +1,37 @@
+[
+    {
+        "outputFileName": "wwwroot/css/bundle.min.css",
+        "inputFiles": ["wwwroot/css/site.css", "wwwroot/css/layout.css"],
+        "minify": {
+            "enabled": true
+        },
+        "sourceMap": false
+    },
+    {
+        "outputFileName": "wwwroot/js/bundle.min.js",
+        "inputFiles": [
+            "wwwroot/js/site.js",
+            "wwwroot/js/diary-notes.js",
+            "wwwroot/js/water-tracker.js",
+            "wwwroot/js/hydration-manager.js",
+            "wwwroot/js/statistics-charts.js",
+            "wwwroot/js/admin-email.js",
+            "wwwroot/js/product-search.js",
+            "wwwroot/js/profile-editor.js",
+            "wwwroot/js/auth-helper.js",
+            "wwwroot/js/diary-details.js",
+            "wwwroot/js/food-import.js",
+            "wwwroot/js/food-form.js",
+            "wwwroot/js/add-to-log.js",
+            "wwwroot/js/barcode-scan.js",
+            "wwwroot/js/export-manager.js",
+            "wwwroot/js/admin-users.js",
+            "wwwroot/js/reset-password.js"
+        ],
+        "minify": {
+            "enabled": true,
+            "commentMode": "all"
+        },
+        "sourceMap": false
+    }
+]

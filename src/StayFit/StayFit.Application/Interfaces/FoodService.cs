@@ -63,6 +63,7 @@ public class FoodService : IFoodService
         }
 
         food.OwnerUserId = userId;
+        food.SubmittedAt ??= DateTime.UtcNow;
         _logger.LogInformation("Додавання нового продукту: {Name}", food.Name);
         await _foodRepository.AddAsync(food);
     }
@@ -142,7 +143,7 @@ public class FoodService : IFoodService
         return await _foodLogRepository!.GetByUserIdAndDateAsync(user.Id, date.Date);
     }
 
-    public async Task AddFoodToLogAsync(int foodId, double quantity, string userEmail)
+    public async Task AddFoodToLogAsync(int foodId, double quantity, string userEmail, DateTime? loggedAt = null)
     {
         EnsureFoodLogDependencies();
 
@@ -172,7 +173,7 @@ public class FoodService : IFoodService
             FoodId = foodId,
             AmountGrams = (float)quantity,
             Quantity = quantity,
-            LoggedAt = DateTime.UtcNow,
+            LoggedAt = loggedAt?.ToUniversalTime() ?? DateTime.UtcNow,
             UserEmail = userEmail,
         };
 
@@ -287,7 +288,7 @@ public class FoodService : IFoodService
             _logger.LogInformation("👤 Користувач знайдено: {Email}", user.Email);
 
             // Отримати норму калорій користувача
-            var goal = await _nutritionGoalRepository.GetByUserIdAsync(user.Email);
+            var goal = await _nutritionGoalRepository.GetByUserIdAsync(user.Id.ToString());
             if (goal == null)
             {
                 _logger.LogWarning("⚠️ Норма калорій НЕ встановлена для користувача {UserId}. Сповіщення не пересилаються!", userId);

@@ -39,11 +39,20 @@ public class HydrationRepository : IHydrationRepository
 
     public async Task<IEnumerable<WaterLog>> GetLogsForDateAsync(int userId, DateTime date)
     {
-        var startOfDay = date.Date;
-        var endOfDay = startOfDay.AddDays(1).AddTicks(-1);
+        // Ensure we query using UTC timestamps because PostgreSQL 'timestamp with time zone' expects UTC
+        DateTime startLocal = date.Date;
+        DateTime endLocal = startLocal.AddDays(1).AddTicks(-1);
+
+        DateTime startUtc = date.Kind == DateTimeKind.Utc
+            ? startLocal  // already UTC
+            : DateTime.SpecifyKind(startLocal, DateTimeKind.Local).ToUniversalTime();
+
+        DateTime endUtc = date.Kind == DateTimeKind.Utc
+            ? endLocal
+            : DateTime.SpecifyKind(endLocal, DateTimeKind.Local).ToUniversalTime();
 
         return await _context.WaterLogs
-            .Where(l => l.UserId == userId && l.LoggedAt >= startOfDay && l.LoggedAt <= endOfDay)
+            .Where(l => l.UserId == userId && l.LoggedAt >= startUtc && l.LoggedAt <= endUtc)
             .OrderByDescending(l => l.LoggedAt)
             .ToListAsync();
     }
@@ -55,8 +64,20 @@ public class HydrationRepository : IHydrationRepository
 
     public async Task<IEnumerable<WaterLog>> GetLogsForPeriodAsync(int userId, DateTime startDate, DateTime endDate)
     {
+        // Convert provided dates to UTC range (inclusive of endDate)
+        DateTime startLocal = startDate.Date;
+        DateTime endLocalExclusive = endDate.Date.AddDays(1).AddTicks(-1);
+
+        DateTime startUtc = startDate.Kind == DateTimeKind.Utc
+            ? startLocal
+            : DateTime.SpecifyKind(startLocal, DateTimeKind.Local).ToUniversalTime();
+
+        DateTime endUtc = endDate.Kind == DateTimeKind.Utc
+            ? endLocalExclusive
+            : DateTime.SpecifyKind(endLocalExclusive, DateTimeKind.Local).ToUniversalTime();
+
         return await _context.WaterLogs
-            .Where(l => l.UserId == userId && l.LoggedAt.Date >= startDate.Date && l.LoggedAt.Date <= endDate.Date)
+            .Where(l => l.UserId == userId && l.LoggedAt >= startUtc && l.LoggedAt <= endUtc)
             .OrderBy(l => l.LoggedAt)
             .ToListAsync();
     }

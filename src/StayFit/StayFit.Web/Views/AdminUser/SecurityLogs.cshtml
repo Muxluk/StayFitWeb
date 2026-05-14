@@ -1,0 +1,143 @@
+@model StayFit.Web.Models.AdminUserSecurityLogsViewModel
+
+@{
+    ViewData["Title"] = "Логи безпеки — " + Model.Email;
+}
+
+<div class="container-fluid mt-4">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h2 class="mb-1"><i class="bi bi-shield-check me-2 text-primary"></i>Логи безпеки</h2>
+            <div class="text-muted small">@Model.Email</div>
+        </div>
+        <a asp-action="Details" asp-route-userId="@Model.UserId" class="btn btn-light border rounded-3">
+            <i class="bi bi-arrow-left me-2"></i>Назад до деталей
+        </a>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Фільтр по типу події -->
+    <div class="card sf-card mb-4">
+        <div class="card-body">
+            <form method="get" asp-action="SecurityLogs" asp-route-userId="@Model.UserId" class="row g-3">
+                <div class="col-12 col-md-6">
+                    <label class="form-label small text-muted">Тип події</label>
+                    <select name="eventType" class="form-select">
+                        <option value="">— Усі події —</option>
+                        <option value="Login" selected="@(Model.EventType == "Login")">Вхід</option>
+                        <option value="Logout" selected="@(Model.EventType == "Logout")">Вихід</option>
+                        <option value="PasswordChange" selected="@(Model.EventType == "PasswordChange")">Зміна пароля</option>
+                        <option value="SessionTerminated" selected="@(Model.EventType == "SessionTerminated")">Завершення сеансу</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-3 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary flex-grow-1">
+                        <i class="bi bi-funnel me-2"></i>Фільтрувати
+                    </button>
+                    <a asp-action="SecurityLogs" asp-route-userId="@Model.UserId" class="btn btn-outline-secondary flex-grow-1">
+                        <i class="bi bi-arrow-counterclockwise me-2"></i>Скинути
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Таблиця логів -->
+    <div class="card sf-card">
+        <div class="card-body p-0">
+            @if (!Model.Logs.Items.Any())
+            {
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-shield-slash fs-1 d-block mb-3 opacity-50"></i>
+                    <p>Записів не знайдено</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Подія</th>
+                                <th>Опис</th>
+                                <th class="d-none d-lg-table-cell">IP адреса</th>
+                                <th class="d-none d-xl-table-cell">Пристрій</th>
+                                <th>Статус</th>
+                                <th>Дата</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var log in Model.Logs.Items)
+                            {
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-secondary-subtle text-secondary px-2 py-1">@log.EventType</span>
+                                    </td>
+                                    <td class="text-muted small">@log.Description</td>
+                                    <td class="d-none d-lg-table-cell font-monospace small">@(log.IpAddress ?? "—")</td>
+                                    <td class="d-none d-xl-table-cell small text-muted">@log.DeviceSummary</td>
+                                    <td>
+                                        @if (log.Status == "Success")
+                                        {
+                                            <span class="badge bg-success-subtle text-success"><i class="bi bi-check-circle me-1"></i>Успішно</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger-subtle text-danger"><i class="bi bi-x-circle me-1"></i>@log.Status</span>
+                                        }
+                                    </td>
+                                    <td class="text-muted small text-nowrap">@log.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Пагінація -->
+    @if (Model.Logs.TotalPages > 1)
+    {
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center gap-2">
+                <li class="page-item @(Model.Page == 1 ? "disabled" : "")">
+                    <a class="page-link border-0 rounded-circle text-dark shadow-sm"
+                       style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;"
+                       asp-action="SecurityLogs" asp-route-userId="@Model.UserId"
+                       asp-route-page="@(Model.Page - 1)" asp-route-eventType="@Model.EventType"><i class="bi bi-chevron-left"></i></a>
+                </li>
+
+                @{
+                    int start = Math.Max(1, Model.Page - 2);
+                    int end = Math.Min(Model.Logs.TotalPages, start + 4);
+                    if (end - start < 4) start = Math.Max(1, end - 4);
+                }
+
+                @for (int i = start; i <= end; i++)
+                {
+                    <li class="page-item @(i == Model.Page ? "active" : "")">
+                        <a class="page-link border-0 rounded-circle @(i == Model.Page ? "bg-primary text-white shadow" : "text-dark shadow-sm")"
+                           style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;"
+                           asp-action="SecurityLogs" asp-route-userId="@Model.UserId"
+                           asp-route-page="@i" asp-route-eventType="@Model.EventType">@i</a>
+                    </li>
+                }
+
+                <li class="page-item @(Model.Page == Model.Logs.TotalPages ? "disabled" : "")">
+                    <a class="page-link border-0 rounded-circle text-dark shadow-sm"
+                       style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;"
+                       asp-action="SecurityLogs" asp-route-userId="@Model.UserId"
+                       asp-route-page="@(Model.Page + 1)" asp-route-eventType="@Model.EventType"><i class="bi bi-chevron-right"></i></a>
+                </li>
+            </ul>
+        </nav>
+    }
+</div>

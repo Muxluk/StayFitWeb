@@ -1,0 +1,153 @@
+@using StayFit.Domain.Entities
+@{
+    ViewData["Title"] = "Додати до щоденника";
+    var selectedFood = (Food?)ViewBag.SelectedFood;
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+            <div class="card sf-card shadow-sm border-0">
+                <div class="card-header bg-success text-white py-3">
+                    <h5 class="mb-0"><i class="bi bi-journal-plus me-2"></i>Додати запис харчування</h5>
+                </div>
+                <div class="card-body p-4">
+
+                    <!-- Search section -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold"><i class="bi bi-search me-1"></i>Пошук продукту</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                            <input type="text" id="sf-atl-search" class="form-control border-start-0 ps-0" 
+                                   placeholder="Введіть назву продукту..." autocomplete="off" />
+                        </div>
+                        <div id="sf-atl-results" class="list-group mt-2 sf-scrollable shadow-sm" style="max-height: 250px;">
+                            <div id="sf-atl-hint" class="text-muted small text-center py-3">Введіть мінімум 2 символи для пошуку</div>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <!-- Selection & Quantity -->
+                    <div id="sf-atl-no-selection" class="text-center py-5 @(selectedFood != null ? "d-none" : "")">
+                        <i class="bi bi-egg-fried fs-1 text-muted opacity-25 d-block mb-3"></i>
+                        <p class="text-muted">Знайдіть та виберіть продукт зі списку вище</p>
+                    </div>
+
+                    <div id="sf-atl-form-container" class="@(selectedFood == null ? "d-none" : "")">
+                        <div class="bg-light-subtle rounded-3 p-3 mb-4 border">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h5 class="fw-bold text-dark mb-0" id="sf-atl-name">@(selectedFood?.Name ?? "")</h5>
+                                    <span class="badge bg-primary-subtle text-primary rounded-pill mt-1" id="sf-atl-category">
+                                        @(selectedFood?.Category.ToString() ?? "")
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="row g-2 mt-2">
+                                <div class="col-3 text-center">
+                                    <div class="fw-bold text-primary" id="sf-atl-kcal">@(selectedFood?.CaloriesPer100g.ToString("F0") ?? "—")</div>
+                                    <small class="text-muted">ккал</small>
+                                </div>
+                                <div class="col-3 text-center">
+                                    <div class="fw-bold text-success" id="sf-atl-protein">@(selectedFood?.ProteinPer100g.ToString("0.0") ?? "—")</div>
+                                    <small class="text-muted">білки г</small>
+                                </div>
+                                <div class="col-3 text-center">
+                                    <div class="fw-bold text-warning" id="sf-atl-fat">@(selectedFood?.FatPer100g.ToString("0.0") ?? "—")</div>
+                                    <small class="text-muted">жири г</small>
+                                </div>
+                                <div class="col-3 text-center">
+                                    <div class="fw-bold text-info" id="sf-atl-carbs">@(selectedFood?.CarbsPer100g.ToString("0.0") ?? "—")</div>
+                                    <small class="text-muted">вугл. г</small>
+                                </div>
+                            </div>
+                            <div class="text-muted text-end" style="font-size:.75rem">на 100 г</div>
+                        </div>
+
+                        <form asp-action="AddToLog" method="post">
+                            <input type="hidden" name="foodId" id="sf-atl-foodId" value="@(selectedFood?.Id ?? 0)" />
+                            
+                            <!-- Quantity with live recalc -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold" for="sf-atl-qty">
+                                    <i class="bi bi-scale me-1"></i>Кількість (г)
+                                </label>
+                                <div class="input-group">
+                                    <input type="number" name="quantity" id="sf-atl-qty"
+                                           class="form-control" value="100" min="1" max="5000" step="1" required />
+                                    <span class="input-group-text">г</span>
+                                </div>
+                            </div>
+
+                            <!-- Live KBZV preview -->
+                            <div class="border rounded p-2 mb-3 bg-white">
+                                <div class="text-muted small mb-1">Загалом для вказаної кількості:</div>
+                                <div class="row g-1 text-center">
+                                    <div class="col-3">
+                                        <div class="fw-bold text-primary fs-6" id="sf-atl-calc-kcal" 
+                                             data-per100="@(selectedFood?.CaloriesPer100g ?? 0)">—</div>
+                                        <small class="text-muted" style="font-size:.7rem">ккал</small>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="fw-bold text-success fs-6" id="sf-atl-calc-protein"
+                                             data-per100="@(selectedFood?.ProteinPer100g ?? 0)">—</div>
+                                        <small class="text-muted" style="font-size:.7rem">білки г</small>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="fw-bold text-warning fs-6" id="sf-atl-calc-fat"
+                                             data-per100="@(selectedFood?.FatPer100g ?? 0)">—</div>
+                                        <small class="text-muted" style="font-size:.7rem">жири г</small>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="fw-bold text-info fs-6" id="sf-atl-calc-carbs"
+                                             data-per100="@(selectedFood?.CarbsPer100g ?? 0)">—</div>
+                                        <small class="text-muted" style="font-size:.7rem">вугл. г</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Meal type -->
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">
+                                    <i class="bi bi-clock me-1"></i>Прийом їжі
+                                </label>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="mealType"
+                                               id="meal-breakfast" value="breakfast" checked />
+                                        <label class="form-check-label" for="meal-breakfast">🌅 Сніданок</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="mealType"
+                                               id="meal-lunch" value="lunch" />
+                                        <label class="form-check-label" for="meal-lunch">☀️ Обід</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="mealType"
+                                               id="meal-dinner" value="dinner" />
+                                        <label class="form-check-label" for="meal-dinner">🌙 Вечеря</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="mealType"
+                                               id="meal-snack" value="snack" />
+                                        <label class="form-check-label" for="meal-snack">🥜 Перекус</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-success w-100" id="sf-atl-submit">
+                                <i class="bi bi-plus-circle me-2"></i>Додати до щоденника
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+}

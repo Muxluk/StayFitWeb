@@ -6,52 +6,75 @@
     <h2 class="mb-4">Адміністрування</h2>
     <p class="text-muted">Оберіть розділ, у який потрібно перейти.</p>
 
+    @{ 
+        var adminUsersUrl = Url.Action("Index", "AdminUser");
+        var adminCategoriesUrl = Url.Action("Index", "AdminCategory");
+        var adminProductsUrl = Url.Action("Index", "AdminProduct");
+        var adminStatisticsUrl = Url.Action("Index", "AdminStatistics");
+        var adminSupportUrl = Url.Action("Index", "AdminSupport");
+    }
+
     <div class="row g-3 mt-1">
         <div class="col-md-4">
-            <div class="card h-100">
+            <div class="card sf-card h-100">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">Статистика системи</h5>
+                    <p class="card-text text-muted">Перегляд ключових метрик та стану системи.</p>
+                        <a asp-controller="AdminStatistics" asp-action="Index" class="btn btn-success mt-auto">Відкрити</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card sf-card h-100">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">Розсилка email</h5>
+                    <p class="card-text text-muted">Відправлення повідомлень усім користувачам системи.</p>
+                        <a asp-controller="AdminEmail" asp-action="Index" class="btn btn-success mt-auto">Відкрити</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card sf-card h-100">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">Керування користувачами</h5>
                     <p class="card-text text-muted">Пошук, перегляд і зміна стану акаунтів.</p>
-                    <a asp-controller="AdminUser" asp-action="Index" class="btn btn-outline-primary mt-auto">Відкрити</a>
+                        <a asp-controller="AdminUser" asp-action="Index" class="btn btn-success mt-auto">Відкрити</a>
                 </div>
             </div>
         </div>
 
         <div class="col-md-4">
-            <div class="card h-100">
+            <div class="card sf-card h-100">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">Керування продуктами</h5>
                     <p class="card-text text-muted">Робота з категоріями продуктів і базовими довідниками.</p>
-                    <a asp-controller="AdminCategory" asp-action="Index" class="btn btn-outline-primary mt-auto">Відкрити</a>
+                        <a asp-controller="AdminCategory" asp-action="Index" class="btn btn-success mt-auto">Відкрити</a>
                 </div>
             </div>
         </div>
 
         <div class="col-md-4">
-            <div class="card h-100 border-danger">
+                <div class="card sf-card h-100">
                 <div class="card-body d-flex flex-column">
-                    <h5 class="card-title text-danger">Модерація продуктів</h5>
+                        <h5 class="card-title">Модерація продуктів</h5>
                     <p class="card-text text-muted">Підтвердження або відхилення нових продуктів.</p>
-                    <a asp-controller="AdminProduct" asp-action="Index" class="btn btn-danger mt-auto">Відкрити</a>
+                        <a asp-controller="AdminProduct" asp-action="Index" class="btn btn-success mt-auto">Відкрити</a>
                 </div>
             </div>
         </div>
 
         <div class="col-md-4">
-            <div class="card h-100"> <div class="card-body d-flex flex-column">
-                    <h5 class="card-title text-primary">Статистика системи</h5> <p class="card-text text-muted">Загальна інформація про роботу додатка та активність користувачів.</p>
-                    <a asp-controller="AdminStatistics" asp-action="Index" class="btn btn-outline-primary mt-auto">Відкрити</a> </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card h-100">
+            <div class="card sf-card h-100">
                 <div class="card-body d-flex flex-column">
-                    <h5 class="card-title text-warning">Звернення користувачів</h5>
-                    <p class="card-text text-muted">Обробка запитів у підтримку, відповіді та статуси.</p>
-                    <a asp-controller="AdminSupport" asp-action="Index" class="btn btn-outline-primary mt-auto">Відкрити</a>
+                    <h5 class="card-title">Технічна підтримка</h5>
+                    <p class="card-text text-muted">Перегляд та відповіді на звернення користувачів.</p>
+                    <a asp-controller="AdminSupport" asp-action="Index" class="btn btn-success mt-auto">Відкрити</a>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+

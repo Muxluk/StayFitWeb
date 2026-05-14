@@ -1,86 +1,107 @@
 @model IEnumerable<StayFit.Domain.Entities.Food>
-@using StayFit.Domain.Enums
 
 @{
-    ViewData["Title"] = "Пошук у світовій базі";
-    var searchTerm = ViewBag.SearchTerm as string;
+    ViewData["Title"] = "Імпорт продуктів";
 }
 
-<div class="container mt-4">
-    <h2>Пошук продуктів</h2>
+<div class="container py-4">
+    <div class="sf-card mb-4">
+        <div class="card-body">
+            <h1 class="h3 fw-bold mb-3">Імпорт з OpenFoodFacts</h1>
+            <p class="text-muted">Шукайте продукти у глобальній базі даних та додавайте їх до свого списку.</p>
 
-    <ul class="nav nav-tabs mb-4 mt-3">
-        <li class="nav-item">
-            <a class="nav-link" asp-controller="ProductSearch" asp-action="Index">Локальна база</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link active" aria-current="page" asp-controller="FoodImport" asp-action="Index">Пошук у світовій базі</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" asp-controller="Barcode" asp-action="Scan">Пошук за штрих-кодом</a>
-        </li>
-    </ul>
-
-    <form method="get" asp-controller="FoodImport" asp-action="Index" class="row g-3 mb-4 mt-2">
-        <div class="col-md-10">
-            <input type="text" name="searchTerm" class="form-control" placeholder="Введіть назву продукту..." value="@searchTerm" />
-        </div>
-        <div class="col-md-2">
-            <button type="submit" class="btn btn-primary w-100">Шукати в API</button>
-        </div>
-    </form>
-
-    @if (Model == null || !Model.Any())
-    {
-        if (!string.IsNullOrEmpty(searchTerm))
-        {
-            <div class="alert alert-warning">
-                Нічого не знайдено за запитом "@searchTerm". Спробуйте інше слово або англійською, наприклад, "Apple".
-            </div>
-        }
-        else
-        {
-            <div class="alert alert-info">
-                Введіть назву продукту для пошуку через USDA FoodData Central API.
-            </div>
-        }
-    }
-    else
-    {
-        <div class="row row-cols-1 row-cols-md-3 g-4">
-            @foreach (var item in Model)
-            {
+            <form id="sf-fi-form" asp-action="Index" method="get" class="row g-2">
                 <div class="col">
-                    <div class="card h-100 shadow-sm border-info">
-                        <div class="card-body">
-                            <h5 class="card-title">@item.Name</h5>
-                            @if (!string.IsNullOrEmpty(item.Brand))
-                            {
-                                <h6 class="card-subtitle mb-2 text-muted">@item.Brand</h6>
-                            }
-                            
-                            <p class="card-text mb-1">
-                                <small class="text-muted">Джерело:</small> <strong>USDA FoodData Central</strong><br/>
-                                <small class="text-muted">Ккал/100г:</small> <strong>@item.CaloriesPer100g</strong><br/>
-                                <small class="text-muted">Б/Ж/В:</small> @item.ProteinPer100g / @item.FatPer100g / @item.CarbsPer100g
-                            </p>
-                        </div>
-                        <div class="card-footer bg-transparent border-top-0">
-                            <form asp-controller="FoodImport" asp-action="Import" method="post" class="d-flex">
-                                <input type="hidden" name="Name" value="@item.Name" />
-                                <input type="hidden" name="Brand" value="@item.Brand" />
-                                <input type="hidden" name="CaloriesPer100g" value="@item.CaloriesPer100g" />
-                                <input type="hidden" name="ProteinPer100g" value="@item.ProteinPer100g" />
-                                <input type="hidden" name="FatPer100g" value="@item.FatPer100g" />
-                                <input type="hidden" name="CarbsPer100g" value="@item.CarbsPer100g" />
-                                <input type="hidden" name="IsVerified" value="true" />
-                                <input type="hidden" name="Category" value="@((int)FoodCategory.General)" />
-                                <button type="submit" class="btn btn-outline-primary btn-sm w-100">Імпортувати до моїх продуктів</button>
-                            </form>
-                        </div>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                        <input type="text" name="searchTerm" value="@ViewBag.SearchTerm" 
+                               class="form-control border-start-0" placeholder="Назва продукту або штрих-код..." required>
                     </div>
                 </div>
-            }
+                <div class="col-auto">
+                    <button type="submit" id="sf-fi-btn" class="btn btn-primary px-4">
+                        <span id="sf-fi-btn-text">Шукати</span>
+                        <span id="sf-fi-btn-spinner" class="spinner-border spinner-border-sm d-none"></span>
+                    </button>
+                </div>
+            </form>
         </div>
-    }
+    </div>
+
+    <div id="sf-fi-skeleton" class="d-none">
+        <div class="sf-card mb-3 skeleton">
+            <div class="card-body py-4"></div>
+        </div>
+        <div class="sf-card mb-3 skeleton">
+            <div class="card-body py-4"></div>
+        </div>
+    </div>
+
+    <div id="sf-fi-results">
+        @if (Model != null)
+        {
+            if (!Model.Any())
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-search text-muted display-1"></i>
+                    <p class="mt-3 text-muted">Нічого не знайдено за вашим запитом.</p>
+                </div>
+            }
+            else
+            {
+                <div class="row row-cols-1 row-cols-md-2 g-4">
+                    @foreach (var item in Model)
+                    {
+                        <div class="col">
+                            <div class="sf-card h-100">
+                                <div class="row g-0">
+                                    <div class="col-4">
+                                        @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                        {
+                                            <img src="@item.ImageUrl" class="img-fluid rounded-start h-100 object-fit-cover" alt="@item.Name">
+                                        }
+                                        else
+                                        {
+                                            <div class="bg-light d-flex align-items-center justify-content-center h-100 rounded-start">
+                                                <i class="bi bi-image text-muted fs-1"></i>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="col-8">
+                                        <div class="card-body">
+                                            <h5 class="card-title text-truncate" title="@item.Name">@item.Name</h5>
+                                            <p class="card-text small text-muted mb-2">@item.Brand</p>
+                                            
+                                            <div class="d-flex gap-2 mb-3">
+                                                <span class="badge bg-primary">@item.CaloriesPer100g.ToString("F0") ккал</span>
+                                                <span class="badge bg-info">@item.ProteinPer100g.ToString("F1") П</span>
+                                            </div>
+
+                                            <form asp-action="Import" method="post">
+                                                <input type="hidden" name="Name" value="@item.Name" />
+                                                <input type="hidden" name="Brand" value="@item.Brand" />
+                                                <input type="hidden" name="CaloriesPer100g" value="@item.CaloriesPer100g" />
+                                                <input type="hidden" name="ProteinPer100g" value="@item.ProteinPer100g" />
+                                                <input type="hidden" name="FatPer100g" value="@item.FatPer100g" />
+                                                <input type="hidden" name="CarbsPer100g" value="@item.CarbsPer100g" />
+                                                <input type="hidden" name="ImageUrl" value="@item.ImageUrl" />
+                                                
+                                                <button type="submit" class="btn btn-sm btn-outline-primary w-100">
+                                                    <i class="bi bi-plus-lg"></i> Додати
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        }
+    </div>
+
 </div>
+
+@section Scripts {
+}

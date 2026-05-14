@@ -26,5 +26,10 @@ public interface ISupportService
     Task<PagedResult<SupportTicketAdminDto>> GetAdminTicketsAsync(SupportStatus? statusFilter, int pageNumber, int pageSize);
     Task<SupportTicketAdminDto?> GetAdminTicketByIdAsync(int id);
     Task<bool> ChangeTicketStatusAsync(int id, SupportStatus newStatus);
+    /// <summary>
+    /// Додати відповідь користувача до свого звернення.
+    /// </summary>
+    Task<Result<int>> AddUserReplyAsync(int userId, int ticketId, string message);
+
     Task<bool> ReplyToTicketAsync(SupportReplyDto replyDto);
 }

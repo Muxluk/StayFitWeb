@@ -22,17 +22,39 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
     public DbSet<FoodCategoryEntity> FoodCategories => Set<FoodCategoryEntity>();
     public DbSet<UserSession> UserSessions => Set<UserSession>();
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<SupportMessage> SupportMessages => Set<SupportMessage>();
+    public DbSet<EmailBroadcast> EmailBroadcasts => Set<EmailBroadcast>();
+    public DbSet<HydrationGoal> HydrationGoals => Set<HydrationGoal>();
+    public DbSet<WaterLog> WaterLogs => Set<WaterLog>();
     public DbSet<SecurityLogEntry> SecurityLogs => Set<SecurityLogEntry>();
     public DbSet<SupportTicket> SupportTickets => Set<SupportTicket>();
     public DbSet<SupportTicketReply> SupportTicketReplies => Set<SupportTicketReply>();
-    public DbSet<HydrationGoal> HydrationGoals { get; set; }
-    public DbSet<WaterLog> WaterLogs { get; set; }
-
-    public DbSet<EmailBroadcast> EmailBroadcasts => Set<EmailBroadcast>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<SupportTicket>(entity =>
+        {
+            entity.HasKey(t => t.Id);
+            entity.Property(t => t.Subject).IsRequired().HasMaxLength(200);
+            entity.Property(t => t.Message).IsRequired().HasMaxLength(2000);
+            entity.Property(t => t.Status).IsRequired().HasMaxLength(50);
+            entity.HasOne(t => t.User)
+                .WithMany()
+                .HasForeignKey(t => t.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<SupportTicketReply>(entity =>
+        {
+            entity.HasKey(r => r.Id);
+            entity.Property(r => r.Message).IsRequired().HasMaxLength(2000);
+            entity.HasOne(r => r.Ticket)
+                .WithMany(t => t.Replies)
+                .HasForeignKey(r => r.TicketId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
 
         modelBuilder.Entity<User>(entity =>
         {
@@ -102,65 +124,22 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>
             entity.HasIndex(n => new { n.UserId, n.IsRead });
         });
 
-        modelBuilder.Entity<SecurityLogEntry>(entity =>
+        modelBuilder.Entity<SupportMessage>(entity =>
         {
-            entity.HasKey(sl => sl.Id);
-            entity.Property(sl => sl.UserId).IsRequired();
-            entity.Property(sl => sl.EventType).IsRequired().HasMaxLength(50);
-            entity.Property(sl => sl.Description).IsRequired().HasMaxLength(200);
-            entity.Property(sl => sl.IpAddress).HasMaxLength(64);
-            entity.Property(sl => sl.UserAgent).HasMaxLength(512);
-            entity.Property(sl => sl.Status).IsRequired().HasMaxLength(20);
-            entity.Property(sl => sl.AdditionalInfo).HasMaxLength(500);
-            entity.HasIndex(sl => sl.UserId);
-            entity.HasIndex(sl => new { sl.UserId, sl.CreatedAt }).IsDescending(false, true);
-            entity.HasOne(sl => sl.User)
-                .WithMany()
-                .HasForeignKey(sl => sl.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
-
-        modelBuilder.Entity<SupportTicket>(entity =>
-        {
-            entity.HasKey(t => t.Id);
-            entity.Property(t => t.UserId).IsRequired();
-            entity.Property(t => t.Subject).IsRequired().HasMaxLength(200);
-            entity.Property(t => t.Message).IsRequired().HasMaxLength(2000);
-            entity.Property(t => t.Status).IsRequired().HasMaxLength(20);
-            entity.Property(t => t.CreatedAt).IsRequired();
-            entity.HasIndex(t => t.UserId);
-            entity.HasIndex(t => new { t.UserId, t.Status });
-            entity.HasIndex(t => t.CreatedAt);
-            entity.HasOne(t => t.User)
-                .WithMany()
-                .HasForeignKey(t => t.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-            entity.HasMany(t => t.Replies)
-                .WithOne(r => r.Ticket)
-                .HasForeignKey(r => r.TicketId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
-
-        modelBuilder.Entity<SupportTicketReply>(entity =>
-        {
-            entity.HasKey(r => r.Id);
-            entity.Property(r => r.TicketId).IsRequired();
-            entity.Property(r => r.Message).IsRequired().HasMaxLength(2000);
-            entity.Property(r => r.CreatedAt).IsRequired();
-            entity.Property(r => r.IsAdminReply).IsRequired();
-            entity.HasIndex(r => r.TicketId);
-            entity.HasIndex(r => r.CreatedAt);
+            entity.HasKey(sm => sm.Id);
+            entity.Property(sm => sm.Subject).IsRequired().HasMaxLength(200);
+            entity.Property(sm => sm.Message).IsRequired().HasMaxLength(2000);
+            entity.HasIndex(sm => sm.IsAdminNotified);
         });
 
         modelBuilder.Entity<EmailBroadcast>(entity =>
         {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.AdminId).IsRequired();
-            entity.Property(e => e.Subject).IsRequired().HasMaxLength(200);
-            entity.Property(e => e.Body).IsRequired();
-            entity.Property(e => e.Audience).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.SentAt).IsRequired();
-            entity.Property(e => e.RecipientCount).IsRequired();
+            entity.HasKey(eb => eb.Id);
+            entity.Property(eb => eb.Subject).IsRequired().HasMaxLength(200);
+            entity.Property(eb => eb.HtmlBody).IsRequired();
+            entity.Property(eb => eb.Status).IsRequired().HasMaxLength(50);
+            entity.HasIndex(eb => eb.AdminUserId);
+            entity.HasIndex(eb => eb.SentAt);
         });
     }
 }

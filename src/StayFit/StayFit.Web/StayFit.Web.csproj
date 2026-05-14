@@ -6,6 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <UserSecretsId>StayFit.Web-1f312ad7-7ce3-4137-a9b3-7874b34126f8</UserSecretsId>
+    <StaticWebAssetFingerprintingEnabled>false</StaticWebAssetFingerprintingEnabled>
+    <DefaultItemExcludes>$(DefaultItemExcludes);wwwroot/js/bundle.min.js;wwwroot/css/bundle.min.css</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +16,19 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="wwwroot\css\bundle.min.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="wwwroot\js\bundle.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AWSSDK.SecretsManager" Version="4.0.4.22" />
+    
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -24,6 +38,19 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
     <PackageReference Include="Serilog.Sinks.Seq" Version="6.0.0" />
+    <PackageReference Include="BuildBundlerMinifier" Version="3.2.449" />
   </ItemGroup>
+
+  <Target Name="BundleAssetsBeforePublish" BeforeTargets="PrepareForPublish" DependsOnTargets="BundleMinify" />
+
+  <Target Name="CopyBundledAssetsToPublish" AfterTargets="Publish">
+    <MakeDir Directories="$(PublishDir)wwwroot\css;$(PublishDir)wwwroot\js" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\wwwroot\css\bundle.min.css"
+          DestinationFolder="$(PublishDir)wwwroot\css"
+          SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\wwwroot\js\bundle.min.js"
+          DestinationFolder="$(PublishDir)wwwroot\js"
+          SkipUnchangedFiles="true" />
+  </Target>
 
 </Project>

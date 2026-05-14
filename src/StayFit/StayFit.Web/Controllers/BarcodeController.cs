@@ -7,6 +7,7 @@ using System.Security.Claims;
 namespace StayFit.Web.Controllers;
 
 [Authorize]
+[Route("barcode")]
 public class BarcodeController : Controller
 {
     private readonly IBarcodeScanService _barcodeScanService;
@@ -16,7 +17,7 @@ public class BarcodeController : Controller
         _barcodeScanService = barcodeScanService;
     }
 
-    [HttpGet]
+    [HttpGet("")]
     [RateLimit(MaxRequests = 30, TimeWindowMinutes = 1)]
     public async Task<IActionResult> Scan(string barcode)
     {

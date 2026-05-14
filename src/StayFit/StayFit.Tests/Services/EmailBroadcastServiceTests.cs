@@ -5,6 +5,7 @@ using Moq;
 using StayFit.Application.Interfaces;
 using StayFit.Application.Services;
 using StayFit.Domain.Entities;
+using StayFit.Domain.Interfaces;
 using Xunit;
 
 namespace StayFit.Tests.Services

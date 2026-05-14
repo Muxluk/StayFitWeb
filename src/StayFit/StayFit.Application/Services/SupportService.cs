@@ -233,6 +233,53 @@ public class SupportService : ISupportService
         }
     }
 
+    /// <inheritdoc />
+    public async Task<Result<int>> AddUserReplyAsync(int userId, int ticketId, string message)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return Result<int>.Failure("Текст коментаря обов'язковий");
+            }
+
+            var ticket = await _supportRepository.GetTicketByIdAsync(ticketId, userId);
+            if (ticket == null)
+            {
+                _logger.LogWarning(
+                    "Користувач {UserId} спробував додати коментар до неіснуючого або чужого звернення {TicketId}",
+                    userId, ticketId);
+                return Result<int>.Failure("Звернення не знайдено");
+            }
+
+            if (ticket.Status == SupportStatus.Closed.ToString())
+            {
+                return Result<int>.Failure("Неможливо додати коментар до закритого звернення");
+            }
+
+            var reply = new SupportTicketReply
+            {
+                TicketId = ticketId,
+                Message = message.Trim(),
+                IsAdminReply = false,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _supportRepository.AddReplyAsync(reply);
+
+            _logger.LogInformation(
+                "Користувач {UserId} додав коментар до звернення {TicketId}",
+                userId, ticketId);
+
+            return Result<int>.Success(reply.Id);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Помилка при додаванні коментаря до звернення {TicketId}", ticketId);
+            return Result<int>.Failure("Помилка при додаванні коментаря");
+        }
+    }
+
     public async Task<bool> ReplyToTicketAsync(SupportReplyDto replyDto)
     {
         try

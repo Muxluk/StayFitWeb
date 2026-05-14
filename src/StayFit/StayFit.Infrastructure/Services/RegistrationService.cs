@@ -12,6 +12,7 @@ namespace StayFit.Infrastructure.Services;
 public sealed class RegistrationService(
     UserManager<ApplicationUser> userManager,
     IUserRepository userRepository,
+    IUserProfileRepository userProfileRepository,
     ILogger<RegistrationService> logger)
     : IRegistrationService
 {
@@ -49,6 +50,23 @@ public sealed class RegistrationService(
         };
 
         await userRepository.AddAsync(domainUser);
+
+        // Create Profile with physical parameters
+        var profile = new UserProfile
+        {
+            UserId = user.Id,
+            FullName = request.UserName,
+            DateOfBirth = request.DateOfBirth,
+            Gender = request.Gender,
+            Weight = request.Weight,
+            Height = request.Height,
+            ActivityLevel = request.ActivityLevel,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        await userProfileRepository.AddAsync(profile);
+
         logger.LogInformation(
             "Registration succeeded. Identity UserId {UserId}, Domain UserId {DomainUserId}",
             user.Id,

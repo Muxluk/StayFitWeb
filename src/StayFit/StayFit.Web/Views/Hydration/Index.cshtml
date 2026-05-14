@@ -1,91 +1,128 @@
-@model StayFit.Application.DTOs.HydrationProgressDto
-
 @{
-    ViewData["Title"] = "Відстеження води";
+    ViewData["Title"] = "Водний баланс";
 }
 
 <div class="container mt-4">
-    <h2 class="text-primary"><i class="bi bi-droplet-fill"></i> Водний баланс</h2>
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h2>Водний баланс</h2>
+        <button class="btn btn-outline-secondary btn-sm" id="waterResetBtn" title="Скинути лічильник">
+            ↺ Скинути
+        </button>
+    </div>
 
-    @if (TempData["Success"] != null) { <div class="alert alert-success">@TempData["Success"]</div> }
-    @if (TempData["Error"] != null) { <div class="alert alert-danger">@TempData["Error"]</div> }
-
-    <div class="row mt-4">
-        <!-- Блок прогресу -->
-        <div class="col-md-6">
-            <div class="card shadow-sm mb-4">
-                <div class="card-body text-center">
-                    <h5 class="card-title text-muted">Випито за сьогодні</h5>
-                    <h1 class="display-4 text-info fw-bold">@Model.ConsumedMl <small class="fs-5 text-muted">/ @Model.DailyGoalMl мл</small></h1>
-                    
-                    <div class="progress mt-3" style="height: 25px;">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" 
-                             role="progressbar" 
-                             style="width: @Model.Percentage%;" 
-                             aria-valuenow="@Model.Percentage" 
-                             aria-valuemin="0" 
-                             aria-valuemax="100">
-                            @Model.Percentage%
+    @* ── Основна картка з прогресом ── *@
+    <div class="row mb-4">
+        <div class="col-12 col-lg-8">
+            <div class="card sf-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-baseline justify-content-between mb-3">
+                        <div>
+                            <h5 class="card-title mb-1">Сьогоднішня норма</h5>
+                            <p class="text-muted small mb-0">Рекомендується <strong>8 склянок</strong> води на день</p>
+                        </div>
+                        <div class="text-end">
+                            <div class="sf-card-value" id="waterIntake">0</div>
+                            <small class="text-muted">/ <span id="waterGoal">8</span> склянок</small>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <!-- Блок додавання -->
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Додати воду</h5>
-                    <div class="d-flex gap-2 mb-3 flex-wrap">
-                        @foreach(var option in Model.QuickAddOptions)
+                    
+                    @* ── Прогрес бар через partial ── *@
+                    <div id="progressContainer">
+                        @await Html.PartialAsync("_ProgressBar", null, new ViewDataDictionary(ViewData)
                         {
-                            <form asp-action="LogWater" method="post">
-                                <input type="hidden" name="volumeMl" value="@option" />
-                                <button type="submit" class="btn btn-outline-info">
-                                    <i class="bi bi-cup"></i> @option мл
-                                </button>
-                            </form>
-                        }
+                            ["Actual"] = 0.0,
+                            ["Target"] = 8.0,
+                            ["Color"] = "info",
+                            ["ShowLabel"] = true
+                        })
                     </div>
-                    <hr />
-                    <form asp-action="LogWater" method="post" class="d-flex gap-2">
-                        <input type="number" name="volumeMl" class="form-control" placeholder="Своє значення (мл)" required min="1" max="2000" />
-                        <button type="submit" class="btn btn-info text-white">Додати</button>
-                    </form>
+
+                    @* ── Рівень в'язкості (мікрокопія) ── *@
+                    <div id="waterDrops" class="sf-water-drops mt-3"></div>
+
+                    <div id="waterWarning" class="alert alert-warning mt-2 py-1 px-2 small" style="display:none;">
+                        ⚠️ Ви перевищили рекомендовану норму водовживання!
+                    </div>
+
+                    <small class="text-muted d-block mt-2">
+                        Натисніть на крапельку щоб відзначити склянку або використайте кнопки нижче
+                    </small>
                 </div>
             </div>
         </div>
 
-        <!-- Історія та налаштування -->
-        <div class="col-md-6">
-            <div class="card shadow-sm mb-4">
+        @* ── Інформація ── *@
+        <div class="col-12 col-lg-4">
+            <div class="card sf-card">
                 <div class="card-body">
-                    <h5 class="card-title">Змінити денну ціль</h5>
-                    <form asp-action="SetCustomGoal" method="post" class="d-flex gap-2">
-                        <input type="number" name="goalMl" class="form-control" value="@Model.DailyGoalMl" required min="500" max="10000" />
-                        <button type="submit" class="btn btn-secondary">Зберегти</button>
-                    </form>
-                    <small class="text-muted">За замовчуванням ціль розраховується як ваша вага × 35 мл.</small>
+                    <h5 class="card-title mb-3">Поради</h5>
+                    <ul class="small list-unstyled">
+                        <li class="mb-2">
+                            <span class="badge bg-info-subtle text-info">1</span>
+                            Пийте воду перед, під час і після тренувань
+                        </li>
+                        <li class="mb-2">
+                            <span class="badge bg-info-subtle text-info">2</span>
+                            Розподіліть споживання води протягом дня
+                        </li>
+                        <li class="mb-2">
+                            <span class="badge bg-info-subtle text-info">3</span>
+                            Гарячі напої теж рахуються!
+                        </li>
+                        <li class="mb-2">
+                            <span class="badge bg-info-subtle text-info">4</span>
+                            Прислухайтеся до сигналів своїх потреб
+                        </li>
+                        <li class="mb-0">
+                            <span class="badge bg-info-subtle text-info">5</span>
+                            Норма варіює залежно від активності
+                        </li>
+                    </ul>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="card-title mb-0">Історія за сьогодні</h5>
+    @* ── Кнопки швидкого додавання ── *@
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card sf-card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Швидке додавання</h5>
+                    <div class="d-grid gap-2 d-sm-flex flex-wrap">
+                        <button class="btn btn-lg btn-outline-info water-btn" data-glasses="1" title="Додати ~200мл">
+                            💧 200 мл
+                        </button>
+                        <button class="btn btn-lg btn-outline-info water-btn" data-glasses="1" title="Додати ~300мл">
+                            💧 300 мл
+                        </button>
+                        <button class="btn btn-lg btn-outline-info water-btn" data-glasses="2" title="Додати ~500мл">
+                            💧 500 мл
+                        </button>
+                        <button class="btn btn-lg btn-info water-btn" data-glasses="4" title="Додати половину норми">
+                            💧 Половина (4)
+                        </button>
+                        <button class="btn btn-lg btn-success water-btn" data-glasses="8" title="Заповнити всю норму">
+                            💧 Вся норма (8)
+                        </button>
+                    </div>
                 </div>
-                <ul class="list-group list-group-flush" style="max-height: 250px; overflow-y: auto;">
-                    @if(!Model.TodayLogs.Any())
-                    {
-                        <li class="list-group-item text-muted text-center py-3">Ви ще не пили воду сьогодні. Час випити склянку!</li>
-                    }
-                    @foreach(var log in Model.TodayLogs)
-                    {
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <span><i class="bi bi-droplet text-info"></i> @log.VolumeMl мл</span>
-                            <span class="text-muted small">@log.LoggedAt.ToString("HH:mm")</span>
-                        </li>
-                    }
-                </ul>
+            </div>
+        </div>
+    </div>
+
+    @* ── Історія сьогодні (розширена версія з часами) ── *@
+    <div class="card sf-card">
+        <div class="card-body">
+            <h5 class="card-title mb-3">Історія водовживання</h5>
+            <div id="waterHistory" class="sf-scrollable list-group list-group-flush">
+                <div class="list-group-item text-muted text-center py-4">
+                    Поки немає записів. Почніть додавати воду!
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+}

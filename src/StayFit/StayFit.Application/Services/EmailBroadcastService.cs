@@ -31,6 +31,7 @@ namespace StayFit.Application.Services
         public async Task SendBroadcastAsync(string adminId, string subject, string body, string audience)
         {
             var recipients = await GetRecipientsByAudience(audience);
+            int.TryParse(adminId, out var adminUserId);
             foreach (var user in recipients)
             {
                 try
@@ -44,12 +45,12 @@ namespace StayFit.Application.Services
             }
             var broadcast = new EmailBroadcast
             {
-                AdminId = adminId,
+                AdminUserId = adminUserId,
                 Subject = subject,
-                Body = body,
-                Audience = audience,
+                HtmlBody = body,
                 SentAt = DateTime.UtcNow,
-                RecipientCount = recipients.Count
+                RecipientCount = recipients.Count,
+                Status = "Sent"
             };
             await _broadcastRepository.AddAsync(broadcast);
         }

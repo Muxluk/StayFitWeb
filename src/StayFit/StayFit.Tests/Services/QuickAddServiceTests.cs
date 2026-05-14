@@ -29,7 +29,7 @@ public class QuickAddServiceTests
         _notificationServiceMock = new Mock<INotificationService>();
         _loggerMock = new Mock<ILogger<QuickAddService>>();
 
-        var notificationSettings = Options.Create(new NotificationSettings { CalorieThresholdPercent = 90 });
+        var notificationSettings = Options.Create(new NotificationSettings());
 
         _quickAddService = new QuickAddService(
             _mealRepositoryMock.Object,

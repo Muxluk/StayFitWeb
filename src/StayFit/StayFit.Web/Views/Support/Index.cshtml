@@ -3,20 +3,34 @@
 @{
     ViewData["Title"] = "Мої звернення";
     var tickets = Model?.ToList() ?? new List<StayFit.Application.DTOs.SupportTicketDto>();
+    var newCount = tickets.Count(t => t.Status?.Equals("new", StringComparison.OrdinalIgnoreCase) ?? false);
 }
 
 <div class="container mt-4">
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
         <div>
-            <h2 class="mb-1">Мої звернення</h2>
-            <p class="text-muted mb-0">Тут відображаються ваші звернення до технічної підтримки та їхній статус.</p>
+            <h2 class="mb-1"><i class="bi bi-chat-left-text"></i> Мої звернення</h2>
+            <p class="text-muted mb-0">Управління вашими зверненнями до технічної підтримки та їхній статус.</p>
         </div>
-        <span class="badge bg-primary fs-6">Всього: @tickets.Count</span>
+        <div class="d-flex gap-2">
+            @if (newCount > 0)
+            {
+                <span class="badge bg-danger fs-6">
+                    <i class="bi bi-bell-fill"></i> @newCount нові
+                </span>
+            }
+            <span class="badge bg-primary fs-6">
+                <i class="bi bi-list-check"></i> Всього: @tickets.Count
+            </span>
+        </div>
     </div>
 
     @if (TempData["SupportError"] is string supportError && !string.IsNullOrWhiteSpace(supportError))
     {
-        <div class="alert alert-danger">@supportError</div>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-circle"></i> @supportError
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
     }
 
     <div class="card shadow-sm">
@@ -25,20 +39,21 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th style="width: 90px;">ID</th>
+                            <th class="ps-3 support-table-col-id">ID</th>
                             <th>Тема</th>
-                            <th>Повідомлення</th>
-                            <th style="width: 150px;">Статус</th>
-                            <th style="width: 190px;">Створено</th>
-                            <th style="width: 140px;"></th>
+                            <th class="d-none d-md-table-cell">Повідомлення</th>
+                            <th class="support-table-col-status">Статус</th>
+                            <th class="d-none d-sm-table-cell support-table-col-created">Створено</th>
+                            <th class="text-end pe-3 support-table-col-actions"></th>
                         </tr>
                     </thead>
                     <tbody>
                         @if (!tickets.Any())
                         {
                             <tr>
-                                <td colspan="6" class="text-center text-muted py-4">
-                                    Поки що немає жодного звернення.
+                                <td colspan="6" class="text-center text-muted py-5">
+                                    <i class="bi bi-inbox support-empty-icon"></i><br>
+                                    <p class="mt-2">Поки що немає жодного звернення.</p>
                                 </td>
                             </tr>
                         }
@@ -46,11 +61,33 @@
                         {
                             foreach (var ticket in tickets)
                             {
-                                <tr>
-                                    <td>#@ticket.Id</td>
-                                    <td class="fw-semibold">@ticket.Subject</td>
+                                var statusClass = ticket.Status?.Trim().ToLowerInvariant() switch
+                                {
+                                    "new" => "badge-support-new",
+                                    "inprogress" or "in_progress" or "processing" => "badge-support-processing",
+                                    "closed" => "badge-support-closed",
+                                    _ => "badge bg-secondary"
+                                };
+
+                                var statusIcon = ticket.Status?.Trim().ToLowerInvariant() switch
+                                {
+                                    "new" => "bi-envelope",
+                                    "inprogress" or "in_progress" or "processing" => "bi-arrow-repeat",
+                                    "closed" => "bi-check-circle",
+                                    _ => "bi-question-circle"
+                                };
+
+                                <tr class="@(ticket.Status?.Equals("new", StringComparison.OrdinalIgnoreCase) ?? false ? "table-warning" : "")">
+                                    <td class="ps-3 fw-semibold">#@ticket.Id</td>
                                     <td>
-                                        <div class="text-truncate" style="max-width: 420px;" title="@ticket.Message">
+                                        <strong>@ticket.Subject</strong>
+                                        @if (ticket.Status?.Equals("new", StringComparison.OrdinalIgnoreCase) ?? false)
+                                        {
+                                            <span class="ms-2 badge bg-danger">Нове</span>
+                                        }
+                                    </td>
+                                    <td class="d-none d-md-table-cell">
+                                        <div class="text-truncate text-muted small" title="@ticket.Message">
                                             @ticket.Message
                                         </div>
                                     </td>
@@ -58,25 +95,33 @@
                                         @switch (ticket.Status?.Trim().ToLowerInvariant())
                                         {
                                             case "new":
-                                                <span class="badge bg-secondary">Нове</span>
+                                                <span class="badge bg-primary">
+                                                    <i class="bi bi-envelope"></i> Нове
+                                                </span>
                                                 break;
                                             case "inprogress":
                                             case "in_progress":
                                             case "processing":
-                                                <span class="badge bg-warning text-dark">В обробці</span>
+                                                <span class="badge bg-warning text-dark">
+                                                    <i class="bi bi-arrow-repeat"></i> В обробці
+                                                </span>
                                                 break;
                                             case "closed":
-                                                <span class="badge bg-success">Закрито</span>
+                                                <span class="badge bg-success">
+                                                    <i class="bi bi-check-circle"></i> Закрито
+                                                </span>
                                                 break;
                                             default:
                                                 <span class="badge bg-light text-dark border">@ticket.Status</span>
                                                 break;
                                         }
                                     </td>
-                                    <td>@ticket.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
-                                    <td class="text-end">
+                                    <td class="d-none d-sm-table-cell small text-muted">
+                                        @ticket.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                                    </td>
+                                    <td class="text-end pe-3">
                                         <a asp-action="Details" asp-route-id="@ticket.Id" class="btn btn-sm btn-outline-primary">
-                                            Перегляд
+                                            <i class="bi bi-eye"></i> Перегляд
                                         </a>
                                     </td>
                                 </tr>
@@ -86,5 +131,11 @@
                 </table>
             </div>
         </div>
+    </div>
+
+    <div class="mt-4">
+        <button type="button" class="btn btn-success btn-lg" data-bs-toggle="modal" data-bs-target="#supportTicketModal">
+            <i class="bi bi-plus-circle"></i> Нове звернення
+        </button>
     </div>
 </div>

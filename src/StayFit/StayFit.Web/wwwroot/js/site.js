@@ -1,183 +1,241 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+﻿// StayFit - Site-wide JavaScript
+// Initializes global event listeners, modal confirm logic, and SignalR notifications.
 
-// Write your JavaScript code.
+(function () {
+    "use strict";
 
-// ─── Система сповіщень ──────────────────────────────────────────────────────
+    document.addEventListener("DOMContentLoaded", function () {
+        initModalConfirm();
+        initAutoSubmit();
+        initNotifications();
+    });
 
-class NotificationManager {
-    constructor() {
-        this.notifications = [];
-        this.loadInterval = null;
-        this.init();
-    }
+    // --- Modal Confirm ---
+    function initModalConfirm() {
+        var modalEl = document.getElementById("modalConfirm");
+        if (!modalEl) return;
 
-    init() {
-        const bell = document.getElementById('notificationBell');
-        if (!bell) return;
+        if (!window.bootstrap || !window.bootstrap.Modal) return;
 
-        // Завантажити сповіщення при завантаженні сторінки
-        this.loadNotifications();
+        var bsModal = new bootstrap.Modal(modalEl);
+        var confirmBtn = modalEl.querySelector(".modal-confirm-btn");
+        var titleEl = modalEl.querySelector(".modal-title");
+        var bodyEl = modalEl.querySelector(".modal-body p, .modal-body");
+        var pendingForm = null;
+        var pendingHref = null;
 
-        // Перезавантажувати кожні 30 секунд
-        this.loadInterval = setInterval(() => this.loadNotifications(), 30000);
+        document.addEventListener("click", function (e) {
+            var target = e.target;
+            while (target && target !== document.body) {
+                if (target.hasAttribute("data-confirm-title")) {
+                    var trigger = target;
+                    e.preventDefault();
+                    e.stopPropagation();
 
-        // Позначити всі як прочитані
-        document.getElementById('markAllReadBtn')?.addEventListener('click', () => this.markAllAsRead());
+                    var title =
+                        trigger.getAttribute("data-confirm-title") ||
+                        "Підтвердження";
+                    var message =
+                        trigger.getAttribute("data-confirm-message") ||
+                        "Ви впевнені?";
+                    var btnText =
+                        trigger.getAttribute("data-confirm-btn") ||
+                        "Підтвердити";
 
-        // Очистити всі
-        document.getElementById('clearAllBtn')?.addEventListener('click', () => this.clearAllNotifications());
-    }
+                    if (titleEl) titleEl.textContent = title;
+                    if (bodyEl) bodyEl.textContent = message;
+                    if (confirmBtn) confirmBtn.textContent = btnText;
 
-    async loadNotifications() {
-        try {
-            const response = await fetch('/notifications/unread');
-            if (!response.ok) throw new Error('Failed to load notifications');
+                    var form = trigger.closest("form");
+                    if (trigger.tagName === "A" && trigger.href) {
+                        pendingHref = trigger.href;
+                        pendingForm = null;
+                    } else if (form) {
+                        pendingForm = form;
+                        pendingHref = null;
+                    }
 
-            this.notifications = await response.json();
-            this.renderNotifications();
-            this.updateBadge();
-        } catch (error) {
-            console.error('Error loading notifications:', error);
-        }
-    }
-
-    async updateBadge() {
-        try {
-            const response = await fetch('/notifications/unread-count');
-            if (!response.ok) throw new Error('Failed to load count');
-
-            const data = await response.json();
-            const badgeElement = document.getElementById('notificationBadge');
-            const countElement = document.getElementById('notificationCount');
-
-            if (data.count > 0) {
-                countElement.textContent = data.count;
-                badgeElement.style.display = 'block';
-            } else {
-                badgeElement.style.display = 'none';
+                    bsModal.show();
+                    return;
+                }
+                target = target.parentNode;
             }
-        } catch (error) {
-            console.error('Error updating badge:', error);
+        });
+
+        if (confirmBtn) {
+            confirmBtn.addEventListener("click", function () {
+                bsModal.hide();
+                if (pendingForm) pendingForm.submit();
+                else if (pendingHref) window.location.href = pendingHref;
+                pendingForm = null;
+                pendingHref = null;
+            });
         }
     }
 
-    renderNotifications() {
-        const list = document.getElementById('notificationList');
-        const clearBtn = document.getElementById('clearAllBtn');
-        const markAllReadBtn = document.getElementById('markAllReadBtn');
-
-        if (!this.notifications || this.notifications.length === 0) {
-            list.innerHTML = '<div class="text-center text-muted">Немає сповіщень</div>';
-            clearBtn.style.display = 'none';
-            markAllReadBtn.style.display = 'none';
-            return;
+    // --- Auto Submit ---
+    function initAutoSubmit() {
+        var selects = document.querySelectorAll("select[data-auto-submit]");
+        for (var i = 0; i < selects.length; i++) {
+            selects[i].addEventListener("change", function () {
+                var form = this.closest("form");
+                if (form) form.submit();
+            });
         }
-
-        clearBtn.style.display = 'block';
-        markAllReadBtn.style.display = 'block';
-
-        list.innerHTML = this.notifications.map(notification => `
-            <div class="notification-item p-2 border-bottom d-flex justify-content-between align-items-start">
-                <div class="flex-grow-1">
-                    <div class="fw-bold">${this.escapeHtml(notification.title)}</div>
-                    <small class="text-muted d-block">${this.escapeHtml(notification.message)}</small>
-                    <small class="text-secondary">${this.formatDate(notification.createdAt)}</small>
-                </div>
-                <button type="button" class="btn btn-sm btn-outline-secondary ms-2" 
-                    onclick="notificationManager.markAsRead(${notification.id})"
-                    title="Позначити як прочитане">
-                    ✓
-                </button>
-            </div>
-        `).join('');
     }
 
-    async markAsRead(notificationId) {
-        try {
-            const response = await fetch(`/notifications/${notificationId}/mark-as-read`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
+    // --- SignalR Notifications ---
+    function initNotifications() {
+        if (typeof signalR === "undefined") return;
+
+        var connection = new signalR.HubConnectionBuilder()
+            .withUrl("/notificationHub")
+            .withAutomaticReconnect()
+            .build();
+
+        connection.on("ReceiveNotification", function (notification) {
+            addNotificationToList(notification);
+            updateBadge(1);
+            showToast(notification);
+        });
+
+        connection.start()["catch"](function (err) {
+            console.error("SignalR Connection Error: ", err.toString());
+        });
+
+        fetchNotifications();
+
+        var markAllBtn = document.getElementById("markAllReadBtn");
+        if (markAllBtn) {
+            markAllBtn.addEventListener("click", function () {
+                fetch("/notifications/mark-all-as-read", {
+                    method: "POST",
+                }).then(function (r) {
+                    if (r.ok) fetchNotifications();
+                });
+            });
+        }
+
+        var clearAllBtn = document.getElementById("clearAllBtn");
+        if (clearAllBtn) {
+            clearAllBtn.addEventListener("click", function () {
+                fetch("/notifications/clear-all", { method: "POST" }).then(
+                    function (r) {
+                        if (r.ok) fetchNotifications();
+                    },
+                );
+            });
+        }
+    }
+
+    function fetchNotifications() {
+        fetch("/notifications/unread")
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                var list = document.getElementById("notificationList");
+                if (!list) return;
+
+                list.innerHTML = "";
+                if (data.length === 0) {
+                    list.innerHTML =
+                        '<div class="text-center text-muted">Немає сповіщень</div>';
+                    updateBadge(0, true);
+                    toggleActionButtons(false);
+                } else {
+                    for (var i = 0; i < data.length; i++) {
+                        addNotificationToList(data[i]);
+                    }
+                    updateBadge(data.length, true);
+                    toggleActionButtons(true);
                 }
             });
+    }
 
-            if (response.ok) {
-                this.loadNotifications();
-            } else {
-                console.error('Failed to mark notification as read');
+    function addNotificationToList(n) {
+        var list = document.getElementById("notificationList");
+        if (!list) return;
+
+        var emptyMsg = list.querySelector(".text-muted");
+        if (emptyMsg) emptyMsg.remove();
+
+        var item = document.createElement("div");
+        item.className = "notification-item mb-2 p-2 border-bottom";
+        item.innerHTML =
+            '<div class="d-flex justify-content-between">' +
+            '<strong class="small">' +
+            n.title +
+            "</strong>" +
+            '<span class="text-muted smaller">' +
+            new Date(n.createdAt).toLocaleTimeString() +
+            "</span>" +
+            "</div>" +
+            '<div class="smaller">' +
+            n.message +
+            "</div>";
+
+        list.insertBefore(item, list.firstChild);
+        toggleActionButtons(true);
+    }
+
+    function updateBadge(count, isAbsolute) {
+        var badge = document.getElementById("notificationBadge");
+        var countEl = document.getElementById("notificationCount");
+        if (!badge || !countEl) return;
+
+        var current = isAbsolute ? 0 : parseInt(countEl.textContent) || 0;
+        var total = current + count;
+
+        countEl.textContent = total;
+        if (total > 0) {
+            badge.classList.remove("d-none");
+        } else {
+            badge.classList.add("d-none");
+        }
+    }
+
+    function toggleActionButtons(show) {
+        var btns = ["markAllReadBtn", "clearAllBtn"];
+        for (var i = 0; i < btns.length; i++) {
+            var el = document.getElementById(btns[i]);
+            if (el) {
+                if (show) el.classList.remove("d-none");
+                else el.classList.add("d-none");
             }
-        } catch (error) {
-            console.error('Error marking notification as read:', error);
         }
     }
 
-    async markAllAsRead() {
-        try {
-            const response = await fetch('/notifications/mark-all-as-read', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                this.loadNotifications();
-            } else {
-                console.error('Failed to mark all notifications as read');
-            }
-        } catch (error) {
-            console.error('Error marking all notifications as read:', error);
-        }
+    function showToast(n) {
+        console.log("New Notification:", n.title, n.message);
     }
+})();
 
-    async clearAllNotifications() {
-        if (!confirm('Ви впевнені, що хочете очистити всі сповіщення?')) {
-            return;
-        }
-
-        try {
-            const response = await fetch('/notifications/clear-all', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                this.loadNotifications();
-            } else {
-                console.error('Failed to clear notifications');
-            }
-        } catch (error) {
-            console.error('Error clearing notifications:', error);
-        }
-    }
-
-    formatDate(dateString) {
-        const date = new Date(dateString);
-        const now = new Date();
-        const diffMs = now - date;
-        const diffMins = Math.floor(diffMs / 60000);
-        const diffHours = Math.floor(diffMs / 3600000);
-        const diffDays = Math.floor(diffMs / 86400000);
-
-        if (diffMins < 1) return 'щойно';
-        if (diffMins < 60) return `${diffMins}м назад`;
-        if (diffHours < 24) return `${diffHours}г назад`;
-        if (diffDays < 7) return `${diffDays}д назад`;
-
-        return date.toLocaleDateString('uk-UA');
-    }
-
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
+// --- Theme Toggle ---
+function sfToggleTheme() {
+    var html = document.documentElement;
+    var isDark = html.getAttribute("data-bs-theme") === "dark";
+    var next = isDark ? "light" : "dark";
+    html.setAttribute("data-bs-theme", next);
+    localStorage.setItem("sf-theme", next);
+    var icon = document.getElementById("sf-theme-icon");
+    if (icon) {
+        icon.className = next === "dark" ? "bi bi-moon-fill" : "bi bi-sun-fill";
     }
 }
 
-// Ініціалізація менеджера сповіщень при завантаженні сторінки
-document.addEventListener('DOMContentLoaded', function() {
-    window.notificationManager = new NotificationManager();
-});
+// Restore theme on page load
+(function () {
+    var html = document.documentElement;
+    var savedTheme = localStorage.getItem("sf-theme");
+    var systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    var theme = savedTheme || (systemDark ? "dark" : "light");
+
+    html.setAttribute("data-bs-theme", theme);
+
+    var icon = document.getElementById("sf-theme-icon");
+    if (icon) {
+        icon.className =
+            theme === "dark" ? "bi bi-moon-fill" : "bi bi-sun-fill";
+    }
+})();

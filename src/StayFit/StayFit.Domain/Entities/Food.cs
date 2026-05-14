@@ -22,6 +22,10 @@ public class Food
     public FoodCategory Category { get; set; } = FoodCategory.General;
 
     public bool IsApproved { get; set; } = false;
+    public bool IsAdminNotified { get; set; } = false;
+
+    /// <summary>Час, коли продукт був надісланий на модерацію.</summary>
+    public DateTime? SubmittedAt { get; set; }
 
     public ICollection<FoodLog> FoodLogs { get; set; } = new List<FoodLog>();
 }

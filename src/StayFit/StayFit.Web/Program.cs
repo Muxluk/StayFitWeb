@@ -16,6 +16,7 @@ using StayFit.Web.Filters;
 using StayFit.Infrastructure.Data;
 using StayFit.Infrastructure.Identity;
 using StayFit.Infrastructure.Repositories;
+using StayFit.Web.Hubs;
 using StayFit.Web.Services;
 using StayFit.Web.Middleware;
 using System.Text;
@@ -67,6 +68,9 @@ builder.Host.UseSerilog((context, configuration) =>
             restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information)
         .Enrich.FromLogContext()
         .Enrich.WithProperty("Application", "StayFit"));
+
+// ─── SignalR ─────────────────────────────────────────────────────────────────
+builder.Services.AddSignalR();
 
 // ─── MVC ────────────────────────────────────────────────────────────────────
 builder.Services.AddControllersWithViews(options =>
@@ -155,8 +159,10 @@ builder.Services.AddScoped<QuickAddService>(provider =>
     ));
 builder.Services.AddScoped<DiaryNoteService>();
 builder.Services.AddScoped<IProfilePhotoService, ProfilePhotoService>();
-builder.Services.AddScoped<IHydrationRepository, HydrationRepository>();
-builder.Services.AddScoped<IHydrationService, HydrationService>();
+
+// ─── Background Services ──────────────────────────────────────────────────────
+builder.Services.AddHostedService<NutritionBackgroundService>();
+
 // ─── Build ──────────────────────────────────────────────────────────────────
 var app = builder.Build();
 
@@ -188,8 +194,12 @@ app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseMiddleware<RequestExecutionTimeLoggingMiddleware>();
 app.UseAuthorization();
 
+app.MapGet("/", () => Results.Redirect("/dashboard"));
+
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Dashboard}/{action=Index}/{id?}");
+
+app.MapHub<NotificationHub>("/notificationHub");
 
 app.Run();

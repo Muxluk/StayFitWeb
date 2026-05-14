@@ -41,6 +41,11 @@ public class AccountController(
             UserName = model.UserName,
             Email = model.Email,
             Password = model.Password,
+            DateOfBirth = model.DateOfBirth,
+            Gender = model.Gender,
+            Weight = model.Weight,
+            Height = model.Height,
+            ActivityLevel = model.ActivityLevel
         });
 
         if (result.IsFailure)
@@ -310,6 +315,23 @@ public class AccountController(
         [DataType(DataType.Password)]
         [Compare(nameof(Password), ErrorMessage = "Паролі не співпадають")]
         public string ConfirmPassword { get; set; } = string.Empty;
+
+        // Фізичні параметри
+        [Display(Name = "Дата народження")]
+        [DataType(DataType.Date)]
+        public DateOnly? DateOfBirth { get; set; }
+
+        [Display(Name = "Стать")]
+        public string? Gender { get; set; }
+
+        [Display(Name = "Вага (кг)")]
+        public decimal? Weight { get; set; }
+
+        [Display(Name = "Зріст (см)")]
+        public decimal? Height { get; set; }
+
+        [Display(Name = "Рівень активності")]
+        public string? ActivityLevel { get; set; }
     }
 
     public sealed class LoginRequest

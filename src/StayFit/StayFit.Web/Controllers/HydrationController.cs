@@ -1,71 +1,41 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
-using StayFit.Application.Interfaces;
 
 namespace StayFit.Web.Controllers;
 
 [Authorize]
+[Route("hydration")]
 public class HydrationController : BaseController
 {
-    private readonly IHydrationService _hydrationService;
+    private readonly ILogger<HydrationController> _logger;
 
-    public HydrationController(IHydrationService hydrationService)
+    public HydrationController(ILogger<HydrationController> logger)
     {
-        _hydrationService = hydrationService;
+        _logger = logger;
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index()
+    public IActionResult Index()
     {
-        int userId = GetRequiredCurrentUserId();
-        var result = await _hydrationService.GetTodayProgressAsync(userId);
-        
-        if (!result.IsSuccess)
-        {
-            TempData["Error"] = string.Join(", ", result.Errors); 
-            return RedirectToAction("Index", "Dashboard");
-        }
-
-        return View(result.Value);
+        _logger.LogInformation("Користувач відвідав сторінку водного балансу");
+        return View();
     }
 
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    [EnableRateLimiting("WaterLogPolicy")]
-    public async Task<IActionResult> LogWater(int volumeMl)
+    [HttpPost("add")]
+    public IActionResult AddWaterIntake([FromBody] AddWaterRequest request)
     {
-        int userId = GetRequiredCurrentUserId();
-        var result = await _hydrationService.LogWaterAsync(userId, volumeMl);
+        _logger.LogInformation("Користувач додав {Glasses} склянок води", request.Glasses);
 
-        if (result.IsSuccess)
+        if (request.Glasses <= 0 || request.Glasses > 20)
         {
-            TempData["Success"] = $"Додано {volumeMl} мл води!";
-        }
-        else
-        {
-            TempData["Error"] = string.Join(", ", result.Errors);
+            return BadRequest(new { message = "Невірна кількість склянок" });
         }
 
-        return RedirectToAction(nameof(Index));
+        return Ok(new { message = $"Додано {request.Glasses} склянок(и) води" });
     }
 
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> SetCustomGoal(int goalMl)
+    public class AddWaterRequest
     {
-        int userId = GetRequiredCurrentUserId();
-        var result = await _hydrationService.SetGoalAsync(userId, goalMl);
-
-        if (result.IsSuccess)
-        {
-            TempData["Success"] = "Ціль успішно оновлено!";
-        }
-        else
-        {
-            TempData["Error"] = string.Join(", ", result.Errors);
-        }
-
-        return RedirectToAction(nameof(Index));
+        public int Glasses { get; set; }
     }
 }

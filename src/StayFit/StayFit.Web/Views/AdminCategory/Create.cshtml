@@ -1,39 +1,86 @@
 @model CreateCategoryRequest
 
 @{
-    ViewData["Title"] = "Додати нову категорію";
+    ViewData["Title"] = "Нова категорія";
 }
 
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-md-6 offset-md-3">
-            <h1>@ViewData["Title"]</h1>
-            <hr />
-
-            <form asp-action="Create" method="post">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-                <div class="form-group mb-3">
-                    <label asp-for="Name" class="form-label">Назва категорії</label>
-                    <input asp-for="Name" class="form-control" placeholder="Напр. Овочі" />
-                    <span asp-validation-for="Name" class="text-danger"></span>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="d-flex align-items-center mb-3">
+                <a asp-action="Index" class="btn btn-sm btn-outline-secondary me-3">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+                <div>
+                    <h2 class="mb-0">Нова категорія</h2>
+                    <p class="text-muted small mb-0">Категорії допомагають групувати продукти харчування</p>
                 </div>
+            </div>
 
-                <div class="form-group mb-3">
-                    <label asp-for="Description" class="form-label">Опис (необов'язково)</label>
-                    <textarea asp-for="Description" class="form-control" rows="3" placeholder="Опис категорії..."></textarea>
-                    <span asp-validation-for="Description" class="text-danger"></span>
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white py-3 border-0">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-tags fs-5"></i>
+                        <span class="fw-semibold">Параметри категорії</span>
+                    </div>
                 </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small"></div>
 
-                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <a href="@Url.Action("Index", "AdminCategory")" class="btn btn-secondary">
-                        <i class="bi bi-arrow-left"></i> Назад
-                    </a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle"></i> Додати
-                    </button>
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label fw-semibold">
+                                <i class="bi bi-tag me-1 text-primary"></i>Назва категорії
+                            </label>
+                            <input asp-for="Name" class="form-control" placeholder="Напр. Овочі та зелень" />
+                            <div class="form-text">Назва відображатиметься у формах і пошуку продуктів</div>
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Description" class="form-label fw-semibold">
+                                <i class="bi bi-card-text me-1 text-secondary"></i>Опис
+                                <span class="fw-normal text-muted">(необов'язково)</span>
+                            </label>
+                            <textarea asp-for="Description" class="form-control" rows="3"
+                                      placeholder="Короткий опис категорії..."></textarea>
+                            <span asp-validation-for="Description" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-6">
+                                <label asp-for="Icon" class="form-label fw-semibold">
+                                    <i class="bi bi-emoji-smile me-1 text-warning"></i>Іконка (emoji)
+                                </label>
+                                <input asp-for="Icon" class="form-control" placeholder="Напр. 🍎" />
+                                <span asp-validation-for="Icon" class="text-danger small"></span>
+                            </div>
+                            <div class="col-6">
+                                <label asp-for="ColorClass" class="form-label fw-semibold">
+                                    <i class="bi bi-palette me-1 text-info"></i>Колір (Bootstrap)
+                                </label>
+                                <select asp-for="ColorClass" class="form-select">
+                                    <option value="">— обрати —</option>
+                                    <option value="danger">🔴 danger (червоний)</option>
+                                    <option value="success">🟢 success (зелений)</option>
+                                    <option value="primary">🔵 primary (синій)</option>
+                                    <option value="warning">🟡 warning (жовтий)</option>
+                                    <option value="info">🛂 info (блакитний)</option>
+                                    <option value="secondary">⚪ secondary (сірий)</option>
+                                    <option value="dark">⚫ dark (чорний)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a asp-action="Index" class="btn btn-outline-secondary">Скасувати</a>
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-plus-lg me-1"></i>Створити
+                            </button>
+                        </div>
+                    </form>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>

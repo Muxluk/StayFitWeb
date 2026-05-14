@@ -25,14 +25,16 @@
 
 <partial name="_StatisticsNav" />
 
-<form method="get" asp-action="Monthly" class="card card-body mb-4">
+<form method="get" asp-action="Monthly" class="card card-body mb-4 bg-light-subtle">
     <div class="row g-2 align-items-end">
         <div class="col-sm-6 col-md-4 col-lg-3">
-            <label for="date" class="form-label mb-1">Дата (місяць)</label>
-            <input id="date" type="date" name="date" value="@selectedDate.ToString("yyyy-MM-dd")" class="form-control" />
+            <label for="date" class="form-label fw-semibold mb-2"><i class="bi bi-calendar-month"></i> Дата (місяць)</label>
+            <input id="date" type="date" name="date" value="@selectedDate.ToString("yyyy-MM-dd")" class="form-control diary-date-picker" />
         </div>
         <div class="col-auto">
-            <button type="submit" class="btn btn-primary">Показати</button>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search"></i> Показати
+            </button>
         </div>
     </div>
 </form>

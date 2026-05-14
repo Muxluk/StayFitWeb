@@ -1,0 +1,16 @@
+@model SearchFilterViewModel
+
+<form method="@Model.Method" asp-controller="@Model.Controller" asp-action="@Model.Action" class="@Model.FormClass">
+    <div class="@Model.SearchColClass">
+        <input type="text" name="@Model.SearchName" class="form-control" placeholder="@Model.Placeholder" value="@Model.SearchValue" />
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.AdditionalHtml))
+    {
+        @Html.Raw(Model.AdditionalHtml)
+    }
+
+    <div class="@Model.ButtonColClass">
+        <button type="submit" class="btn btn-primary w-100">@Model.ButtonText</button>
+    </div>
+</form>

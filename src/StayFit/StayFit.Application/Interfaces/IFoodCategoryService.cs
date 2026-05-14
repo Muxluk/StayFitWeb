@@ -26,12 +26,12 @@ public interface IFoodCategoryService
     /// <summary>
     /// Створити нову категорію
     /// </summary>
-    Task<Result<FoodCategoryEntity>> CreateAsync(string name, string? description);
+    Task<Result<FoodCategoryEntity>> CreateAsync(string name, string? description, string? icon, string? colorClass);
 
     /// <summary>
     /// Оновити категорію
     /// </summary>
-    Task<Result<FoodCategoryEntity>> UpdateAsync(int id, string name, string? description, bool isActive);
+    Task<Result<FoodCategoryEntity>> UpdateAsync(int id, string name, string? description, bool isActive, string? icon, string? colorClass);
 
     /// <summary>
     /// Видалити категорію

@@ -19,51 +19,50 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - StayFit.Web</title>
-    <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/bundle.min.css" asp-append-version="true" />
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm bg-body-tertiary border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">StayFit.Web</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                <a class="navbar-brand" asp-area="" asp-controller="Dashboard" asp-action="Index">StayFit.Web</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between" id="navbarSupportedContent">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Головна</a>
+                            <a class="nav-link" asp-area="" asp-controller="Dashboard" asp-action="Index">Головна</a>
                         </li>
                         <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="ProductSearch" asp-action="Index">Пошук продуктів</a>
+                        <a class="nav-link" asp-area="" asp-controller="ProductSearch" asp-action="Index">Пошук продуктів</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Food" asp-action="Index">Мої продукти</a>
+                            <a class="nav-link" asp-area="" asp-controller="Food" asp-action="Index">Мої продукти</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Diary" asp-action="Index">Мій щоденник</a>
+                            <a class="nav-link" asp-controller="Diary" asp-action="Index">Мій щоденник</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Hydration" asp-action="Index">
+                            <a class="nav-link" asp-controller="Hydration" asp-action="Index">
                                 <i class="bi bi-droplet-fill text-info"></i> Моя вода
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Statistics" asp-action="Daily">Статистика</a>
+                            <a class="nav-link" asp-controller="Statistics" asp-action="Daily">Статистика</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="NutritionGoal" asp-action="Index">Мої цілі</a>
+                            <a class="nav-link" asp-controller="NutritionGoal" asp-action="Index">Мої цілі</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Export" asp-action="Index">Експорт</a>
+                            <a class="nav-link" asp-controller="Export" asp-action="Index">Експорт</a>
                         </li>
                         @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Admin" asp-action="Index">Адміністрування</a>
+                                <a class="nav-link" asp-controller="Admin" asp-action="Index">Адміністрування</a>
                             </li>
                         }
                     </ul>
@@ -75,37 +74,35 @@
                                     <span class="badge @environmentBadgeClass">ENV: @environmentName</span>
                                 </a>
                             </li>
-                            <li class="nav-item d-flex align-items-center me-2">
-                                <a asp-controller="AdminEmail" asp-action="Create" class="btn btn-sm btn-outline-primary">
-                                    Email-розсилка
-                                </a>
-                            </li>
+
                         }
-                        <li class="nav-item d-flex align-items-center me-2">
-                            <span class="badge bg-light text-dark border">Dashboard N: @DashboardOptions.Value.RecentDiaryEntriesCount</span>
+                        <li class="nav-item d-flex align-items-center me-1">
+                            <button id="sf-theme-toggle" class="btn btn-link nav-link px-2" title="Перемкнути тему" onclick="sfToggleTheme()" type="button">
+                                <i class="bi bi-moon-fill" id="sf-theme-icon"></i>
+                            </button>
                         </li>
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item d-flex align-items-center me-2">
                                 <div class="dropdown">
-                                    <button class="btn btn-link nav-link text-dark position-relative" type="button" id="notificationBell" data-bs-toggle="dropdown" aria-expanded="false" title="Сповіщення">
+                                    <button class="btn btn-link nav-link position-relative" type="button" id="notificationBell" data-bs-toggle="dropdown" aria-expanded="false" title="Сповіщення">
                                         🔔
-                                        <span id="notificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">
+                                        <span id="notificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">
                                             <span id="notificationCount">0</span>
                                         </span>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationBell" id="notificationDropdown">
                                         <li class="dropdown-header">Сповіщення</li>
                                         <li><hr class="dropdown-divider"></li>
-                                        <li id="notificationList" class="p-3" style="min-width: 300px; max-height: 400px; overflow-y: auto;">
+                                        <li id="notificationList" class="p-3 notification-dropdown-list">
                                             <div class="text-center text-muted">Немає сповіщень</div>
                                         </li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li class="text-center p-2 d-flex gap-2">
-                                            <button type="button" class="btn btn-sm btn-outline-primary flex-grow-1" id="markAllReadBtn" style="display: none;">
+                                            <button type="button" class="btn btn-sm btn-outline-primary flex-grow-1 d-none" id="markAllReadBtn">
                                                 ✓ Прочитати все
                                             </button>
-                                            <button type="button" class="btn btn-sm btn-outline-danger flex-grow-1" id="clearAllBtn" style="display: none;">
+                                            <button type="button" class="btn btn-sm btn-outline-danger flex-grow-1 d-none" id="clearAllBtn">
                                                 🗑 Очистити все
                                             </button>
                                         </li>
@@ -113,22 +110,22 @@
                                 </div>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Profile" asp-action="Edit" title="Мій профіль">👤 @User.Identity.Name</a>
+                                <a class="nav-link" asp-area="" asp-controller="Profile" asp-action="Edit" title="Мій профіль">👤 @User.Identity.Name</a>
                             </li>
                             <li class="nav-item">
                                 <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
                                     @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-link nav-link text-dark">Вийти</button>
+                                    <button type="submit" class="btn btn-link nav-link">Вийти</button>
                                 </form>
                             </li>
                         }
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Вхід</a>
+                                <a class="nav-link" asp-controller="Account" asp-action="Login">Вхід</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Реєстрація</a>
+                                <a class="nav-link" asp-controller="Account" asp-action="Register">Реєстрація</a>
                             </li>
                         }
                     </ul>
@@ -136,8 +133,8 @@
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+    <div class="container flex-grow-1">
+        <main role="main" class="pb-3 h-100">
             @RenderBody()
         </main>
     </div>
@@ -185,14 +182,26 @@
         </div>
     }
 
-    <footer class="border-top footer text-muted">
+    <footer class="border-top footer text-muted mt-auto">
         <div class="container">
-            &copy; 2026 - StayFit
+            <div class="row py-3 align-items-center">
+                <div class="col-md-6">&copy; 2026 - StayFit</div>
+                <div class="col-md-6 text-md-end">
+                    <ul class="list-inline mb-0">
+                        <li class="list-inline-item"><a class="text-decoration-none text-muted" asp-controller="Dashboard" asp-action="Index">Головна</a></li>
+                        <li class="list-inline-item"><a class="text-decoration-none text-muted" asp-controller="Home" asp-action="About">Про нас</a></li>
+                        <li class="list-inline-item"><a class="text-decoration-none text-muted" asp-controller="Support" asp-action="Index">Контакти</a></li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </footer>
+
+    @await Html.PartialAsync("_ModalConfirm", new ModalConfirmViewModel())
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="~/js/bundle.min.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

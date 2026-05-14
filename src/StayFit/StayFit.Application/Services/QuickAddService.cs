@@ -96,7 +96,7 @@ public class QuickAddService
                 await _foodLogRepository.AddAsync(newLog);
                 copiedLogsCount++;
 
-                // Для уведомлений: собираем информацию о добавляемых продуктах
+                // Для сповіщень: збираємо інформацію про продукти що додаються
                 var calories = (log.Food?.CaloriesPer100g ?? 0) * log.AmountGrams / 100;
                 totalCaloriesAdded += calories;
             }
@@ -111,7 +111,7 @@ public class QuickAddService
                 // Створити сповіщення про додавання прийому їжі
                 await _notificationService.CreateFoodAddedNotificationAsync(
                     user.Id,
-                    $"Повторный прием: {existingMeal.Name}", 
+                    $"Повторний прийом: {existingMeal.Name}", 
                     totalCaloriesAdded
                 );
             }

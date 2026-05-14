@@ -27,7 +27,7 @@ public class FoodRepository : Repository<Food>, IFoodRepository
     public async Task<(IEnumerable<Food> Items, int TotalCount)> SearchAsync(string? searchTerm, FoodCategory? category, int page, int pageSize, int userId)
     {
 
-        var query = DbSet.Where(f => f.OwnerUserId == userId || f.OwnerUserId == 0).AsQueryable();
+        var query = DbSet.Where(f => f.IsApproved || f.OwnerUserId == userId).AsQueryable();
 
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
@@ -60,7 +60,8 @@ public class FoodRepository : Repository<Food>, IFoodRepository
     {
         return await DbSet
             .Where(f => f.IsApproved == false)
-            .OrderByDescending(f => f.Id)
+            .OrderByDescending(f => f.SubmittedAt)
+            .ThenByDescending(f => f.Id)
             .ToListAsync();
     }
 

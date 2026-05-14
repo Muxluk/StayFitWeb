@@ -1,15 +1,40 @@
-using System;
+namespace StayFit.Domain.Entities;
 
-namespace StayFit.Domain.Entities
+/// <summary>
+/// Представляє запис про розсилку email-повідомлень адміністратором.
+/// </summary>
+public class EmailBroadcast
 {
-    public class EmailBroadcast
-    {
-        public int Id { get; set; }
-        public string AdminId { get; set; } = string.Empty; // Id адміністратора, який ініціював розсилку
-        public string Subject { get; set; } = string.Empty;
-        public string Body { get; set; } = string.Empty;
-        public string Audience { get; set; } = string.Empty; // Наприклад: "All", "Active", "Role:User"
-        public DateTime SentAt { get; set; }
-        public int RecipientCount { get; set; }
-    }
+    public int Id { get; set; }
+    
+    /// <summary>
+    /// ID адміністратора, який відправив розсилку.
+    /// </summary>
+    public int AdminUserId { get; set; }
+    public User? AdminUser { get; set; }
+    
+    /// <summary>
+    /// Тема листа.
+    /// </summary>
+    public required string Subject { get; set; }
+    
+    /// <summary>
+    /// HTML-текст листа.
+    /// </summary>
+    public required string HtmlBody { get; set; }
+    
+    /// <summary>
+    /// Кількість отримувачів.
+    /// </summary>
+    public int RecipientCount { get; set; }
+    
+    /// <summary>
+    /// Дата відправлення.
+    /// </summary>
+    public DateTime SentAt { get; set; }
+    
+    /// <summary>
+    /// Статус розсилки (Pending, Sent, Failed).
+    /// </summary>
+    public string Status { get; set; } = "Pending";
 }

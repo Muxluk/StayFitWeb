@@ -11,112 +11,181 @@
 }
 
 <div class="container mt-4">
-    <h2>🎯 Встановлення цілей харчування</h2>
+    <h2>Встановлення цілей харчування</h2>
 
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
     }
 
-    <div class="row mt-4">
-        <div class="col-md-5">
-            <div class="card shadow-sm">
+    <div class="row g-4 mt-2">
+        @* ── Форма редагування цілей (ліва сторона) ── *@
+        <div class="col-12 col-lg-5">
+            <div class="card sf-card">
                 <div class="card-body">
-                    <h5 class="card-title">Редагувати цілі</h5>
+                    <h5 class="card-title mb-4">Редагувати цілі</h5>
                     <form asp-action="Index" method="post">
-                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                        
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        @* Калорії *@
                         <div class="mb-3">
-                            <label asp-for="CaloriesGoal" class="form-label">Ціль калорій (ккал)</label>
-                            <input asp-for="CaloriesGoal" class="form-control" type="number" step="1" />
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label asp-for="ProteinGoal" class="form-label">Білки (г)</label>
-                                <input asp-for="ProteinGoal" class="form-control" />
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label asp-for="FatGoal" class="form-label">Жири (г)</label>
-                                <input asp-for="FatGoal" class="form-control" />
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label asp-for="CarbsGoal" class="form-label">Вугл. (г)</label>
-                                <input asp-for="CarbsGoal" class="form-control" />
+                            <label asp-for="CaloriesGoal" class="form-label">Ціль калорій</label>
+                            <div class="input-group">
+                                <input asp-for="CaloriesGoal" class="form-control form-control-lg" type="number" step="50" min="1000" max="5000" placeholder="2000" />
+                                <span class="input-group-text">ккал</span>
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary w-100">Зберегти зміни</button>
+                        @* КБЖВ *@
+                        <div class="row g-2">
+                            <div class="col-sm-4">
+                                <label asp-for="ProteinGoal" class="form-label">Білки</label>
+                                <div class="input-group">
+                                    <input asp-for="ProteinGoal" class="form-control" type="number" step="5" min="0" placeholder="150" />
+                                    <span class="input-group-text">г</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <label asp-for="FatGoal" class="form-label">Жири</label>
+                                <div class="input-group">
+                                    <input asp-for="FatGoal" class="form-control" type="number" step="5" min="0" placeholder="60" />
+                                    <span class="input-group-text">г</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <label asp-for="CarbsGoal" class="form-label">Вуглеводи</label>
+                                <div class="input-group">
+                                    <input asp-for="CarbsGoal" class="form-control" type="number" step="5" min="0" placeholder="250" />
+                                    <span class="input-group-text">г</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg w-100 mt-4">Зберегти зміни</button>
                     </form>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-7">
-            <div class="card shadow-sm">
+        @* ── Прогрес (права сторона) ── *@
+        <div class="col-12 col-lg-7">
+            <div class="card sf-card">
                 <div class="card-body">
                     <h5 class="card-title mb-4">Прогрес за сьогодні</h5>
-                    
-                    @{
-                    void RenderProgress(string label, float cur, float target, string unit)
-                    {
-                        var rawPercent = target > 0 ? (cur / target) * 100 : 0;
-                        var displayPercent = Math.Min(rawPercent, 100); 
-                        
-                        string colorClass;
-                        
-                        if (rawPercent < 50) 
-                        {
-                            colorClass = "bg-danger";
-                        }
-                        else if (rawPercent < 95) 
-                        {
-                            colorClass = "bg-warning";
-                        }
-                        else if (rawPercent <= 105) 
-                        {
-                            colorClass = "bg-success";
-                        }
-                        else if (rawPercent <= 110) 
-                        {
-                            colorClass = "bg-warning";
-                        }
-                        else 
-                        {
-                            colorClass = "bg-danger";
-                        }
-
-                        <div class="mb-4">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span><strong>@label:</strong> @cur.ToString("0") / @target.ToString("0") @unit</span>
-                                <span class="fw-bold" style="color: @(colorClass == "bg-danger" ? "#dc3545" : "inherit")">
-                                    @rawPercent.ToString("0")%
-                                </span>
-                            </div>
-                            <div class="progress" style="height: 22px; border-radius: 10px; background-color: #e9ecef;">
-                                <div class="progress-bar @colorClass shadow-sm" role="progressbar" 
-                                    style="width: @(displayPercent.ToString("0", System.Globalization.CultureInfo.InvariantCulture))%; transition: width 0.6s ease;" 
-                                    aria-valuenow="@displayPercent" aria-valuemin="0" aria-valuemax="100">
-                                </div>
-                            </div>
-                        </div>
-                    }
-                }
 
                     @if (goal != null)
                     {
-                        RenderProgress("Калорії", curCalories, goal.CaloriesGoal, "ккал");
-                        RenderProgress("Білки", curProteins, goal.ProteinGoal, "г");
-                        RenderProgress("Жири", curFats, goal.FatGoal, "г");
-                        RenderProgress("Вуглеводи", curCarbs, goal.CarbsGoal, "г");
+                        @* Калорії *@
+                        <div class="mb-4 pb-3 border-bottom">
+                            <div class="d-flex justify-content-between align-items-baseline mb-2">
+                                <div>
+                                    <span class="fw-semibold">Калорії</span>
+                                </div>
+                                <div class="text-end">
+                                    <span class="sf-card-value">@curCalories.ToString("F0")</span>
+                                    <span class="text-muted small">/ @goal.CaloriesGoal.ToString("F0") ккал</span>
+                                </div>
+                            </div>
+                            @await Html.PartialAsync("_ProgressBar", null, new ViewDataDictionary(ViewData)
+                            {
+                                ["Actual"] = (double)curCalories,
+                                ["Target"] = (double)goal.CaloriesGoal,
+                                ["Color"] = curCalories > goal.CaloriesGoal * 1.1f ? "danger" : "success"
+                            })
+                            @if (curCalories > goal.CaloriesGoal)
+                            {
+                                <small class="text-danger d-block mt-1">Перевищено на @((curCalories - goal.CaloriesGoal).ToString("F0")) ккал</small>
+                            }
+                        </div>
+
+                        @* Білки *@
+                        <div class="mb-4 pb-3 border-bottom">
+                            <div class="d-flex justify-content-between align-items-baseline mb-2">
+                                <div>
+                                    <span class="fw-semibold">Білки</span>
+                                </div>
+                                <div class="text-end">
+                                    <span class="sf-card-value">@curProteins.ToString("F1")</span>
+                                    <span class="text-muted small">/ @goal.ProteinGoal.ToString("F0") г</span>
+                                </div>
+                            </div>
+                            @await Html.PartialAsync("_ProgressBar", null, new ViewDataDictionary(ViewData)
+                            {
+                                ["Actual"] = (double)curProteins,
+                                ["Target"] = (double)goal.ProteinGoal,
+                                ["Color"] = "info"
+                            })
+                            @if (curProteins > goal.ProteinGoal)
+                            {
+                                <small class="text-danger d-block mt-1">Перевищено на @((curProteins - goal.ProteinGoal).ToString("F1")) г</small>
+                            }
+                        </div>
+
+                        @* Жири *@
+                        <div class="mb-4 pb-3 border-bottom">
+                            <div class="d-flex justify-content-between align-items-baseline mb-2">
+                                <div>
+                                    <span class="fw-semibold">Жири</span>
+                                </div>
+                                <div class="text-end">
+                                    <span class="sf-card-value">@curFats.ToString("F1")</span>
+                                    <span class="text-muted small">/ @goal.FatGoal.ToString("F0") г</span>
+                                </div>
+                            </div>
+                            @await Html.PartialAsync("_ProgressBar", null, new ViewDataDictionary(ViewData)
+                            {
+                                ["Actual"] = (double)curFats,
+                                ["Target"] = (double)goal.FatGoal,
+                                ["Color"] = "warning"
+                            })
+                            @if (curFats > goal.FatGoal)
+                            {
+                                <small class="text-danger d-block mt-1">Перевищено на @((curFats - goal.FatGoal).ToString("F1")) г</small>
+                            }
+                        </div>
+
+                        @* Вуглеводи *@
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between align-items-baseline mb-2">
+                                <div>
+                                    <span class="fw-semibold">Вуглеводи</span>
+                                </div>
+                                <div class="text-end">
+                                    <span class="sf-card-value">@curCarbs.ToString("F1")</span>
+                                    <span class="text-muted small">/ @goal.CarbsGoal.ToString("F0") г</span>
+                                </div>
+                            </div>
+                            @await Html.PartialAsync("_ProgressBar", null, new ViewDataDictionary(ViewData)
+                            {
+                                ["Actual"] = (double)curCarbs,
+                                ["Target"] = (double)goal.CarbsGoal,
+                                ["Color"] = "primary"
+                            })
+                            @if (curCarbs > goal.CarbsGoal)
+                            {
+                                <small class="text-danger d-block mt-1">Перевищено на @((curCarbs - goal.CarbsGoal).ToString("F1")) г</small>
+                            }
+                        </div>
                     }
                     else
                     {
-                        <p class="text-muted">Встановіть цілі, щоб бачити прогрес.</p>
+                        <div class="alert alert-info mb-0">
+                            <strong>Інформація:</strong> Встановіть цілі зліва, щоб бачити прогрес.
+                        </div>
                     }
                 </div>
             </div>
         </div>
+    </div>
+
+    @* ── Порада (горизонтальна стрічка) ── *@
+    <div class="alert alert-light border mt-3 mb-0 py-2 px-3">
+        <small class="text-muted">
+            <strong>Порада:</strong> Стандартна норма — 2000 ккал з розподілом 50% вуглеводів, 30% білків, 20% жирів.
+        </small>
     </div>
 </div>
 

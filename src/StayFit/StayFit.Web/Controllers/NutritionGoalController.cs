@@ -34,8 +34,9 @@ public class NutritionGoalController : BaseController
     public async Task<IActionResult> Index()
     {
         var userIdInt = GetRequiredCurrentUserId();
-        var userIdStr = userIdInt.ToString();
         var userEmail = GetCurrentUserEmailOrEmpty();
+        var domainUser = !string.IsNullOrEmpty(userEmail) ? await _userRepository.GetByEmailAsync(userEmail) : null;
+        var userIdStr = domainUser?.Id.ToString() ?? userIdInt.ToString();
 
         // Отримання цілей КБЖВ
         var goalResult = await _nutritionGoalService.GetGoalAsync(userIdStr);
@@ -66,19 +67,16 @@ public class NutritionGoalController : BaseController
     {
         if (!ModelState.IsValid) return await Index(); 
 
-        var userIdStr = GetRequiredCurrentUserId().ToString();
+        var userEmail = GetCurrentUserEmailOrEmpty();
+        var domainUser = !string.IsNullOrEmpty(userEmail) ? await _userRepository.GetByEmailAsync(userEmail) : null;
+        var userIdStr = domainUser?.Id.ToString() ?? GetRequiredCurrentUserId().ToString();
         var result = await _nutritionGoalService.SetGoalAsync(userIdStr, dto);
 
         if (result.IsSuccess)
         {
-            var userEmail = GetCurrentUserEmailOrEmpty();
-            if (!string.IsNullOrEmpty(userEmail))
+            if (domainUser != null)
             {
-                var user = await _userRepository.GetByEmailAsync(userEmail);
-                if (user != null)
-                {
-                    await _notificationService.CreateNutritionGoalSetNotificationAsync(user.Id, (int)dto.CaloriesGoal);
-                }
+                await _notificationService.CreateNutritionGoalSetNotificationAsync(domainUser.Id, (int)dto.CaloriesGoal);
             }
 
             TempData["SuccessMessage"] = "Цілі збережено!";

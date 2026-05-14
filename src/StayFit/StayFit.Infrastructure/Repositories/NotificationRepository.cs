@@ -54,4 +54,13 @@ public class NotificationRepository : Repository<Notification>, INotificationRep
         DbSet.RemoveRange(notifications);
         await Context.SaveChangesAsync();
     }
+
+    public async Task<bool> HasCalorieThresholdNotificationTodayAsync(int userId)
+    {
+        var today = DateTime.UtcNow.Date;
+        return await DbSet.AnyAsync(n =>
+            n.UserId == userId &&
+            n.Type == "CalorieThreshold" &&
+            n.CreatedAt >= today);
+    }
 }

@@ -12,12 +12,14 @@ namespace StayFit.Tests.Services;
 public sealed class NotificationServiceTests
 {
     private readonly Mock<INotificationRepository> _notificationRepositoryMock;
+    private readonly Mock<IUserRepository> _userRepositoryMock;
     private readonly Mock<IOptions<NotificationSettings>> _notificationSettingsMock;
     private readonly Mock<ILogger<NotificationService>> _loggerMock;
 
     public NotificationServiceTests()
     {
         _notificationRepositoryMock = new Mock<INotificationRepository>();
+        _userRepositoryMock = new Mock<IUserRepository>();
         _notificationSettingsMock = new Mock<IOptions<NotificationSettings>>();
         _loggerMock = new Mock<ILogger<NotificationService>>();
 
@@ -30,6 +32,7 @@ public sealed class NotificationServiceTests
     {
         return new NotificationService(
             _notificationRepositoryMock.Object,
+            _userRepositoryMock.Object,
             _notificationSettingsMock.Object,
             _loggerMock.Object);
     }

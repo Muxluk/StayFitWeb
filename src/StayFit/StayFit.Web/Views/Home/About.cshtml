@@ -1,0 +1,58 @@
+@{
+    ViewData["Title"] = "Про нас";
+}
+
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h1 class="mb-4">🏃 Про StayFit</h1>
+
+            <div class="card card-elevated mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Що таке StayFit?</h5>
+                    <p>
+                        <strong>StayFit</strong> — це персональний помічник для ведення здорового способу життя. Наш застосунок допомагає вам 
+                        відслідковувати калорійність продуктів, зберігати дані про водний баланс, аналізувати статистику та досягати своїх 
+                        фітнес-цілей.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card card-elevated mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Основні можливості</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">✅ <strong>Щоденник харчування</strong> — додавайте продукти та відслідковуйте калорії</li>
+                        <li class="mb-2">💧 <strong>Монітор гідратації</strong> — контролюйте кількість спожитої води</li>
+                        <li class="mb-2">📊 <strong>Детальна статистика</strong> — аналізуйте прогрес із графіками та звітами</li>
+                        <li class="mb-2">🎯 <strong>Персональні цілі</strong> — встановлюйте та досягайте своїх нутрієнтивних цілей</li>
+                        <li class="mb-2">🔐 <strong>Безпека даних</strong> — ваші особисті дані захищені та приватні</li>
+                        <li class="mb-2">📱 <strong>Мобільна оптимізація</strong> — зручне використання на будь-якому пристрої</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card card-elevated">
+                <div class="card-body">
+                    <h5 class="card-title">Почніть зараз</h5>
+                    <p>
+                        Готові до змін? 
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <a asp-controller="Dashboard" asp-action="Index" class="btn btn-primary">Перейти до дашборду</a>
+                        }
+                        else
+                        {
+                            <a asp-controller="Account" asp-action="Register" class="btn btn-primary">Зареєструватись</a>
+                            <span class="ms-2">або <a asp-controller="Account" asp-action="Login" class="link-primary">увійти</a></span>
+                        }
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-5 text-center text-muted">
+                <p>Питання чи пропозиції? <a asp-controller="Support" asp-action="Index" class="text-muted link-underline">Зв'яжіться з нами</a></p>
+            </div>
+        </div>
+    </div>
+</div>

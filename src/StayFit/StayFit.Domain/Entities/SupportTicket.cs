@@ -26,6 +26,7 @@ public class SupportTicket
     /// Поточний статус звернення (New, InProgress, Closed).
     /// </summary>
     public string Status { get; set; } = "New";
+    public bool IsAdminNotified { get; set; } = false;
 
     /// <summary>
     /// Дата створення звернення.

@@ -111,9 +111,13 @@ public class FoodImportService : IFoodImportService
         product.OwnerUserId = ownerUserId;
         product.CreatedByEmail = userEmail;
         product.Id = 0; // Ensure it's treated as a new entity
+        product.SubmittedAt ??= DateTime.UtcNow;
 
         await _repository.AddImportedFoodAsync(product);
         
         _logger.LogInformation("Product {ProductName} imported successfully into local DB", product.Name);
     }
+
+    public Task<HashSet<string>> GetExistingNamesAsync(IEnumerable<string> names)
+        => _repository.GetMatchingNamesAsync(names);
 }

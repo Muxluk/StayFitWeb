@@ -1,0 +1,73 @@
+html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow:
+        0 0 0 0.1rem var(--surface-color),
+        0 0 0 0.25rem var(--primary-color);
+}
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    background: linear-gradient(
+        180deg,
+        #e7f7e8 0%,
+        #f4fbf5 40%,
+        #ffffff 100%
+    ) !important;
+    background-color: #e7f7e8 !important;
+}
+
+[data-bs-theme="dark"] body {
+    background: linear-gradient(
+        180deg,
+        #0d1117 0%,
+        #111827 50%,
+        #1a1f2e 100%
+    ) !important;
+    background-color: #0d1117 !important;
+    color: #e2e8f0 !important;
+}
+
+.support-fab {
+    position: fixed !important;
+    right: 1.5rem !important;
+    bottom: 1.5rem !important;
+    z-index: 1070 !important;
+    width: 3.5rem !important;
+    height: 3.5rem !important;
+    border-radius: 50% !important;
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+}
+
+.form-floating > .form-control-plaintext::placeholder,
+.form-floating > .form-control::placeholder {
+    color: var(--secondary-text-color);
+    text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder,
+.form-floating > .form-control:focus::placeholder {
+    text-align: start;
+}

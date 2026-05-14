@@ -1,0 +1,82 @@
+@{
+    ViewData["Title"] = "Забагато запитів";
+}
+
+<div class="error-page-container">
+    <div class="error-content">
+        <div class="error-illustration text-warning">
+            <i class="bi bi-clock-history"></i>
+        </div>
+        
+        <h1 class="error-code text-warning">429</h1>
+        <h2 class="error-title">Забагато запитів</h2>
+        <p class="error-message">Ви відправили занадто багато запитів за короткий час. Системі потрібен час для відновлення.</p>
+
+        <div class="alert alert-warning mb-4">
+            <strong><i class="bi bi-exclamation-triangle"></i> Захист від перевантаження</strong>
+            <p class="mt-2 mb-0">
+                Для захисту системи ми обмежуємо кількість запитів, які кожний користувач може виконати за певний час. 
+                Ви перевищили цей ліміт. Спробуйте повторити дії через деякий час.
+            </p>
+        </div>
+
+        <div class="card bg-light-subtle border-warning mb-4">
+            <div class="card-body text-center">
+                <h5 class="mb-3"><i class="bi bi-hourglass-split"></i> Час до наступної спроби:</h5>
+                <div id="rateLimitTimer" class="display-5 text-warning fw-bold">
+                    <span id="minutes">1</span>:<span id="seconds">00</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info mb-4">
+            <strong><i class="bi bi-lightbulb"></i> Поради:</strong>
+            <ul class="mb-0 mt-2">
+                <li>Зачекайте, поки таймер закінчиться</li>
+                <li>Уникайте швидкого повторення однакових дій</li>
+                <li><a href="@Url.Action("Index", "Support")" class="alert-link">Якщо проблема повторюється, звернутися до підтримки</a></li>
+            </ul>
+        </div>
+
+        <div class="error-actions">
+            <button class="btn btn-warning btn-lg" id="retryBtn" disabled onclick="window.location.reload()">
+                <i class="bi bi-arrow-clockwise"></i> Спробувати знову
+            </button>
+            <a href="@Url.Action("Index", "Home")" class="btn btn-outline-secondary btn-lg">
+                <i class="bi bi-house"></i> На головну
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Rate limit timer (default: 60 seconds)
+    const timerMinutes = document.getElementById('minutes');
+    const timerSeconds = document.getElementById('seconds');
+    const retryBtn = document.getElementById('retryBtn');
+    
+    let secondsLeft = 60;
+    
+    function updateTimer() {
+        const minutes = Math.floor(secondsLeft / 60);
+        const seconds = secondsLeft % 60;
+        
+        timerMinutes.textContent = minutes;
+        timerSeconds.textContent = seconds.toString().padStart(2, '0');
+        
+        if (secondsLeft > 0) {
+            secondsLeft--;
+            setTimeout(updateTimer, 1000);
+        } else {
+            timerMinutes.textContent = '0';
+            timerSeconds.textContent = '00';
+            retryBtn.disabled = false;
+            retryBtn.classList.remove('btn-warning');
+            retryBtn.classList.add('btn-success');
+            retryBtn.innerHTML = '<i class="bi bi-check-circle"></i> Спробувати знову';
+        }
+    }
+    
+    // Start the timer
+    updateTimer();
+</script>
