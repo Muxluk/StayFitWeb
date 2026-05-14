@@ -22,7 +22,7 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/bundle.min.css" asp-append-version="true" />
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm bg-body-tertiary border-bottom box-shadow mb-3">
             <div class="container-fluid">
@@ -133,8 +133,8 @@
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+    <div class="container flex-grow-1">
+        <main role="main" class="pb-3 h-100">
             @RenderBody()
         </main>
     </div>
@@ -182,13 +182,13 @@
         </div>
     }
 
-    <footer class="border-top footer text-muted">
+    <footer class="border-top footer text-muted mt-auto">
         <div class="container">
             <div class="row py-3 align-items-center">
                 <div class="col-md-6">&copy; 2026 - StayFit</div>
                 <div class="col-md-6 text-md-end">
                     <ul class="list-inline mb-0">
-                        <li class="list-inline-item"><a class="text-decoration-none text-muted" asp-controller="Home" asp-action="Index">Головна</a></li>
+                        <li class="list-inline-item"><a class="text-decoration-none text-muted" asp-controller="Dashboard" asp-action="Index">Головна</a></li>
                         <li class="list-inline-item"><a class="text-decoration-none text-muted" asp-controller="Home" asp-action="About">Про нас</a></li>
                         <li class="list-inline-item"><a class="text-decoration-none text-muted" asp-controller="Support" asp-action="Index">Контакти</a></li>
                     </ul>

@@ -165,6 +165,8 @@ app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseMiddleware<RequestExecutionTimeLoggingMiddleware>();
 app.UseAuthorization();
 
+app.MapGet("/", () => Results.Redirect("/dashboard"));
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Dashboard}/{action=Index}/{id?}");

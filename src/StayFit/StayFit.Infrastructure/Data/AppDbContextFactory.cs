@@ -8,10 +8,11 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
 {
     public AppDbContext CreateDbContext(string[] args)
     {
+        var webProjectDirectory = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "StayFit.Web"));
+
         var config = new ConfigurationBuilder()
-            .SetBasePath(Path.Combine(Directory.GetCurrentDirectory()))
-            .AddJsonFile("appsettings.json", optional: false)
-            .AddJsonFile("appsettings.Development.json", optional: true)
+            .AddJsonFile(Path.Combine(webProjectDirectory, "appsettings.json"), optional: false)
+            .AddJsonFile(Path.Combine(webProjectDirectory, "appsettings.Development.json"), optional: true)
             .AddEnvironmentVariables()
             .Build();
 

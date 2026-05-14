@@ -74,11 +74,11 @@ button.accept-policy {
 }
 
 .footer {
-    position: absolute;
-    bottom: 0;
+    position: relative;
+    margin-top: auto;
     width: 100%;
-    white-space: nowrap;
-    line-height: 60px;
+    white-space: normal;
+    line-height: 1.5;
 }
 
 .card-elevated {
@@ -389,7 +389,9 @@ button.accept-policy {
 .sf-card {
     border-radius: 10px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
-    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease;
     height: 100%;
 }
 
@@ -482,7 +484,8 @@ button.accept-policy {
 
 /* ─── Progress bar animations ────────────────────────────────────────────── */
 @keyframes sf-progress-pulse {
-    0%, 100% {
+    0%,
+    100% {
         opacity: 1;
     }
     50% {
@@ -522,7 +525,10 @@ button.accept-policy {
     border-radius: 0.5rem;
     background: #fff;
     cursor: pointer;
-    transition: border-color 0.15s, background 0.15s, transform 0.1s;
+    transition:
+        border-color 0.15s,
+        background 0.15s,
+        transform 0.1s;
     user-select: none;
 }
 
@@ -598,8 +604,12 @@ button.accept-policy {
 
 /* ─── Skeleton shimmer ────────────────────────────────────────────────────── */
 @keyframes sf-shimmer {
-    0%   { background-position: -400px 0; }
-    100% { background-position:  400px 0; }
+    0% {
+        background-position: -400px 0;
+    }
+    100% {
+        background-position: 400px 0;
+    }
 }
 
 .sf-skeleton-shimmer {
@@ -651,7 +661,9 @@ button.accept-policy {
     overflow: hidden;
     background: var(--surface-color);
     box-shadow: var(--shadow-card);
-    transition: box-shadow 0.2s, transform 0.15s;
+    transition:
+        box-shadow 0.2s,
+        transform 0.15s;
 }
 
 .sf-ps-card:hover {
@@ -763,14 +775,30 @@ button.accept-policy {
     white-space: nowrap;
 }
 
-.sf-ps-macro--cal  { background: #fff8e1; }
-.sf-ps-macro--cal  .sf-ps-macro-val { color: #e65100; }
-.sf-ps-macro--prot { background: #e3f2fd; }
-.sf-ps-macro--prot .sf-ps-macro-val { color: #0277bd; }
-.sf-ps-macro--fat  { background: #fff3e0; }
-.sf-ps-macro--fat  .sf-ps-macro-val { color: #f57c00; }
-.sf-ps-macro--carb { background: #e8f5e9; }
-.sf-ps-macro--carb .sf-ps-macro-val { color: #2e7d32; }
+.sf-ps-macro--cal {
+    background: #fff8e1;
+}
+.sf-ps-macro--cal .sf-ps-macro-val {
+    color: #e65100;
+}
+.sf-ps-macro--prot {
+    background: #e3f2fd;
+}
+.sf-ps-macro--prot .sf-ps-macro-val {
+    color: #0277bd;
+}
+.sf-ps-macro--fat {
+    background: #fff3e0;
+}
+.sf-ps-macro--fat .sf-ps-macro-val {
+    color: #f57c00;
+}
+.sf-ps-macro--carb {
+    background: #e8f5e9;
+}
+.sf-ps-macro--carb .sf-ps-macro-val {
+    color: #2e7d32;
+}
 
 .sf-ps-per100 {
     font-size: 0.68rem;
@@ -1250,14 +1278,30 @@ button.accept-policy {
 }
 
 /* ─── Macro pills (product cards) ────────────────────────────────────────── */
-[data-bs-theme="dark"] .sf-ps-macro--cal  { background: #2d1a00; }
-[data-bs-theme="dark"] .sf-ps-macro--cal  .sf-ps-macro-val { color: #ff9a3c; }
-[data-bs-theme="dark"] .sf-ps-macro--prot { background: #0d1e2d; }
-[data-bs-theme="dark"] .sf-ps-macro--prot .sf-ps-macro-val { color: #5ab4f7; }
-[data-bs-theme="dark"] .sf-ps-macro--fat  { background: #2a1800; }
-[data-bs-theme="dark"] .sf-ps-macro--fat  .sf-ps-macro-val { color: #ffb74d; }
-[data-bs-theme="dark"] .sf-ps-macro--carb { background: #0d2010; }
-[data-bs-theme="dark"] .sf-ps-macro--carb .sf-ps-macro-val { color: #66bb6a; }
+[data-bs-theme="dark"] .sf-ps-macro--cal {
+    background: #2d1a00;
+}
+[data-bs-theme="dark"] .sf-ps-macro--cal .sf-ps-macro-val {
+    color: #ff9a3c;
+}
+[data-bs-theme="dark"] .sf-ps-macro--prot {
+    background: #0d1e2d;
+}
+[data-bs-theme="dark"] .sf-ps-macro--prot .sf-ps-macro-val {
+    color: #5ab4f7;
+}
+[data-bs-theme="dark"] .sf-ps-macro--fat {
+    background: #2a1800;
+}
+[data-bs-theme="dark"] .sf-ps-macro--fat .sf-ps-macro-val {
+    color: #ffb74d;
+}
+[data-bs-theme="dark"] .sf-ps-macro--carb {
+    background: #0d2010;
+}
+[data-bs-theme="dark"] .sf-ps-macro--carb .sf-ps-macro-val {
+    color: #66bb6a;
+}
 
 /* ─── Product card footer & image wrapper ────────────────────────────────── */
 [data-bs-theme="dark"] .sf-ps-footer {
@@ -1511,5 +1555,3 @@ button.accept-policy {
     border-color: #2d3748;
     opacity: 1;
 }
-
-
