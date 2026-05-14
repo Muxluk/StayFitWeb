@@ -1,4 +1,8 @@
+using Amazon;
+using Amazon.SecretsManager;
+using Amazon.SecretsManager.Model;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Serilog;
@@ -14,10 +18,35 @@ using StayFit.Infrastructure.Identity;
 using StayFit.Infrastructure.Repositories;
 using StayFit.Web.Services;
 using StayFit.Web.Middleware;
-using Microsoft.AspNetCore.RateLimiting;
+using System.Text;
 using System.Threading.RateLimiting;
 
+
 var builder = WebApplication.CreateBuilder(args);
+if (!builder.Environment.IsDevelopment())
+{
+    try
+    {
+        var client = new AmazonSecretsManagerClient(RegionEndpoint.EUNorth1);
+        var request = new GetSecretValueRequest
+        {
+            SecretId = "StayFit/Prod/Secrets"
+        };
+
+        var response = client.GetSecretValueAsync(request).GetAwaiter().GetResult();
+
+        if (!string.IsNullOrEmpty(response.SecretString))
+        {
+            var secretBytes = Encoding.UTF8.GetBytes(response.SecretString);
+            builder.Configuration.AddJsonStream(new MemoryStream(secretBytes));
+            Console.WriteLine("Секрети з AWS завантажено!");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Помилка AWS Secrets Manager: {ex.Message}");
+    }
+}
 builder.Configuration.AddUserSecrets<Program>(optional: true, reloadOnChange: true);
 
 // ─── Serilog ────────────────────────────────────────────────────────────────
