@@ -24,7 +24,9 @@ jobs:
       run: dotnet build src/StayFit/StayFit.sln --no-restore -c Release
 
     - name: Publish
-      run: dotnet publish src/StayFit/StayFit.Web/StayFit.Web.csproj -c Release -o ./publish
+      run: |
+        dotnet publish src/StayFit/StayFit.Web/StayFit.Web.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -o ./publish
+        echo "web: ./StayFit.Web" > ./publish/Procfile
 
     - name: Create deployment package
       run: |
